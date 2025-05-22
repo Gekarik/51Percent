@@ -59,7 +59,7 @@
 //    {
 //        // захватываем стартовый и всех его соседей
 //        var startHex = _player.StartHex; // пусть Player хранит ссылку
-//        startHex.SetOwner(_player.Id,_player.Color);
+//        startHex.SetOwner(_player.Id, _player.Color);
 
 //        _fixedTerritory.Add(startHex);
 //        foreach (var nei in _grid.GetNeighbors(startHex))
@@ -68,7 +68,7 @@
 //            _fixedTerritory.Add(nei);
 //        }
 
-//        Debug.Log($"StartHex?-{_player.StartHex==null},_fixedTerritory-{_fixedTerritory.Count}");
+//        Debug.Log($"StartHex?-{_player.StartHex == null},_fixedTerritory-{_fixedTerritory.Count}");
 //    }
 
 //    private void FixTerritory()

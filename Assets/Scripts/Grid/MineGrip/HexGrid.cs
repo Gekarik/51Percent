@@ -4,66 +4,84 @@ using UnityEngine;
 
 public class HexGrid : MonoBehaviour
 {
-    [SerializeField] private HexGridData _hexGridData;
-    private Transform _hexContainer;
+    [SerializeField] private HexGridData gridData;
 
-    private readonly Dictionary<AxialCoord, Hex> _hexByCoord = new();
+    private Dictionary<AxialCoord, Hex> hexByCoord;
+    private Dictionary<Hex, IReadOnlyList<Hex>> neighborsCache;
 
     private void Awake()
-    {
-        _hexContainer = transform;
-    }
-
-    private void Start()
     {
         BuildRuntimeDictionary();
     }
 
-    public void BuildRuntimeDictionary()
+    private void BuildRuntimeDictionary()
     {
-        _hexByCoord.Clear();
+        Debug.Log("[HexGrid] BuildRuntimeDictionary started.");
 
-        var allHexes = _hexContainer.GetComponentsInChildren<Hex>();
+        Hex[] children = GetComponentsInChildren<Hex>();
+        Debug.Log($"[HexGrid] Found {children.Length} Hex children.");
 
-        var lookup = allHexes.ToDictionary(h => h.Coord, h => h);
-
-        foreach (var coord in _hexGridData.Coords)
+        var lookup = new Dictionary<AxialCoord, Hex>(children.Length);
+        foreach (var hex in children)
         {
-            if (lookup.TryGetValue(coord, out var hex))
-                _hexByCoord[coord] = hex;
-            else
-                Debug.LogWarning($"HexGrid: не найден Hex с Coord {coord}", this);
+            if (hex == null)
+            {
+                Debug.LogWarning("[HexGrid] Found null Hex in children.");
+                continue;
+            }
+
+            lookup[hex.Coord] = hex;
+            Debug.Log($"[HexGrid] Added Hex to lookup with Coord: {hex.Coord}");
         }
 
-        Debug.Log($"HexGrid: загружено {_hexByCoord.Count}/{_hexGridData.Coords.Count} тайлов.");
+        int expectedCount = gridData.Coords.Count;
+        Debug.Log($"[HexGrid] gridData has {expectedCount} coords.");
+
+        hexByCoord = new Dictionary<AxialCoord, Hex>(expectedCount);
+
+        foreach (var coord in gridData.Coords)
+        {
+            if (lookup.TryGetValue(coord, out var hex))
+                hexByCoord[coord] = hex;
+            else
+                Debug.LogWarning($"[HexGrid] No Hex found for Coord: {coord}");
+        }
+
+        neighborsCache = new Dictionary<Hex, IReadOnlyList<Hex>>();
     }
+
+    public IReadOnlyList<Hex> AllHexes => hexByCoord.Values.ToList();
 
     public Hex GetRandomHex()
     {
-        if (_hexByCoord.Count == 0)
-            return null;
+        var allHexes = AllHexes;
+        if (allHexes.Count == 0) return null;
 
-        var keys = _hexByCoord.Keys.ToList();
-        var randomKey = keys[Random.Range(0, keys.Count)];
-        return _hexByCoord[randomKey];
+        int index = UnityEngine.Random.Range(0, allHexes.Count);
+        return allHexes[index];
     }
 
-    public IEnumerable<Hex> GetNeighbors(AxialCoord coord)
+    private IReadOnlyList<Hex> GetNeighbors(Hex tile)
     {
+        var neighbors = new List<Hex>(6);
+
         foreach (var (dq, dr) in AxialCoord.Directions)
         {
-            var neighbor = new AxialCoord(coord.Q + dq, coord.R + dr);
-
-            if (_hexByCoord.TryGetValue(neighbor, out var hex))
-                yield return hex;
+            var neighborCoord = new AxialCoord(tile.Coord.Q + dq, tile.Coord.R + dr);
+            if (hexByCoord.TryGetValue(neighborCoord, out var neighbor))
+                neighbors.Add(neighbor);
         }
+
+        return neighbors;
     }
 
-    public void Reset()
+    public IReadOnlyList<Hex> GetNeighborsCached(Hex tile)
     {
-        foreach (var hex in _hexByCoord.Values)
-            hex.Reset();   
-        
-        _hexByCoord.Clear();
+        if (neighborsCache.TryGetValue(tile, out var cachedNeighbors))
+            return cachedNeighbors;
+
+        var neighbors = GetNeighbors(tile);
+        neighborsCache[tile] = neighbors;
+        return neighbors;
     }
 }

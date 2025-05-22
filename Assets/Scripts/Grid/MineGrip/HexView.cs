@@ -8,11 +8,13 @@ public class HexView : MonoBehaviour
 
     private HexViewAnimator _hexViewAnimator;
     private MeshRenderer _meshRenderer;
+    private Material _startMaterial;
 
     private void Awake()
     {
         _hexViewAnimator = GetComponent<HexViewAnimator>();
         _meshRenderer = GetComponent<MeshRenderer>();
+        _startMaterial = _meshRenderer.material;
     }
 
     private void OnEnable()
@@ -43,13 +45,18 @@ public class HexView : MonoBehaviour
             case HexState.PartOfTrail:
                 break;
 
-            case HexState.Busy: 
+            case HexState.Busy:
                 break;
 
-            default: 
+            default:
                 break;
         }
     }
 
     public Bounds GetBounds() => GetComponent<MeshRenderer>().bounds;
+
+    public void Reset()
+    {
+        _meshRenderer.material = _startMaterial;
+    }
 }

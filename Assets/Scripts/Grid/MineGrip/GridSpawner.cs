@@ -3,17 +3,17 @@ using UnityEngine;
 public class GridSpawner : MonoBehaviour
 {
     [SerializeField] private Hex _hexPrefab;
-    [SerializeField] private Transform _container;
     [SerializeField] private float _hexRadius;
     [SerializeField] private BoxCollider _playableArea;
     [SerializeField] private HexGrid _grid;
     [SerializeField] private HexGridData _gridData;
 
+    private Transform _container;
     private Bounds _bounds;
 
-    private void Awake()
+    private void OnValidate()
     {
-        RegenerateGrid();
+        _container = _grid.transform;
     }
 
     [ContextMenu("Regenerate")]

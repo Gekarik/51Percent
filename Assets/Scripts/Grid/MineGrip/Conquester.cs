@@ -1,110 +1,99 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
+using System;
 
+[RequireComponent(typeof(ICharacter))]
 public class Conquester : MonoBehaviour
 {
+    [SerializeField] private HexGrid _grid;
+    [SerializeField] private PolygonZoneTester _zoneTester;
+
     public Action<ICharacter, ICharacter> TrailInterrupted;
 
-    private HexGrid _grid;
-    private HashSet<Hex> _trail; // Используем HashSet для избежания дублирования
-    private HashSet<Hex> _fixed;
     private ICharacter _player;
+
+    private readonly HashSet<Hex> _trailSet = new HashSet<Hex>();
+    private readonly HashSet<Hex> _fixedSet = new HashSet<Hex>();
+    private readonly List<Vector2> _polyCache = new List<Vector2>();
 
     private void Awake()
     {
         _player = GetComponent<ICharacter>();
-        _trail = new HashSet<Hex>();
-        _fixed = new HashSet<Hex>();
+        CreateZoneTester();
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void CreateZoneTester()
     {
-        if (collision.gameObject.TryGetComponent(out Hex hex))
-        {
-            if (hex.State == HexState.PartOfTrail && _player != hex.Owner)
-            {
-                TrailInterrupted?.Invoke(hex.Owner, _player);
-            }
-            else
-            {
-                AddHexToTrail(hex);
-            }
-        }
+        var zoneObject = new GameObject("ZoneTester");
+        zoneObject.transform.SetParent(transform);
+        _zoneTester = zoneObject.AddComponent<PolygonZoneTester>();
     }
 
-    private void AddHexToTrail(Hex hex)
+    public void Init(HexGrid grid)
     {
-        if (!_trail.Contains(hex))
-        {
-            _trail.Add(hex);
-            hex.SetState(HexState.PartOfTrail);
-        }
+        _grid = grid;
     }
 
     public void GetStartTerritory(Hex startHex)
     {
-        if (_fixed.Count == 0 && _player.State == CharacterState.Alive)
-        {
-            Debug.Log(startHex.Coord.ToString());
+        var hexes = _grid.GetNeighborsCached(startHex).Append(startHex);
 
-            _fixed.UnionWith(BFS(startHex, 2)); // Например, радиус BFS = 2
-            _fixed.Add(startHex);
-
-            foreach (Hex hex in _fixed)
-            {
-                hex.SetOwner(_player);
-            }
-        }
+        foreach (var hex in hexes)
+            CaptureHex(hex);
     }
 
-    private HashSet<Hex> BFS(Hex startHex, int radius)
+    private void OnCollisionEnter(Collision collision)
     {
-        var visited = new HashSet<Hex>();
-        var queue = new Queue<(Hex hex, int depth)>();
-        queue.Enqueue((startHex, 0));
-        visited.Add(startHex);
+        if (collision.gameObject.TryGetComponent(out Hex hex) == false || hex.Owner == _player)
+            return;
 
-        while (queue.Count > 0)
+        if (hex.Owner != _player && hex.State != HexState.PartOfTrail)
         {
-            var (currentHex, depth) = queue.Dequeue();
+            if (_trailSet.Add(hex))
+                hex.AddedToTrail();
 
-            if (depth < radius)
-            {
-                foreach (Hex neighbor in _grid.GetNeighbors(currentHex.Coord))
-                {
-                    if (!visited.Contains(neighbor) && neighbor.IsPassable)
-                    {
-                        visited.Add(neighbor);
-                        queue.Enqueue((neighbor, depth + 1));
-                    }
-                }
-            }
+            return;
         }
 
-        return visited;
+        if (_trailSet.Count > 0 && hex.Owner == _player)
+        {
+            FixTerritory();
+            _trailSet.Clear();
+        }
     }
 
     private void FixTerritory()
     {
-        foreach (Hex hex in _trail)
+        foreach (var hex in _trailSet)
+            CaptureHex(hex);
+
+        _polyCache.Clear();
+        _polyCache.AddRange(_trailSet.Select(hex => (Vector2)hex.transform.position));
+
+        _zoneTester.SetPolygon(_polyCache);
+
+        foreach (var tile in _grid.AllHexes)
         {
-            _fixed.Add(hex);
-            hex.SetOwner(_player);
-            hex.SetState(HexState.Busy);
+            if (_fixedSet.Contains(tile))
+                continue;
+
+            if (_zoneTester.IsInside((Vector2)tile.transform.position))
+                CaptureHex(tile);
         }
-
-        _trail.Clear();
     }
 
-    private void Reset()
+
+    private void CaptureHex(Hex tile)
     {
-        _trail.Clear();
-        _fixed.Clear();
+        bool addedToFixed = _fixedSet.Add(tile);
+
+        if (addedToFixed)
+            tile.SetOwner(_player);
     }
 
-    internal void Init(HexGrid hexGrid)
+    private void OnDestroy()
     {
-        _grid = hexGrid ?? throw new ArgumentNullException(nameof(hexGrid));
+        // zoneTester живёт на сцене, не удаляем здесь
     }
 }

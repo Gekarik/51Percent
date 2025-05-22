@@ -4,10 +4,11 @@ using UnityEngine;
 public class Hex : MonoBehaviour
 {
     [SerializeField] private HexView _hexView;
+    [SerializeField] private AxialCoord _coord;
+    public AxialCoord Coord => _coord;
 
     public Action<ICharacter> StateChanged;
     public Action AddedToTrail;
-    public AxialCoord Coord { get; private set; }
     public ICharacter Owner { get; private set; }
     public HexState State { get; private set; }
 
@@ -30,13 +31,14 @@ public class Hex : MonoBehaviour
         AddedToTrail?.Invoke();
     }
 
-    public void SetCoord(AxialCoord coord) => Coord = coord;
+    public void SetCoord(AxialCoord coord) => _coord = coord;
 
     public Bounds GetRendererBounds() => _hexView.GetBounds();
 
     public void Reset()
     {
         Owner = null;
-        State = HexState.Busy;
+        State = HexState.Empty;
+        _hexView.Reset();
     }
 }
