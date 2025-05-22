@@ -61,19 +61,21 @@ public class HexGrid : MonoBehaviour
         return allHexes[index];
     }
 
-    private IReadOnlyList<Hex> GetNeighbors(Hex tile)
+    private IReadOnlyList<Hex> GetNeighbors(Hex tile, float searchRadius = 1.5f)
     {
-        var neighbors = new List<Hex>(6);
+        var neighbors = new List<Hex>();
+        var colliders = Physics.OverlapSphere(tile.transform.position, searchRadius);
 
-        foreach (var (dq, dr) in AxialCoord.Directions)
+        foreach (var collider in colliders)
         {
-            var neighborCoord = new AxialCoord(tile.Coord.Q + dq, tile.Coord.R + dr);
-            if (hexByCoord.TryGetValue(neighborCoord, out var neighbor))
+            Hex neighbor = collider.GetComponent<Hex>();
+            if (neighbor != null && neighbor != tile)
                 neighbors.Add(neighbor);
         }
 
         return neighbors;
     }
+
 
     public IReadOnlyList<Hex> GetNeighborsCached(Hex tile)
     {

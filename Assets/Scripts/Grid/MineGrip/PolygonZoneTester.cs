@@ -13,19 +13,18 @@ public class PolygonZoneTester : MonoBehaviour
         _polygonCollider.isTrigger = true;
     }
 
-    public void SetPolygon(IList<Vector2> points)
+    public void SetPolygon(IList<Vector2> worldPoints)
     {
-        int count = points.Count;
-
-        if (polygonPoints.Length < count)
-            polygonPoints = new Vector2[count];
-
-        for (int i = 0; i < count; i++)
-            polygonPoints[i] = points[i];
+        // Локальные точки относительно transform позиции
+        Vector2[] localPoints = new Vector2[worldPoints.Count];
+        Vector2 origin = transform.position;
+        for (int i = 0; i < worldPoints.Count; i++)
+            localPoints[i] = worldPoints[i] - origin;
 
         _polygonCollider.pathCount = 1;
-        _polygonCollider.SetPath(0, polygonPoints);
+        _polygonCollider.SetPath(0, localPoints);
     }
+
 
     public bool IsInside(Vector2 point) => _polygonCollider.OverlapPoint(point);
     private void OnDrawGizmos()

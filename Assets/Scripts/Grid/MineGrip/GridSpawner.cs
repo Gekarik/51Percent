@@ -13,7 +13,8 @@ public class GridSpawner : MonoBehaviour
 
     private void OnValidate()
     {
-        _container = _grid.transform;
+        if (_grid != null)
+            _container = _grid.transform;
     }
 
     [ContextMenu("Regenerate")]
