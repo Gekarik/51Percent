@@ -5,7 +5,7 @@ public class RayCaster : MonoBehaviour
     private RaycastHit _hit;
     private Ray _ray;
     private Camera _camera;
-    [SerializeField] private HexGrid _grid;
+    [SerializeField] private HexGridLegacy _grid;
 
     private void Awake()
     {

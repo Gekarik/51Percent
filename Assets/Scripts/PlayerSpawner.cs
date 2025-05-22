@@ -3,32 +3,36 @@ using UnityEngine;
 
 public class PlayerSpawner : MonoBehaviour
 {
-    [SerializeField] private HexGrid _hexgrid;
-    [SerializeField] private int _playerCount;
-    [SerializeField] private Player _PlayerPrefab;
-    [SerializeField] private Camera _camera;
+    [Header("References")]
+    [SerializeField] private HexGrid _hexGrid;
+    [SerializeField] private Player _playerPrefab;
+    [SerializeField] private Camera _cameraPrefab;
+
+    [SerializeField] private int _playerCount = 1;
+    [SerializeField] private float _spawnDelay = 2f;
 
     private IEnumerator Start()
     {
-        yield return new WaitForSeconds(2);
-
+        yield return new WaitForSeconds(_spawnDelay);
         SpawnPlayers();
-    }
-
-    private void SpawnPlayer()
-    {
-        Hex hex = _hexgrid.GetRandomHex();
-
-        Player player = Instantiate(_PlayerPrefab, hex.transform.position, Quaternion.identity);
-        Camera cam = Instantiate(_camera);
-
-        cam.GetComponent<CameraFollower>().Init(player.transform);
-        player.Init(hex);
     }
 
     private void SpawnPlayers()
     {
-        for (int i = 0; i < _playerCount; i++)
-            SpawnPlayer();
+        SpawnSinglePlayer();
+    }
+
+    private void SpawnSinglePlayer()
+    {
+        var hex = _hexGrid.GetRandomHex();
+
+        var player = Instantiate(_playerPrefab, hex.transform.position, Quaternion.identity);
+        player.Init(hex, _hexGrid);
+
+        var cam = Instantiate(_cameraPrefab);
+        var follower = cam.GetComponent<CameraFollower>();
+
+        if (follower != null)
+            follower.Init(player.transform);
     }
 }

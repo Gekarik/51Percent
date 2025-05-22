@@ -1,7 +1,7 @@
 ﻿using DG.Tweening;
 using UnityEngine;
 
-public class Hex : MonoBehaviour
+public class HexLegacy : MonoBehaviour
 {
     public int OwnerId { get; private set; }
     public AxialCoord Coord { get; private set; }
@@ -20,13 +20,13 @@ public class Hex : MonoBehaviour
         _block = new MaterialPropertyBlock();
     }
 
-    public void SetOwner(int playerId, Color color)
-    {
-        if ((playerId == OwnerId) || playerId < 0)
-            return;
-        OwnerId = playerId;
-        SetColor(color);
-    }
+    //public void SetOwner(int playerId, Color color)
+    //{
+    //    if ((playerId == OwnerId) || playerId < 0)
+    //        return;
+    //    OwnerId = playerId;
+    //    SetColor(color);
+    //}
 
     public void SetColor(Color color)
     {

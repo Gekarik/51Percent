@@ -33,4 +33,14 @@ public class HexAnimator : MonoBehaviour, IHexAnimationHandler
                       .Append(transform.DOScale(_stretchScale, _stretchDuration).SetEase(Ease.OutQuad))
                       .Append(transform.DOScale(_initialScale, _stretchDuration).SetEase(Ease.InQuad));
     }
+
+    public void Stop()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public void Reset()
+    {
+        throw new System.NotImplementedException();
+    }
 }

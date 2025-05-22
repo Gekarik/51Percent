@@ -1,7 +1,7 @@
-using DG.Tweening;
+//using DG.Tweening;
 
-public interface IHexAnimationHandler
-{
-    Tween Bounce();
-    Tween Stretch();
-}
+//public interface IHexAnimationHandler
+//{
+//    Tween Bounce();
+//    Tween Stretch();
+//}

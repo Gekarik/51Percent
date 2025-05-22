@@ -1,19 +1,19 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Animator), typeof(Mover))]
-public class Player : MonoBehaviour
+[RequireComponent(typeof(Animator), typeof(Mover), typeof(Conquester))]
+public class Player : MonoBehaviour, ICharacter
 {
-    public Color Color { get; private set; } = Color.green;
     private Conquester _conquester;
     private Mover _mover;
     private Animator _animator;
-    public Hex _startHex { get; private set; }
 
-    public int Id { get; private set; } = 5;
+    public CharacterState State { get; private set; }
+    public Color Color { get; private set; } = Color.green;
 
-    public void Init(Hex startHex)
+    public void Init(Hex startHex, HexGrid hexGrid)
     {
-        _startHex = startHex;
+        _conquester.Init(hexGrid);
+        _conquester.GetStartTerritory(startHex);
     }
 
     private void Awake()
@@ -21,6 +21,9 @@ public class Player : MonoBehaviour
         _mover = GetComponent<Mover>();
         _animator = GetComponent<Animator>();
         _conquester = GetComponent<Conquester>();
+
+        //Color = Colors.GetFreeColor();
+        //id = GetId();
     }
 
     private void Update()
@@ -30,6 +33,17 @@ public class Player : MonoBehaviour
 
     public void Die()
     {
-
+        throw new System.NotImplementedException();
     }
+
+    public void Kill()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+
+public enum CharacterState
+{
+    Alive = 0,
+    Died
 }
