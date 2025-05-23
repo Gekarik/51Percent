@@ -7,8 +7,6 @@ using System.Linq;
 public class Conquester : MonoBehaviour
 {
     [SerializeField] private HexGrid _grid;
-    [Tooltip("Минимальное количество гексов в трейле для замыкания")]
-    [SerializeField] private int _minTrailCount = 3;
 
     public Action<ICharacter, ICharacter> TrailInterrupted;
 
@@ -32,7 +30,7 @@ public class Conquester : MonoBehaviour
                 TrailInterrupted?.Invoke(hex.Owner, _player);
                 break;
 
-            case HexState.Busy when hex.Owner == _player && _trailList.Count >= _minTrailCount:
+            case HexState.Busy when hex.Owner == _player && _trailList.Count > 0:
                 HandleClosure(hex);
                 break;
 
@@ -44,7 +42,7 @@ public class Conquester : MonoBehaviour
 
     private void HandleTrail(Hex hex)
     {
-        if (!_trailList.Contains(hex))
+        if (_trailList.Contains(hex) == false)
         {
             _trailList.Add(hex);
             hex.SetOwner(_player);
@@ -54,23 +52,18 @@ public class Conquester : MonoBehaviour
 
     private void HandleClosure(Hex returnHex)
     {
-        // замкнули: добавляем последнюю точку
-        if (!_trailList.Contains(returnHex))
+        if (_trailList.Contains(returnHex) == false)
             _trailList.Add(returnHex);
 
-        // 1) захватываем весь треил
         foreach (var t in _trailList)
             CaptureHex(t);
 
-        // 2) строим полигон по x/z центрам
         var poly = _trailList
             .Select(h => (x: h.transform.position.x, y: h.transform.position.z))
             .ToList();
 
-        // 3) для каждого hex проверяем попадание центра внутрь полигона
         foreach (var hex in _grid.AllHexes)
         {
-            // пропускаем уже захваченные
             if (_fixed.Contains(hex))
                 continue;
 
@@ -79,11 +72,9 @@ public class Conquester : MonoBehaviour
                 CaptureHex(hex);
         }
 
-        // 4) чистим треил
         _trailList.Clear();
     }
 
-    // алгоритм ray-casting для выпуклых/невыпуклых полигонов
     private bool PointInPolygon((float x, float y) p, List<(float x, float y)> poly)
     {
         bool inside = false;
@@ -110,7 +101,6 @@ public class Conquester : MonoBehaviour
         }
     }
 
-    // Остальные публичные методы без изменений...
     public void Init(HexGrid grid) => _grid = grid ?? throw new ArgumentNullException();
     public void GetStartTerritory(Hex start)
     {
