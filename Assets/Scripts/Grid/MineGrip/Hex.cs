@@ -21,7 +21,6 @@ public class Hex : MonoBehaviour
     {
         Debug.Log("Owner Setted");
         Owner = player ?? throw new ArgumentNullException(nameof(player));
-        State = HexState.Busy;
         StateChanged?.Invoke(player);
     }
 

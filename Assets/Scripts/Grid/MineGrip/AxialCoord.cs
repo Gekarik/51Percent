@@ -18,7 +18,11 @@ public struct AxialCoord : IEquatable<AxialCoord>
 
     public static readonly (int dq, int dr)[] Directions =
     {
-        (+1,  0), (+1, -1), ( 0, -1),
-        (-1,  0), (-1, +1), ( 0, +1)
+        (0, +1), (+1, 0), (+1, -1),
+        (0, -1), (-1, 0), (-1, +1)
     };
+
+
+    public static AxialCoord operator +(AxialCoord a, (int dq, int dr) b)
+    => new AxialCoord(a.Q + b.dq, a.R + b.dr);
 }

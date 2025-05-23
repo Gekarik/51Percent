@@ -158,6 +158,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _hexView: {fileID: 3992642742792010953}
+  _coord:
+    Q: 0
+    R: 0
 --- !u!64 &6603769825578936296
 MeshCollider:
   m_ObjectHideFlags: 0

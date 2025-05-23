@@ -1,89 +1,89 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 public class HexGrid : MonoBehaviour
 {
-    [SerializeField] private HexGridData gridData;
+    [Header("Neighbors Detection")]
+    [Tooltip("Радиус окружности для поиска соседей вокруг центра Hex")]
 
-    private Dictionary<AxialCoord, Hex> hexByCoord;
-    private Dictionary<Hex, IReadOnlyList<Hex>> neighborsCache;
+    private List<Hex> _allHexes;
+    private Dictionary<AxialCoord, Hex> _coordToHex = new();
+    private readonly Dictionary<Hex, IReadOnlyList<Hex>> _neighborsCache = new();
 
     private void Awake()
     {
-        BuildRuntimeDictionary();
+        _allHexes = GetComponentsInChildren<Hex>(true).ToList();
+        _coordToHex.Clear();
+
+        foreach (var hex in _allHexes)
+            _coordToHex[hex.Coord] = hex;
     }
 
-    private void BuildRuntimeDictionary()
-    {
-        Debug.Log("[HexGrid] BuildRuntimeDictionary started.");
+    /// <summary>Все Hex в этой сетке.</summary>
+    public IReadOnlyList<Hex> AllHexes => _allHexes;
 
-        Hex[] children = GetComponentsInChildren<Hex>();
-        Debug.Log($"[HexGrid] Found {children.Length} Hex children.");
-
-        var lookup = new Dictionary<AxialCoord, Hex>(children.Length);
-        foreach (var hex in children)
-        {
-            if (hex == null)
-            {
-                Debug.LogWarning("[HexGrid] Found null Hex in children.");
-                continue;
-            }
-
-            lookup[hex.Coord] = hex;
-            Debug.Log($"[HexGrid] Added Hex to lookup with Coord: {hex.Coord}");
-        }
-
-        int expectedCount = gridData.Coords.Count;
-        Debug.Log($"[HexGrid] gridData has {expectedCount} coords.");
-
-        hexByCoord = new Dictionary<AxialCoord, Hex>(expectedCount);
-
-        foreach (var coord in gridData.Coords)
-        {
-            if (lookup.TryGetValue(coord, out var hex))
-                hexByCoord[coord] = hex;
-            else
-                Debug.LogWarning($"[HexGrid] No Hex found for Coord: {coord}");
-        }
-
-        neighborsCache = new Dictionary<Hex, IReadOnlyList<Hex>>();
-    }
-
-    public IReadOnlyList<Hex> AllHexes => hexByCoord.Values.ToList();
-
+    /// <summary>Возвращает рандомный Hex из сетки или null, если сетка пуста.</summary>
     public Hex GetRandomHex()
     {
-        var allHexes = AllHexes;
-        if (allHexes.Count == 0) return null;
-
-        int index = UnityEngine.Random.Range(0, allHexes.Count);
-        return allHexes[index];
+        if (_allHexes.Count == 0)
+            return null;
+        int idx = UnityEngine.Random.Range(0, _allHexes.Count);
+        return _allHexes[idx];
     }
 
-    private IReadOnlyList<Hex> GetNeighbors(Hex tile, float searchRadius = 1.5f)
+    /// <summary>Возвращает кэшированных соседей через AxialCoord.</summary>
+    public IReadOnlyList<Hex> GetNeighborsCached(Hex tile)
     {
-        var neighbors = new List<Hex>();
-        var colliders = Physics.OverlapSphere(tile.transform.position, searchRadius);
+        if (_neighborsCache.TryGetValue(tile, out var cached))
+            return cached;
 
-        foreach (var collider in colliders)
+        var coord = tile.Coord;
+        var result = new List<Hex>();
+
+        foreach (var (dq, dr) in AxialCoord.Directions)
         {
-            Hex neighbor = collider.GetComponent<Hex>();
-            if (neighbor != null && neighbor != tile)
+            var neighborCoord = new AxialCoord(coord.Q + dq, coord.R + dr);
+            if (_coordToHex.TryGetValue(neighborCoord, out var neighbor))
+                result.Add(neighbor);
+        }
+
+        _neighborsCache[tile] = result;
+        return result;
+    }
+
+    /// <summary>Проверяет наличие Hex по координатам.</summary>
+    public bool TryGetHex(AxialCoord coord, out Hex hex)
+    {
+        return _coordToHex.TryGetValue(coord, out hex);
+    }
+
+    /// <summary>Возвращает соседей по координатам без кэша.</summary>
+    public IReadOnlyList<Hex> GetLogicalNeighbors(Hex hex)
+    {
+        var neighbors = new List<Hex>(6);
+        var center = hex.Coord;
+
+        foreach (var offset in AxialCoord.Directions)
+        {
+            var coord = new AxialCoord(center.Q + offset.dq, center.R + offset.dr);
+            if (_coordToHex.TryGetValue(coord, out var neighbor))
                 neighbors.Add(neighbor);
         }
 
         return neighbors;
     }
 
-
-    public IReadOnlyList<Hex> GetNeighborsCached(Hex tile)
+    /// <summary>При изменении числа Hex (например, регенерации), очистить кэш и пересобрать список.</summary>
+    public void Rebuild()
     {
-        if (neighborsCache.TryGetValue(tile, out var cachedNeighbors))
-            return cachedNeighbors;
+        _allHexes = GetComponentsInChildren<Hex>(true).ToList();
+        _coordToHex.Clear();
+        _neighborsCache.Clear();
 
-        var neighbors = GetNeighbors(tile);
-        neighborsCache[tile] = neighbors;
-        return neighbors;
+        foreach (var hex in _allHexes)
+            _coordToHex[hex.Coord] = hex;
     }
 }
