@@ -15,24 +15,18 @@ public class HexView : MonoBehaviour
         _hexViewAnimator = GetComponent<HexViewAnimator>();
         _meshRenderer = GetComponent<MeshRenderer>();
         _startMaterial = _meshRenderer.material;
+
+        _hexViewAnimator.Init(transform);
     }
 
     private void OnEnable()
     {
         _hex.StateChanged += OnStateChanged;
-        _hex.AddedToTrail += OnAddedToTrail;
     }
 
     private void OnDisable()
     {
         _hex.StateChanged -= OnStateChanged;
-        _hex.AddedToTrail -= OnAddedToTrail;
-    }
-
-    private void OnAddedToTrail()
-    {
-        if (_meshRenderer != null)
-            _meshRenderer.material.color = Color.green;
     }
 
     private void OnStateChanged(ICharacter player)
@@ -43,9 +37,11 @@ public class HexView : MonoBehaviour
         switch (_hex.State)
         {
             case HexState.PartOfTrail:
+                _hexViewAnimator.Stretch();
                 break;
 
             case HexState.Busy:
+                _hexViewAnimator.Jump();
                 break;
 
             default:

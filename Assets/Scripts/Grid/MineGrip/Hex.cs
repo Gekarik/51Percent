@@ -8,7 +8,6 @@ public class Hex : MonoBehaviour
     public AxialCoord Coord => _coord;
 
     public Action<ICharacter> StateChanged;
-    public Action AddedToTrail;
     public ICharacter Owner { get; private set; }
     public HexState State { get; private set; }
 
@@ -17,17 +16,12 @@ public class Hex : MonoBehaviour
         State = HexState.Empty;
     }
 
-    public void SetOwner(ICharacter player)
+    public void SetOwner(ICharacter player, HexState hexState)
     {
         Debug.Log("Owner Setted");
+        State = hexState;
         Owner = player ?? throw new ArgumentNullException(nameof(player));
         StateChanged?.Invoke(player);
-    }
-
-    public void SetState(HexState hexState)
-    {
-        State = hexState;
-        AddedToTrail?.Invoke();
     }
 
     public void SetCoord(AxialCoord coord) => _coord = coord;

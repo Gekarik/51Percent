@@ -8,7 +8,6 @@ public class PlayerSpawner : MonoBehaviour
     [SerializeField] private Player _playerPrefab;
     [SerializeField] private Camera _cameraPrefab;
 
-    [SerializeField] private int _playerCount = 1;
     [SerializeField] private float _spawnDelay = 2f;
 
     private IEnumerator Start()
