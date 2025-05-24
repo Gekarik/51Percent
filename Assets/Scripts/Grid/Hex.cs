@@ -1,42 +1,34 @@
-﻿using DG.Tweening;
+using System;
 using UnityEngine;
 
-public class HexLegacy : MonoBehaviour
+public class Hex : MonoBehaviour
 {
-    public int OwnerId { get; private set; }
-    public AxialCoord Coord { get; private set; }
-    private Renderer _renderer;
+    [SerializeField] private HexView _hexView;
+    public HexView HexView => _hexView;
 
-    private Animator _animator;
-    private MaterialPropertyBlock _block;
-    private Transform _transform;
+    public Action<ICharacter> StateChanged;
+    public ICharacter Owner { get; private set; }
+    public HexState State { get; private set; }
 
     private void Awake()
     {
-        _transform = transform;
-        _animator = GetComponent<Animator>();
-        _block = new MaterialPropertyBlock();
-        _renderer = GetComponent<Renderer>();
-        _block = new MaterialPropertyBlock();
+        State = HexState.Empty;
     }
 
-    //public void SetOwner(int playerId, Color color)
-    //{
-    //    if ((playerId == OwnerId) || playerId < 0)
-    //        return;
-    //    OwnerId = playerId;
-    //    SetColor(color);
-    //}
-
-    public void SetColor(Color color)
+    public void SetOwner(ICharacter player, HexState hexState)
     {
-        _renderer.GetPropertyBlock(_block);
-        _block.SetColor("_Color", color);
-        _renderer.SetPropertyBlock(_block);
+        Debug.Log("Owner Setted");
+        State = hexState;
+        Owner = player ?? throw new ArgumentNullException(nameof(player));
+        StateChanged?.Invoke(player);
     }
 
-    public void SetCoord(AxialCoord axialCoord)
+    public Bounds GetRendererBounds() => _hexView.GetBounds();
+
+    public void Reset()
     {
-        Coord = axialCoord;
+        Owner = null;
+        State = HexState.Empty;
+        _hexView.Reset();
     }
 }
