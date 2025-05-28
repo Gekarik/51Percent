@@ -8,6 +8,10 @@ public class Conquester : MonoBehaviour
 {
     [SerializeField] private HexGrid _grid;
 
+    //еу
+    private HexEnvironmentAdapter _env;
+    //
+
     public Action<ICharacter, ICharacter> TrailInterrupted;
     public Action<IReadOnlyList<Transform>> AreaCaptured;
 
@@ -19,6 +23,12 @@ public class Conquester : MonoBehaviour
     {
         _player = GetComponent<ICharacter>();
         _grid = FindObjectOfType<HexGrid>();
+
+        // получаем размер гекса по оси Z
+        float hexSizeZ = _grid.AllHexes[0].GetRendererBounds().size.z;
+        // порог — чуть больше диаметра (1.1f)
+        float maxDist = hexSizeZ * 1.1f;
+        _env = new HexEnvironmentAdapter(_grid);
     }
 
     private void OnEnable()
@@ -63,57 +73,32 @@ public class Conquester : MonoBehaviour
 
     private void HandleClosure(Hex returnHex)
     {
-        List<Hex> hexToCapture = new();
-
-        if (_trailList.Contains(returnHex) == false)
+        // Перед вызовом будьте уверены, что returnHex находится в _trailList
+        if (!_trailList.Contains(returnHex))
             _trailList.Add(returnHex);
 
-        foreach (var hex in _trailList)
-            hexToCapture.Add(hex);
+        // Собираем состояние
+        var state = new ConquestState(
+            fixedHexes: new HashSet<Hex>(_fixed),
+            trailHexes: _trailList);
 
-        var poly = _trailList.Select(h => (h.transform.position.x, h.transform.position.z)).ToList();
+        // Вычисляем область для захвата
+        var toCapture = ConquestAlgorithm.ComputeCapturedArea(_env, state);
 
-        foreach (var hex in _grid.AllHexes)
-        {
-            if (_fixed.Contains(hex))
-                continue;
-
-            var pt = (hex.transform.position.x, hex.transform.position.z);
-
-            if (PointInPolygon(pt, poly))
-                hexToCapture.Add(hex);
-        }
-
-        foreach (var hex in hexToCapture)
+        // Захватываем и фиксируем новые гексы
+        foreach (var hex in toCapture)
             CaptureHex(hex);
 
-        var transformToAnimate = hexToCapture
-        .Where(h => h != null && h.HexView != null)       
-        .Select(h => h.HexView.transform)
-        .Distinct()                                       
-        .ToList();
+        // Анимация
+        var transforms = toCapture
+            .Where(h => h.HexView != null)
+            .Select(h => h.HexView.transform)
+            .Distinct()
+            .ToList();
+        AreaCaptured?.Invoke(transforms);
 
-        AreaCaptured?.Invoke(transformToAnimate);
+        // Сбрасываем трейл
         _trailList.Clear();
-    }
-
-    private bool PointInPolygon((float x, float y) p, List<(float x, float y)> poly)
-    {
-        bool inside = false;
-        int n = poly.Count;
-
-        for (int i = 0, j = n - 1; i < n; j = i++)
-        {
-            var xi = poly[i].x; var yi = poly[i].y;
-            var xj = poly[j].x; var yj = poly[j].y;
-
-            bool intersect = ((yi > p.y) != (yj > p.y))
-                             && (p.x < (xj - xi) * (p.y - yi) / (yj - yi + float.Epsilon) + xi);
-            if (intersect)
-                inside = !inside;
-        }
-
-        return inside;
     }
 
     private void CaptureHex(Hex hex)
@@ -129,8 +114,7 @@ public class Conquester : MonoBehaviour
 
     public void GetStartTerritory(Hex startHex)
     {
-        var searchRadius = startHex.GetRendererBounds().size.z / 2;
-        var startTerritory = _grid.GetNeighbors(startHex, searchRadius);
+        var startTerritory = _grid.GetNeighbors(startHex);
 
         foreach (var h in startTerritory)
             CaptureHex(h);

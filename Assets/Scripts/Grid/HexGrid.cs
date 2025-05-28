@@ -7,14 +7,49 @@ public class HexGrid : MonoBehaviour
 {
     [SerializeField] private ViewAnimator _viewAnimator;
 
+    private const float RadiusSearchFactor = 1.01f;
     private List<Hex> _allHexes;
+    private Dictionary<Hex, List<Hex>> _neighborMap;
+    private float _neighborSearchRadius;
+    public float NeighborSearchRadius => _neighborSearchRadius;
+    public IReadOnlyList<Hex> AllHexes => _allHexes;
 
     private void Awake()
     {
         _allHexes = GetComponentsInChildren<Hex>(true).ToList();
+        float hexDiameter = _allHexes[0].GetRendererBounds().size.z;
+        _neighborSearchRadius = hexDiameter * RadiusSearchFactor;
+        BuildNeighborMap();
     }
 
-    public IReadOnlyList<Hex> AllHexes => _allHexes;
+    private void BuildNeighborMap()
+    {
+        _neighborMap = new Dictionary<Hex, List<Hex>>(_allHexes.Count);
+        LayerMask hexMask = 1 << _allHexes[0].gameObject.layer;
+
+        foreach (var hex in _allHexes)
+        {
+            var colliders = Physics.OverlapSphere(hex.transform.position, _neighborSearchRadius, hexMask);
+            var neighbors = new List<Hex>();
+            foreach (var collider in colliders)
+            {
+                if (collider.TryGetComponent(out Hex h) && h != hex)
+                    neighbors.Add(h);
+            }
+
+            _neighborMap[hex] = neighbors;
+        }
+    }
+
+    public IReadOnlyList<Hex> GetNeighborsCached(Hex hex) => _neighborMap.TryGetValue(hex, out var n) ? n : new List<Hex>();
+
+    public IEnumerable<Hex> GetNeighbors(Hex hex)
+    {
+        float radius = NeighborSearchRadius;
+        return GetNeighborsCached(hex)
+            .Where(n => Vector3.Distance(hex.transform.position,
+                                         n.transform.position) <= radius);
+    }
 
     public Hex GetRandomHex()
     {
@@ -23,28 +58,6 @@ public class HexGrid : MonoBehaviour
 
         int index = Random.Range(0, _allHexes.Count);
         return _allHexes[index];
-    }
-
-    public List<Hex> GetNeighbors(Hex startHex, float searchRadius)
-    {
-        var neighbors = new List<Hex>();
-
-        LayerMask hexMask = 1 << startHex.gameObject.layer;
-
-        var point = startHex.transform.position;
-        var colliders = Physics.OverlapSphere(startHex.transform.position, searchRadius, hexMask);
-
-        Debug.Log(colliders.Length); 
-
-        foreach (var collider in colliders)
-        {
-            if (collider.TryGetComponent(out Hex hex))
-                neighbors.Add(hex);
-        }
-
-        Debug.Log(neighbors.Count().ToString());
-
-        return neighbors;
     }
 
     public void OnAreaCaptured(IReadOnlyList<Transform> hexesView)
