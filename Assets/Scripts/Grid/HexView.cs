@@ -4,8 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(ViewAnimator))]
 public class HexView : MonoBehaviour
 {
-    [SerializeField] private Hex _hex;
-
+    private Hex _hex;
     private MeshRenderer _meshRenderer;
     private Material _startMaterial;
 
@@ -13,6 +12,7 @@ public class HexView : MonoBehaviour
     {
         _meshRenderer = GetComponent<MeshRenderer>();
         _startMaterial = _meshRenderer.material;
+        _hex = GetComponentInParent<Hex>();
     }
 
     private void OnEnable()

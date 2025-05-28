@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 762060239462321515}
   - component: {fileID: 7888007276175707840}
-  - component: {fileID: 3992642742792010953}
   - component: {fileID: 1374492450203396206}
   - component: {fileID: 1116270198417587915}
+  - component: {fileID: 2642466529729108414}
   m_Layer: 0
   m_Name: View
   m_TagString: Untagged
@@ -50,19 +50,6 @@ MonoBehaviour:
   animationHeight: 0.25
   delayIncrement: 0.01
   animationDuration: 0.3
---- !u!114 &3992642742792010953
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5972912020408004083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01bfc81a3ec3cc44bb8d44730b96be40, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _hex: {fileID: 749776565419251354}
 --- !u!23 &1374492450203396206
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -113,6 +100,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5972912020408004083}
   m_Mesh: {fileID: -2124705421725058983, guid: 5b09a35004d8f99478115a2ab87041e5, type: 3}
+--- !u!114 &2642466529729108414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5972912020408004083}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01bfc81a3ec3cc44bb8d44730b96be40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _hex: {fileID: 749776565419251354}
 --- !u!1 &9194670950014218852
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,7 +159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59a62490ea7911d46bbb0c8cb45ad8a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _hexView: {fileID: 3992642742792010953}
+  _hexView: {fileID: 2642466529729108414}
 --- !u!64 &6603769825578936296
 MeshCollider:
   m_ObjectHideFlags: 0

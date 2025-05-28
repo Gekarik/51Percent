@@ -124,7 +124,7 @@ public class Conquester : MonoBehaviour
 
     public void Init(HexGrid grid) 
     {
-        // _grid = grid ?? throw new ArgumentNullException();
+        _grid = grid ?? throw new ArgumentNullException();
     }
 
     public void GetStartTerritory(Hex startHex)

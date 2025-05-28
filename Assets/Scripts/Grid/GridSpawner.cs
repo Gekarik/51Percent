@@ -5,7 +5,6 @@ public class GridSpawner : MonoBehaviour
     [SerializeField] private Hex _hexPrefab;
     [SerializeField] private float _hexRadius;
     [SerializeField] private BoxCollider _playableArea;
-
     [SerializeField] private HexGrid _grid;
 
     private Transform _container;
@@ -59,7 +58,5 @@ public class GridSpawner : MonoBehaviour
     {
         while (_container.childCount > 0)
             DestroyImmediate(_container.GetChild(0).gameObject);
-
-        //_gridData?.Clear();
     }
 }
