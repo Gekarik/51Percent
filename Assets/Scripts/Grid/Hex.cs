@@ -20,6 +20,7 @@ public class Hex : MonoBehaviour
         Debug.Log("Owner Setted");
         State = hexState;
         Owner = player ?? throw new ArgumentNullException(nameof(player));
+
         StateChanged?.Invoke(player);
     }
 

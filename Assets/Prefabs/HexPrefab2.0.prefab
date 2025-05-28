@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 762060239462321515}
-  - component: {fileID: 7888007276175707840}
   - component: {fileID: 1374492450203396206}
   - component: {fileID: 1116270198417587915}
   - component: {fileID: 2642466529729108414}
@@ -29,27 +28,12 @@ Transform:
   m_GameObject: {fileID: 5972912020408004083}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.000000074505806, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 2669208178648822176}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7888007276175707840
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5972912020408004083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23d64dc4684b1ec4887975b92390b70d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animationHeight: 0.25
-  delayIncrement: 0.01
-  animationDuration: 0.3
 --- !u!23 &1374492450203396206
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -112,7 +96,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01bfc81a3ec3cc44bb8d44730b96be40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _hex: {fileID: 749776565419251354}
 --- !u!1 &9194670950014218852
 GameObject:
   m_ObjectHideFlags: 0

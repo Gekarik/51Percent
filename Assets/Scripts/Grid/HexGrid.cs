@@ -1,9 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class HexGrid : MonoBehaviour
+public class HexGrid : MonoBehaviour, IHexGridProvider
 {
     [SerializeField] private ViewAnimator _viewAnimator;
 
@@ -13,6 +12,8 @@ public class HexGrid : MonoBehaviour
     private float _neighborSearchRadius;
     public float NeighborSearchRadius => _neighborSearchRadius;
     public IReadOnlyList<Hex> AllHexes => _allHexes;
+
+    public ViewAnimator ViewAnimator => _viewAnimator;
 
     private void Awake()
     {
@@ -60,8 +61,12 @@ public class HexGrid : MonoBehaviour
         return _allHexes[index];
     }
 
-    public void OnAreaCaptured(IReadOnlyList<Transform> hexesView)
+    public void OnAreaCaptured(IReadOnlyCollection<Transform> hexesView)
     {
-        _viewAnimator.Wave(hexesView);
+        if (_viewAnimator != null)
+        {
+            _viewAnimator.Wave(hexesView);
+            Debug.Log(hexesView.Count);
+        }
     }
 }

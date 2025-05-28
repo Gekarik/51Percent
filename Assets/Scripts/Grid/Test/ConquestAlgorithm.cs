@@ -1,23 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public static class ConquestAlgorithm
+public class ConquestAlgorithm: IConquestAlgorithm
 {
-    public static List<Hex> ComputeCapturedArea(IHexEnvironment env, IConquestState state)
+    public List<Hex> ComputeCapturedArea(IReadOnlyCollection<Hex> FixedHexes, IReadOnlyCollection<Hex> TrailHexes, IHexGridProvider hexGridProvider)
     {
         // 1) Формируем барьер
-        var barrier = new HashSet<Hex>(state.FixedHexes);
-        barrier.UnionWith(state.TrailHexes);
+        var barrier = new HashSet<Hex>(FixedHexes);
+        barrier.UnionWith(TrailHexes);
 
         // 2) Кешируем списки соседей и их размеры
-        var allHexes = env.AllHexes;
+        var allHexes = hexGridProvider.AllHexes;
         int count = allHexes.Count;
         var neighborMap = new Dictionary<Hex, List<Hex>>(count);
         var neighborCounts = new Dictionary<Hex, int>(count);
 
         foreach (var h in allHexes)
         {
-            var neighs = env.GetNeighbors(h).ToList();
+            var neighs = hexGridProvider.GetNeighbors(h).ToList();
             neighborMap[h] = neighs;
             neighborCounts[h] = neighs.Count;
         }
@@ -58,7 +58,7 @@ public static class ConquestAlgorithm
                 toCapture.Add(h);
         }
         // Включаем трейл
-        toCapture.AddRange(state.TrailHexes);
+        toCapture.AddRange(TrailHexes);
         return toCapture;
     }
 }

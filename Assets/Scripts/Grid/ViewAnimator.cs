@@ -24,7 +24,7 @@ public class ViewAnimator : MonoBehaviour
 
     }
 
-    public void Wave(IReadOnlyList<Transform> hexes)
+    public void Wave(IReadOnlyCollection<Transform> hexes)
     {
         foreach (var (hex, index) in hexes.Select((hex, index) => (hex, index)))
         {

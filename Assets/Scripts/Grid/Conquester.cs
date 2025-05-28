@@ -6,33 +6,23 @@ using System.Linq;
 [RequireComponent(typeof(ICharacter))]
 public class Conquester : MonoBehaviour
 {
-    [SerializeField] private HexGrid _grid;
-
-    //еу
-    private HexEnvironmentAdapter _env;
-    //
-
     public Action<ICharacter, ICharacter> TrailInterrupted;
     public Action<IReadOnlyList<Transform>> AreaCaptured;
 
+    private IHexGridProvider _grid;
     private ICharacter _player;
-    private readonly List<Hex> _trailList = new List<Hex>();
+
+    private readonly HashSet<Hex> _trailList = new HashSet<Hex>();
     private readonly HashSet<Hex> _fixed = new HashSet<Hex>();
 
     private void Awake()
     {
         _player = GetComponent<ICharacter>();
-        _grid = FindObjectOfType<HexGrid>();
-
-        // получаем размер гекса по оси Z
-        float hexSizeZ = _grid.AllHexes[0].GetRendererBounds().size.z;
-        // порог — чуть больше диаметра (1.1f)
-        float maxDist = hexSizeZ * 1.1f;
-        _env = new HexEnvironmentAdapter(_grid);
     }
 
-    private void OnEnable()
+    public void Init(HexGrid grid)
     {
+        _grid = grid ?? throw new ArgumentNullException();
         AreaCaptured += _grid.OnAreaCaptured;
     }
 
@@ -73,31 +63,23 @@ public class Conquester : MonoBehaviour
 
     private void HandleClosure(Hex returnHex)
     {
-        // Перед вызовом будьте уверены, что returnHex находится в _trailList
-        if (!_trailList.Contains(returnHex))
+        if (_trailList.Contains(returnHex) == false)
             _trailList.Add(returnHex);
 
-        // Собираем состояние
-        var state = new ConquestState(
-            fixedHexes: new HashSet<Hex>(_fixed),
-            trailHexes: _trailList);
+        var toCapture = new ConquestAlgorithm().ComputeCapturedArea(_fixed, _trailList, _grid);
 
-        // Вычисляем область для захвата
-        var toCapture = ConquestAlgorithm.ComputeCapturedArea(_env, state);
-
-        // Захватываем и фиксируем новые гексы
         foreach (var hex in toCapture)
             CaptureHex(hex);
 
-        // Анимация
         var transforms = toCapture
             .Where(h => h.HexView != null)
             .Select(h => h.HexView.transform)
             .Distinct()
             .ToList();
+
+        Debug.Log(transforms.Count);
         AreaCaptured?.Invoke(transforms);
 
-        // Сбрасываем трейл
         _trailList.Clear();
     }
 
@@ -107,23 +89,18 @@ public class Conquester : MonoBehaviour
             hex.SetOwner(_player, HexState.Busy);
     }
 
-    public void Init(HexGrid grid) 
-    {
-        _grid = grid ?? throw new ArgumentNullException();
-    }
-
     public void GetStartTerritory(Hex startHex)
     {
-        var startTerritory = _grid.GetNeighbors(startHex);
+        var startTerritory = _grid.GetNeighbors(startHex).Append(startHex);
 
-        foreach (var h in startTerritory)
-            CaptureHex(h);
+        foreach (var hex in startTerritory)
+            CaptureHex(hex);
     }
 
     public void Reset()
     {
-        foreach (var h in _fixed) 
-            h.Reset();
+        foreach (var hex in _fixed)
+            hex.Reset();
 
         _fixed.Clear();
         _trailList.Clear();

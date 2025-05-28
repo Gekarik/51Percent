@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 
-[RequireComponent(typeof(ViewAnimator))]
 public class HexView : MonoBehaviour
 {
     private Hex _hex;
@@ -30,6 +29,7 @@ public class HexView : MonoBehaviour
         switch (_hex.State)
         {
             case HexState.PartOfTrail:
+                //Замена цвета и текстуры
                 //Stretch();
                 break;
 

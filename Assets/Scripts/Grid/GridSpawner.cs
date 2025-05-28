@@ -5,16 +5,9 @@ public class GridSpawner : MonoBehaviour
     [SerializeField] private Hex _hexPrefab;
     [SerializeField] private float _hexRadius;
     [SerializeField] private BoxCollider _playableArea;
-    [SerializeField] private HexGrid _grid;
+    [SerializeField] private Transform _container;
 
-    private Transform _container;
     private Bounds _bounds;
-
-    private void OnValidate()
-    {
-        if (_grid != null)
-            _container = _grid.transform;
-    }
 
     [ContextMenu("Regenerate")]
     private void RegenerateGrid()
@@ -43,7 +36,6 @@ public class GridSpawner : MonoBehaviour
         {
             for (int q = 0; q < cols; q++)
             {
-                //перечитать, понять
                 float x = _bounds.min.x + q * hexWidth + ((r % 2) == 1 ? hexWidth * 0.5f : 0f) + hexWidth * 0.5f;
                 float z = _bounds.min.z + r * hexHight * 0.75f + hexHight * 0.5f;
 
