@@ -5,12 +5,12 @@ public class HexView : MonoBehaviour
 {
     private Hex _hex;
     private MeshRenderer _meshRenderer;
-    private Material _startMaterial;
+    private MaterialPropertyBlock _propertyBlock;
 
     private void Awake()
     {
+        _propertyBlock = new MaterialPropertyBlock();
         _meshRenderer = GetComponent<MeshRenderer>();
-        _startMaterial = _meshRenderer.material;
         _hex = GetComponentInParent<Hex>();
     }
 
@@ -42,13 +42,16 @@ public class HexView : MonoBehaviour
         }
 
         if (_meshRenderer != null)
-            _meshRenderer.material.color = player.Color;
+        {
+            _propertyBlock.SetColor("_Color", player.Color);
+            _meshRenderer.SetPropertyBlock(_propertyBlock);
+        }   
     }
 
     public Bounds GetBounds() => GetComponent<MeshRenderer>().bounds;
 
     public void Reset()
     {
-        _meshRenderer.material = _startMaterial;
+        //_meshRenderer.material = _startMaterial;
     }
 }
