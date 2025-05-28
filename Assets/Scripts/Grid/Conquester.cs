@@ -11,6 +11,7 @@ public class Conquester : MonoBehaviour
 
     private IHexGridProvider _grid;
     private ICharacter _player;
+    ConquestAlgorithm _conquestAlgorithm;
 
     private readonly HashSet<Hex> _trailList = new HashSet<Hex>();
     private readonly HashSet<Hex> _fixed = new HashSet<Hex>();
@@ -18,6 +19,7 @@ public class Conquester : MonoBehaviour
     private void Awake()
     {
         _player = GetComponent<ICharacter>();
+        _conquestAlgorithm = new ConquestAlgorithm();
     }
 
     public void Init(HexGrid grid)
@@ -66,7 +68,7 @@ public class Conquester : MonoBehaviour
         if (_trailList.Contains(returnHex) == false)
             _trailList.Add(returnHex);
 
-        var toCapture = new ConquestAlgorithm().ComputeCapturedArea(_fixed, _trailList, _grid);
+        var toCapture = _conquestAlgorithm.ComputeCapturedArea(_fixed, _trailList, _grid);
 
         foreach (var hex in toCapture)
             CaptureHex(hex);
@@ -77,7 +79,6 @@ public class Conquester : MonoBehaviour
             .Distinct()
             .ToList();
 
-        Debug.Log(transforms.Count);
         AreaCaptured?.Invoke(transforms);
 
         _trailList.Clear();
