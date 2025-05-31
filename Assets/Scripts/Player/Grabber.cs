@@ -19,8 +19,11 @@ public class Grabber : MonoBehaviour
                 case Booster booster:
                     BoosterCollected?.Invoke(booster);
                     break;
-            }
 
+                default:
+                    Debug.Log($"{GetType()} Нет обработчика для типа «{item.GetType().Name}»");
+                    break;
+            }
             item.Collect();
         }
     }

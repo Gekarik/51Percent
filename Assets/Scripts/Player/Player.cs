@@ -1,14 +1,46 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Animator), typeof(Mover), typeof(Conquester))]
+[RequireComponent(typeof(PlayerStatsComponent))]
 public class Player : MonoBehaviour, ICharacter
 {
+    [field: SerializeField] public Camera Camera { get; private set; }
+
     private Conquester _conquester;
     private Mover _mover;
     private Animator _animator;
+    private Grabber _grabber;
+    public PlayerStatsComponent StatsComponent { get; private set; }
 
     public CharacterState State { get; private set; }
     public Color Color { get; private set; } = Color.green;
+
+    private void OnEnable()
+    {
+        _grabber.CoinCollected += OnCoinCollected;
+        _grabber.BoosterCollected += TempBoosterMethod;
+    }
+
+    private void OnDisable()
+    {
+        _grabber.CoinCollected -= OnCoinCollected;
+        _grabber.BoosterCollected -= TempBoosterMethod;
+    }
+
+    private void TempBoosterMethod(Booster booster)
+    {
+        Debug.Log("Some booster collected. Kill me already lol");
+    }
+
+    private void OnMakeAKill()
+    {
+        StatsComponent.RegisterKill();
+    }
+
+    private void OnCoinCollected(Coin coin)
+    {
+        StatsComponent.CollectCoin();
+    }
 
     public void Init(Hex startHex, HexGrid hexGrid)
     {
@@ -18,12 +50,15 @@ public class Player : MonoBehaviour, ICharacter
 
     private void Awake()
     {
+        Camera = Camera.main;
+        Camera.GetComponent<CameraFollower>().Init(transform);
+        _grabber = GetComponent<Grabber>();
         _mover = GetComponent<Mover>();
         _animator = GetComponent<Animator>();
         _conquester = GetComponent<Conquester>();
+        StatsComponent = GetComponent<PlayerStatsComponent>();
 
         //Color = Colors.GetFreeColor();
-        //id = GetId();
     }
 
     private void Update()
@@ -40,10 +75,4 @@ public class Player : MonoBehaviour, ICharacter
     {
         throw new System.NotImplementedException();
     }
-}
-
-public enum CharacterState
-{
-    Alive = 0,
-    Died
 }
