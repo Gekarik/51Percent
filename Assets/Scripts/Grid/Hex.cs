@@ -17,7 +17,6 @@ public class Hex : MonoBehaviour
 
     public void SetOwner(ICharacter player, HexState hexState)
     {
-        Debug.Log("Owner Setted");
         State = hexState;
         Owner = player ?? throw new ArgumentNullException(nameof(player));
 

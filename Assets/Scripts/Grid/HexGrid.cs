@@ -1,72 +1,58 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class HexGrid : MonoBehaviour, IHexGridProvider
 {
     [SerializeField] private ViewAnimator _viewAnimator;
-
-    private const float RadiusSearchFactor = 1.01f;
     private List<Hex> _allHexes;
     private Dictionary<Hex, List<Hex>> _neighborMap;
-    private float _neighborSearchRadius;
-    public float NeighborSearchRadius => _neighborSearchRadius;
-    public IReadOnlyList<Hex> AllHexes => _allHexes;
+    private float _cellDiameter;
 
+    public IReadOnlyList<Hex> AllHexes => _allHexes;
     public ViewAnimator ViewAnimator => _viewAnimator;
+    public float CellDiameter => _cellDiameter;
 
     private void Awake()
     {
         _allHexes = GetComponentsInChildren<Hex>(true).ToList();
-        float hexDiameter = _allHexes[0].GetRendererBounds().size.z;
-        _neighborSearchRadius = hexDiameter * RadiusSearchFactor;
+        if (_allHexes.Count == 0)
+            throw new InvalidOperationException("HexGrid: нет ни одного Hex в дочерних объектах");
+
+        _cellDiameter = _allHexes[0].GetRendererBounds().size.x;
         BuildNeighborMap();
     }
 
     private void BuildNeighborMap()
     {
         _neighborMap = new Dictionary<Hex, List<Hex>>(_allHexes.Count);
-        LayerMask hexMask = 1 << _allHexes[0].gameObject.layer;
-
+        float radius = _cellDiameter * 1.01f;
         foreach (var hex in _allHexes)
         {
-            var colliders = Physics.OverlapSphere(hex.transform.position, _neighborSearchRadius, hexMask);
-            var neighbors = new List<Hex>();
-            foreach (var collider in colliders)
-            {
-                if (collider.TryGetComponent(out Hex h) && h != hex)
-                    neighbors.Add(h);
-            }
-
+            var neighbors = _allHexes
+                .Where(h => h != hex && Vector3.Distance(hex.transform.position, h.transform.position) <= radius)
+                .ToList();
             _neighborMap[hex] = neighbors;
         }
     }
 
-    public IReadOnlyList<Hex> GetNeighborsCached(Hex hex) => _neighborMap.TryGetValue(hex, out var n) ? n : new List<Hex>();
-
     public IEnumerable<Hex> GetNeighbors(Hex hex)
     {
-        float radius = NeighborSearchRadius;
-        return GetNeighborsCached(hex)
-            .Where(n => Vector3.Distance(hex.transform.position,
-                                         n.transform.position) <= radius);
+        return _neighborMap.TryGetValue(hex, out var list) ? list : Enumerable.Empty<Hex>();
     }
 
-    public Hex GetRandomHex()
-    {
-        if (_allHexes.Count == 0)
-            return null;
-
-        int index = Random.Range(0, _allHexes.Count);
-        return _allHexes[index];
-    }
+    public Hex GetRandomHex() => _allHexes.Count > 0 ? _allHexes[UnityEngine.Random.Range(0, _allHexes.Count)] : null;
 
     public void OnAreaCaptured(IReadOnlyCollection<Transform> hexesView)
     {
-        if (_viewAnimator != null)
-        {
-            _viewAnimator.Wave(hexesView);
-            Debug.Log(hexesView.Count);
-        }
+        _viewAnimator?.Wave(hexesView);
+        Debug.Log(hexesView.Count);
+    }
+
+    public int Distance(Hex a, Hex b)
+    {
+        float d = Vector3.Distance(a.transform.position, b.transform.position);
+        return Mathf.RoundToInt(d / (_cellDiameter * 1.01f));
     }
 }
