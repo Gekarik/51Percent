@@ -8,6 +8,7 @@ public class PlayerSpawner : MonoBehaviour
     [SerializeField] private PlayerStatsView _uiPrefab;
     [SerializeField] private HexGrid _grid;
 
+
     private void Start()
     {
         if (_grid == null)
@@ -20,7 +21,7 @@ public class PlayerSpawner : MonoBehaviour
     private void SpawnSinglePlayer(Hex startHex)
     {
         var player = Instantiate(_playerPrefab, startHex.transform.position, Quaternion.identity);
-        player.Init(startHex,_grid);
+        player.InitConquester(_grid, startHex);
 
         var statsModel = player.StatsComponent.Stats;
 

@@ -1,31 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
 [RequireComponent(typeof(ICharacter))]
 public class Conquester : MonoBehaviour
 {
-    public Action<ICharacter, ICharacter> TrailInterrupted;
-    public Action<IReadOnlyList<Transform>> AreaCaptured;
+    private KillManager _killManager;
+    private ConquestAlgorithm _algorithm;
+    private readonly List<Hex> _trailList = new List<Hex>();
+    private readonly HashSet<Hex> _fixed = new HashSet<Hex>();
+
+    public event Action<ICharacter, ICharacter> TrailInterrupted;
+    public event Action<IReadOnlyList<Transform>> AreaCaptured;
     public IReadOnlyCollection<Hex> FixedHexes => _fixed;
 
     private IHexGridProvider _grid;
-    private ICharacter _player;
-    ConquestAlgorithm _conquestAlgorithm;
-
-    private readonly HashSet<Hex> _trailList = new HashSet<Hex>();
-    private readonly HashSet<Hex> _fixed = new HashSet<Hex>();
+    private ICharacter _owner;
 
     private void Awake()
     {
-        _player = GetComponent<ICharacter>();
-        _conquestAlgorithm = new ConquestAlgorithm();
+        _algorithm = new ConquestAlgorithm();
+        _owner = GetComponent<ICharacter>();
+        _killManager = new KillManager(this);
     }
 
-    public void Init(HexGrid grid)
+    public void Init(IHexGridProvider grid)
     {
-        _grid = grid ?? throw new ArgumentNullException();
+        _grid = grid ?? throw new ArgumentException();
+        
         AreaCaptured += _grid.OnAreaCaptured;
     }
 
@@ -36,77 +39,72 @@ public class Conquester : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.TryGetComponent(out Hex hex) == false)
+        if (!collision.gameObject.TryGetComponent(out Hex hex))
             return;
 
-        switch (hex.State)
+        if (hex.State == HexState.PartOfTrail && hex.Owner != _owner)
         {
-            case HexState.PartOfTrail when hex.Owner != _player:
-                TrailInterrupted?.Invoke(hex.Owner, _player);
-                break;
-
-            case HexState.Busy when hex.Owner == _player && _trailList.Count > 0:
-                HandleClosure(hex);
-                break;
-
-            case HexState.Empty:
-                HandleTrail(hex);
-                break;
+            TrailInterrupted?.Invoke(hex.Owner, _owner);
+            AddToTrail(hex);
+            return;
         }
+
+        if (_fixed.Contains(hex) == false)
+            AddToTrail(hex);
+        else if (_trailList.Count > 0 && hex.State == HexState.Busy && hex.Owner == _owner)
+            CloseTrail(hex);
     }
 
-    private void HandleTrail(Hex hex)
+    public void GetStartTerritory(Hex starthex)
     {
-        if (_trailList.Contains(hex) == false)
+        var hexes = _grid.GetNeighbors(starthex).Append(starthex);
+        FixHexes(hexes);
+    }
+
+    private void AddToTrail(Hex hex)
+    {
+        if (!_trailList.Contains(hex))
         {
             _trailList.Add(hex);
-            hex.SetOwner(_player, HexState.PartOfTrail);
+            hex.SetOwner(_owner, HexState.PartOfTrail);
         }
     }
 
-    private void HandleClosure(Hex returnHex)
+    private void CloseTrail(Hex returnHex)
     {
-        if (_trailList.Contains(returnHex) == false)
+        if (!_trailList.Contains(returnHex))
             _trailList.Add(returnHex);
 
-        var toCapture = _conquestAlgorithm.ComputeCapturedArea(_fixed, _trailList, _grid);
+        var captured = _algorithm.ComputeCapturedArea(_fixed, _trailList, _grid);
 
-        foreach (var hex in toCapture)
-            CaptureHex(hex);
+        foreach (var h in captured)
+            CaptureHex(h);
 
-        var transforms = toCapture
-            .Where(h => h.HexView != null)
-            .Select(h => h.HexView.transform)
-            .Distinct()
-            .ToList();
+        var views = captured.Where(h => h.HexView != null).Select(h => h.HexView.transform).Distinct().ToList();
 
-        AreaCaptured?.Invoke(transforms);
-
+        AreaCaptured?.Invoke(views);
         _trailList.Clear();
     }
 
     private void CaptureHex(Hex hex)
     {
         if (_fixed.Add(hex))
-            hex.SetOwner(_player, HexState.Busy);
+            hex.SetOwner(_owner, HexState.Busy);
     }
 
-    public void GetStartTerritory(Hex startHex)
+    public void FixHexes(IEnumerable<Hex> hexes)
     {
-        var startTerritory = _grid.GetNeighbors(startHex).Append(startHex);
-        FixHexes(startTerritory);
-    }
-
-    public void FixHexes(IEnumerable<Hex> trail)
-    {
-        foreach (var hex in trail)
-            CaptureHex(hex);
+        foreach (var h in hexes)
+            CaptureHex(h);
     }
 
     public void Reset()
     {
-        foreach (var hex in _fixed)
-            hex.Reset();
+        foreach (var h in _fixed)
+            h.Reset();
+
+        foreach (var h in _trailList)
+            h.Reset();
 
         _fixed.Clear();
         _trailList.Clear();

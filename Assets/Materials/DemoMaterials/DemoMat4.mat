@@ -87,6 +87,7 @@ Material:
     - _MinLight: 0
     - _MinShade: 0.754
     - _Offset: 1.1
+    - _OtlWidth: 5
     - _OutWidth: 1
     - _Outline: 1
     - _Overlap: 0
@@ -139,7 +140,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - _AmbientColor: {r: 1, g: 0.740566, b: 0.740566, a: 1}
-    - _Color: {r: 0.4666667, g: 1, b: 0.59295946, a: 1}
+    - _Color: {r: 0.5882353, g: 0.5882353, b: 0.5882353, a: 1}
     - _ColorDim: {r: 1, g: 0.5424528, b: 0.5424528, a: 1}
     - _ColorDimCurve: {r: 0.85023, g: 0.85034, b: 0.85045, a: 0.85056}
     - _ColorDimExtra: {r: 1, g: 0.5424528, b: 0.5424528, a: 1}
@@ -150,6 +151,7 @@ Material:
     - _LightmapDirection: {r: 0, g: 1, b: 0, a: 0}
     - _MaxColor: {r: 1, g: 0.9205481, b: 0.2688679, a: 1}
     - _MinColor: {r: 0, g: 0, b: 0, a: 1}
+    - _OtlColor: {r: 0, g: 0, b: 0, a: 1}
     - _OutColor: {r: 1, g: 1, b: 1, a: 1}
     - _RimColor: {r: 289.11557, g: 0, b: 581.2745, a: 1}
     - _ShnColor: {r: 1, g: 1, b: 0, a: 1}

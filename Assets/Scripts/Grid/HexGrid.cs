@@ -6,6 +6,7 @@ using UnityEngine;
 public class HexGrid : MonoBehaviour, IHexGridProvider
 {
     [SerializeField] private ViewAnimator _viewAnimator;
+
     private List<Hex> _allHexes;
     private Dictionary<Hex, List<Hex>> _neighborMap;
     private float _cellDiameter;
@@ -47,7 +48,6 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
     public void OnAreaCaptured(IReadOnlyCollection<Transform> hexesView)
     {
         _viewAnimator?.Wave(hexesView);
-        Debug.Log(hexesView.Count);
     }
 
     public int Distance(Hex a, Hex b)

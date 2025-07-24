@@ -10,10 +10,11 @@ public class PathProvider : VectorProviderComponent
     public void SetPath(List<Hex> hexPath, IHexGridProvider grid)
     {
         _waypoints.Clear();
+
         foreach (var h in hexPath)
             _waypoints.Add(h.transform.position);
+
         _current = 0;
-        Debug.Log($"[PathProvider:{name}] Path set: {_waypoints.Count} points");
     }
 
     public override Vector3 GetMoveDirection()
@@ -24,11 +25,13 @@ public class PathProvider : VectorProviderComponent
         Vector3 target = _waypoints[_current];
         Vector3 raw = target - transform.position;
         raw.y = 0;
+
         if (raw.magnitude < 0.2f)
         {
             _current++;
             return Vector3.zero;
         }
+
         return raw.normalized;
     }
 
