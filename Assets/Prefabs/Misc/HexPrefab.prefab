@@ -151,6 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _outlineView: {fileID: 3089725837400916398}
+  _hexViewAnimationParams: {fileID: 11400000, guid: 29a65a9b9ea8f5e46b5af654d56e8c1d, type: 2}
 --- !u!23 &7054555012571273712
 MeshRenderer:
   m_ObjectHideFlags: 0

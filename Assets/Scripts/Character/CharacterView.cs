@@ -5,7 +5,6 @@ public class CharacterView : MonoBehaviour
 {
     private CharacterAbstract _character;
     private Animator _animator;
-    
 
     private void Awake()
     {

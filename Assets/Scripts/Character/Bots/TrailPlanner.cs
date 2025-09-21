@@ -3,32 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-/// <summary>
-/// Формирует дугу захвата (trail) и путь возврата на основе fixedCells и параметра агрессии.
-/// </summary>
 public class TrailPlanner
 {
-    /// <summary>
-    /// Построить основной трейл: случайная дуга или возврат пусто.
-    /// </summary>
-    public List<Hex> BuildTrail(IReadOnlyCollection<Hex> fixedCells, IHexGridProvider grid, int aggression)
+    public List<IHex> BuildTrail(IReadOnlyCollection<IHex> fixedCells, IHexGridProvider grid, int aggression)
     {
-        // Если нет фиксированных клеток, ничего не делаем.
         if (fixedCells.Count == 0) return null;
 
-        // Для низкой агрессии строим короткую случайную дугу
         if (aggression <= 1)
             return BuildRandomTrail(fixedCells, grid, 3);
 
-        // Иначе строим дугу по параметру агрессии
         return BuildArcTrail(fixedCells, grid, aggression);
     }
 
-    private List<Hex> BuildRandomTrail(IReadOnlyCollection<Hex> fixedCells, IHexGridProvider grid, int length)
+    private List<IHex> BuildRandomTrail(IReadOnlyCollection<IHex> fixedCells, IHexGridProvider grid, int length)
     {
         var rnd = new System.Random();
         var start = fixedCells.ElementAt(rnd.Next(fixedCells.Count));
-        var trail = new List<Hex> { start };
+        var trail = new List<IHex> { start };
 
         for (int i = 0; i < length; i++)
         {
@@ -42,7 +33,7 @@ public class TrailPlanner
         return trail.Count > 1 ? trail : null;
     }
 
-    private List<Hex> BuildArcTrail(IReadOnlyCollection<Hex> fixedCells, IHexGridProvider grid, int aggression)
+    private List<IHex> BuildArcTrail(IReadOnlyCollection<IHex> fixedCells, IHexGridProvider grid, int aggression)
     {
         var rnd = new System.Random();
         var start = fixedCells.ElementAt(rnd.Next(fixedCells.Count));
@@ -59,7 +50,6 @@ public class TrailPlanner
         var direct = Pathfinder.AStar(start, target, grid, h => !fixedCells.Contains(h));
         if (direct == null || direct.Count < 3) return null;
 
-        // Разбиваем путь на три сегмента
         int count = direct.Count;
         int idx1 = count / 3;
         int idx2 = 2 * count / 3;
@@ -70,29 +60,24 @@ public class TrailPlanner
         Vector3 perp = Vector3.Cross(dir, Vector3.up).normalized;
         float offsetBase = grid.CellDiameter * aggression * 0.3f;
 
-        // Два детур-пойнта с разными смещениями
         Vector3 det1 = pos1 + perp * offsetBase;
         Vector3 det2 = pos2 - perp * offsetBase;
 
         var hex1 = grid.AllHexes.OrderBy(h => Vector3.Distance(h.transform.position, det1)).First();
         var hex2 = grid.AllHexes.OrderBy(h => Vector3.Distance(h.transform.position, det2)).First();
 
-        // Пути между ключевыми точками
         var seg1 = Pathfinder.AStar(start, hex1, grid, h => !fixedCells.Contains(h));
         var seg2 = Pathfinder.AStar(hex1, hex2, grid, h => !fixedCells.Contains(h));
         var seg3 = Pathfinder.AStar(hex2, target, grid, h => !fixedCells.Contains(h));
         if (seg1 == null || seg2 == null || seg3 == null) return direct;
 
-        var arc = new List<Hex>(seg1);
+        var arc = new List<IHex>(seg1);
         arc.AddRange(seg2.Skip(1));
         arc.AddRange(seg3.Skip(1));
         return arc.Count > 1 ? arc : null;
     }
 
-    /// <summary>
-    /// Построение пути возврата по фиксированным клеткам.
-    /// </summary>
-    public List<Hex> BuildReturn(List<Hex> trail, IReadOnlyCollection<Hex> fixedCells, IHexGridProvider grid)
+    public List<IHex> BuildReturn(List<IHex> trail, IReadOnlyCollection<IHex> fixedCells, IHexGridProvider grid)
     {
         if (trail == null || trail.Count < 2) return null;
         var from = trail.Last();

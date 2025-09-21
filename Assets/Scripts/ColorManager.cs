@@ -28,7 +28,7 @@ public class ColorManager : MonoBehaviour
     public static Color GetRandomColor()
     {
         if (_availableColors == null || _availableColors.Count == 0)
-            throw new System.InvalidOperationException("Все цвета уже использованы или ColorManager не инициализирован.");
+            throw new System.InvalidOperationException();
 
         int lastIndex = _availableColors.Count - 1;
         Color color = _availableColors[lastIndex];

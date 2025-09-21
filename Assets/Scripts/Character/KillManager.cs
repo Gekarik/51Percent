@@ -1,14 +1,11 @@
 ﻿public class KillManager 
 {
-    private Conquester _conquester;
-
-    public KillManager(Conquester conquester)
+    public KillManager()
     {
-        _conquester = conquester;
-        _conquester.TrailInterrupted += OnTrailInterrupted;
+        
     }
 
-    private void OnTrailInterrupted(ICharacter victim, ICharacter killer)
+    public void OnTrailInterrupted(ICharacter victim, ICharacter killer)
     {
         victim.Die();
         killer.Kill();

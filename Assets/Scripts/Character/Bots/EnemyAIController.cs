@@ -14,7 +14,7 @@ public class EnemyAIController : MonoBehaviour
     private PathProvider _pathProvider;
     private IHexGridProvider _grid;
     private State _state = State.Idle;
-    private List<Hex> _trailPath;
+    private List<IHex> _trailPath;
 
     private void Awake()
     {

@@ -5,18 +5,18 @@ using UnityEngine;
 
 public static class Pathfinder
 {
-    public static List<Hex> AStar(
-        Hex start,
-        Hex goal,
+    public static List<IHex> AStar(
+        IHex start,
+        IHex goal,
         IHexGridProvider grid,
-        Func<Hex, bool> canEnter)
+        Func<IHex, bool> canEnter)
     {
-        var openSet = new SimplePriorityQueue<Hex>();
+        var openSet = new SimplePriorityQueue<IHex>();
         openSet.Enqueue(start, 0);
 
-        var cameFrom = new Dictionary<Hex, Hex>();
-        var gScore = new Dictionary<Hex, float> { { start, 0 } };
-        var fScore = new Dictionary<Hex, float> { { start, Heuristic(start, goal) } };
+        var cameFrom = new Dictionary<IHex, IHex>();
+        var gScore = new Dictionary<IHex, float> { { start, 0 } };
+        var fScore = new Dictionary<IHex, float> { { start, Heuristic(start, goal) } };
 
         while (openSet.Count > 0)
         {
@@ -37,15 +37,14 @@ public static class Pathfinder
                 }
             }
         }
-        return new List<Hex>();
+        return new List<IHex>();
     }
 
-    static float Heuristic(Hex a, Hex b)
-        => Vector3.Distance(a.transform.position, b.transform.position);
+    static float Heuristic(IHex a, IHex b) => Vector3.Distance(a.transform.position, b.transform.position);
 
-    static List<Hex> ReconstructPath(Dictionary<Hex, Hex> cameFrom, Hex current)
+    static List<IHex> ReconstructPath(Dictionary<IHex, IHex> cameFrom, IHex current)
     {
-        var path = new List<Hex> { current };
+        var path = new List<IHex> { current };
         while (cameFrom.TryGetValue(current, out var prev))
         {
             current = prev;

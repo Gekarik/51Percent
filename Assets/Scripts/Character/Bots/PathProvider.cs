@@ -7,7 +7,7 @@ public class PathProvider : VectorProviderComponent
     private readonly List<Vector3> _waypoints = new List<Vector3>();
     private int _current = 0;
 
-    public void SetPath(List<Hex> hexPath, IHexGridProvider grid)
+    public void SetPath(List<IHex> hexPath, IHexGridProvider grid)
     {
         _waypoints.Clear();
 

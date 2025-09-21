@@ -1,55 +1,46 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshRenderer))]
-public class HexView : MonoBehaviour
+public class HexView : MonoBehaviour, ICoroutineRunner
 {
-    private const string _Color = nameof(_Color);
-
     [SerializeField] private Outline _outlineView;
-
-    private IHex _hex;
+    [SerializeField] private float _durationOfColorizing = 0.1f;
+    
+    private HexViewAnimator _hexViewAnimator;
+    private Colorizer _colorizer;
     private MeshRenderer _meshRenderer;
-    private MaterialPropertyBlock _mpbBase;
-    private MaterialPropertyBlock _defaultMaterial;
 
     private void Awake()
     {
-        _mpbBase = new MaterialPropertyBlock();
-        _defaultMaterial = new MaterialPropertyBlock();
-
         _meshRenderer = GetComponent<MeshRenderer>();
-        
-        _meshRenderer.GetPropertyBlock(_defaultMaterial, 0);
+
+        _hexViewAnimator = new HexViewAnimator(transform);
+        _colorizer = new Colorizer(_meshRenderer, this, _durationOfColorizing);
         _outlineView.gameObject.SetActive(false);
-    }
-
-
-    private void OnDisable() => _hex.StateChanged -= UpdateView;
-
-    public void Init(IHex hex)
-    {
-        _hex = hex;
-        _hex.StateChanged += UpdateView;
     }
 
     public Bounds GetBounds() => GetComponent<MeshRenderer>().bounds;
 
-    private void UpdateView(ICharacter player)
+    public void UpdateView(IHex hex)
     {
-        _mpbBase.Clear();
+        _outlineView.gameObject.SetActive(hex.State == HexState.PartOfTrail);
 
-        if(player != null)
-            _mpbBase.SetColor(_Color, player.Color);
-
-        _meshRenderer.SetPropertyBlock(_mpbBase, 0);
-
-        _outlineView.gameObject.SetActive(_hex.State == HexState.PartOfTrail);
+        if (hex.Owner == null)
+            _colorizer.ResetColor();
+        else
+        {
+            _hexViewAnimator.Pulse();
+            _colorizer.SetColor(hex.Owner.Color);
+        }
     }
 
     public void Reset()
     {
-        _meshRenderer.SetPropertyBlock(_defaultMaterial, 0);
+        _colorizer.ResetColor();
         _outlineView.gameObject.SetActive(false);
     }
 
+    public Coroutine StartRoutine(IEnumerator routine) => StartCoroutine(routine);
+    public void StopRoutine(Coroutine routine) => StopCoroutine(routine);
 }

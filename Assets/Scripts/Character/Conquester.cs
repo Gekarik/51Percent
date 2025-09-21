@@ -6,14 +6,15 @@ using UnityEngine;
 [RequireComponent(typeof(ICharacter))]
 public class Conquester : MonoBehaviour
 {
-    private KillManager _killManager;
-    private ConquestAlgorithm _algorithm;
+    private TerritoryManager _territoryManager;
     private readonly List<Hex> _trailList = new List<Hex>();
-    private readonly HashSet<Hex> _fixed = new HashSet<Hex>();
+
+    private ConquestAlgorithm _algorithm;
 
     public event Action<ICharacter, ICharacter> TrailInterrupted;
     public event Action<IReadOnlyList<Transform>> AreaCaptured;
-    public IReadOnlyCollection<Hex> FixedHexes => _fixed;
+
+    public IReadOnlyCollection<IHex> FixedHexes => _territoryManager.GetFixedByOwner(_owner);
 
     private IHexGridProvider _grid;
     private ICharacter _owner;
@@ -22,43 +23,34 @@ public class Conquester : MonoBehaviour
     {
         _algorithm = new ConquestAlgorithm();
         _owner = GetComponent<ICharacter>();
-        _killManager = new KillManager(this);
+
+        _territoryManager = FindObjectOfType<TerritoryManager>();
+        _territoryManager.InitCharacter(_owner);
     }
 
     public void Init(IHexGridProvider grid)
     {
         _grid = grid ?? throw new ArgumentException();
-        
-        AreaCaptured += _grid.OnAreaCaptured;
-    }
-
-    private void OnDisable()
-    {
-        AreaCaptured -= _grid.OnAreaCaptured;
+        AreaCaptured += _territoryManager.OnAreaCaptured;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!collision.gameObject.TryGetComponent(out Hex hex))
+        if (collision.gameObject.TryGetComponent(out Hex hex) == false)
             return;
 
         if (hex.State == HexState.PartOfTrail && hex.Owner != _owner)
         {
             TrailInterrupted?.Invoke(hex.Owner, _owner);
             AddToTrail(hex);
+
             return;
         }
 
-        if (_fixed.Contains(hex) == false)
+        if (FixedHexes.Contains(hex) == false || hex.Owner != _owner)
             AddToTrail(hex);
         else if (_trailList.Count > 0 && hex.State == HexState.Busy && hex.Owner == _owner)
             CloseTrail(hex);
-    }
-
-    public void GetStartTerritory(Hex starthex)
-    {
-        var hexes = _grid.GetNeighbors(starthex).Append(starthex);
-        FixHexes(hexes);
     }
 
     private void AddToTrail(Hex hex)
@@ -75,7 +67,7 @@ public class Conquester : MonoBehaviour
         if (!_trailList.Contains(returnHex))
             _trailList.Add(returnHex);
 
-        var captured = _algorithm.ComputeCapturedArea(_fixed, _trailList, _grid);
+        var captured = _algorithm.ComputeCapturedArea(FixedHexes, _trailList, _grid);
 
         foreach (var h in captured)
             CaptureHex(h);
@@ -86,13 +78,13 @@ public class Conquester : MonoBehaviour
         _trailList.Clear();
     }
 
-    private void CaptureHex(Hex hex)
+    private void CaptureHex(IHex hex)
     {
-        if (_fixed.Add(hex))
-            hex.SetOwner(_owner, HexState.Busy);
+        _territoryManager.FixHex(_owner, hex);
+        hex.SetOwner(_owner, HexState.Busy);
     }
 
-    public void FixHexes(IEnumerable<Hex> hexes)
+    public void FixHexes(List<IHex> hexes)
     {
         foreach (var h in hexes)
             CaptureHex(h);
@@ -100,13 +92,13 @@ public class Conquester : MonoBehaviour
 
     public void Reset()
     {
-        foreach (var h in _fixed)
-            h.Reset();
+        var hexesToReset = _trailList.Concat(FixedHexes).ToList();
 
-        foreach (var h in _trailList)
-            h.Reset();
-
-        _fixed.Clear();
+        foreach (var hex in hexesToReset)
+            hex.Reset();
+        
+        _territoryManager.OnCharacterDied(_owner);//некорректно
+        AreaCaptured -= _territoryManager.OnAreaCaptured;
         _trailList.Clear();
     }
 }

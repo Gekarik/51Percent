@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using UnityEngine;
 
@@ -21,10 +22,17 @@ public class Grabber : MonoBehaviour
                     break;
 
                 default:
-                    Debug.Log($"{GetType()} Нет обработчика для типа «{item.GetType().Name}»");
-                    break;
+                    throw new NotImplementedException();
             }
+
             item.Collect();
         }
+    }
+
+    private void CollectAnimation(Transform item)
+    {
+        Sequence sequence = DOTween.Sequence();
+
+        sequence.Join(item.DOScale(Vector3.zero, 0.5f)).Join(item.DOMove(transform.position, 0.5f));
     }
 }

@@ -1,33 +1,22 @@
-using System;
 using UnityEngine;
 
-
-public class PlayerSpawner : MonoBehaviour
+public class PlayerSpawner : CharacterSpawner<Player>
 {
-    [SerializeField] private Player _playerPrefab;
     [SerializeField] private PlayerStatsView _uiPrefab;
-    [SerializeField] private HexGrid _grid;
-
 
     private void Start()
     {
-        if (_grid == null)
-            throw new InvalidOperationException($"HexGrid is empty");
-
-        var startHex = _grid.GetRandomHex();
-        SpawnSinglePlayer(startHex);
+        var player = SpawnSingleCharacter();
+        InitUI(player);
     }
-
-    private void SpawnSinglePlayer(Hex startHex)
+    
+    private void InitUI(Player player)
     {
-        var player = Instantiate(_playerPrefab, startHex.transform.position, Quaternion.identity);
-        player.InitConquester(_grid, startHex);
-
         var statsModel = player.StatsComponent.Stats;
-
+        
         var view = Instantiate(_uiPrefab);
         view.SetCamera(player.Camera);
-
+        
         var presenter = new PlayerStatsPresenter(statsModel, view);
     }
 }

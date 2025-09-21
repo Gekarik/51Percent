@@ -3,17 +3,17 @@ using System.Linq;
 
 public class ConquestAlgorithm: IConquestAlgorithm
 {
-    public List<Hex> ComputeCapturedArea(IReadOnlyCollection<Hex> FixedHexes, IReadOnlyCollection<Hex> TrailHexes, IHexGridProvider hexGridProvider)
+    public List<IHex> ComputeCapturedArea(IReadOnlyCollection<IHex> fixedHexes,
+        IReadOnlyCollection<Hex> trailHexes,
+        IHexGridProvider hexGridProvider)
     {
-        // 1) Формируем барьер
-        var barrier = new HashSet<Hex>(FixedHexes);
-        barrier.UnionWith(TrailHexes);
+        var barrier = new HashSet<IHex>(fixedHexes);
+        barrier.UnionWith(trailHexes);
 
-        // 2) Кешируем списки соседей и их размеры
         var allHexes = hexGridProvider.AllHexes;
         int count = allHexes.Count;
-        var neighborMap = new Dictionary<Hex, List<Hex>>(count);
-        var neighborCounts = new Dictionary<Hex, int>(count);
+        var neighborMap = new Dictionary<IHex, List<IHex>>(count);
+        var neighborCounts = new Dictionary<IHex, int>(count);
 
         foreach (var h in allHexes)
         {
@@ -22,12 +22,10 @@ public class ConquestAlgorithm: IConquestAlgorithm
             neighborCounts[h] = neighs.Count;
         }
 
-        // 3) Находим максимальное число соседей
         int maxNeighbors = neighborCounts.Values.DefaultIfEmpty(0).Max();
 
-        // 4) Определяем граничные узлы
-        var borderSeeds = new Queue<Hex>();
-        var visited = new HashSet<Hex>();
+        var borderSeeds = new Queue<IHex>();
+        var visited = new HashSet<IHex>();
         foreach (var h in allHexes)
         {
             if (neighborCounts[h] < maxNeighbors && !barrier.Contains(h))
@@ -37,28 +35,29 @@ public class ConquestAlgorithm: IConquestAlgorithm
             }
         }
 
-        // 5) BFS от всех borderSeeds
         while (borderSeeds.Count > 0)
         {
             var current = borderSeeds.Dequeue();
+            
             foreach (var n in neighborMap[current])
             {
                 if (barrier.Contains(n) || visited.Contains(n))
                     continue;
+                
                 visited.Add(n);
                 borderSeeds.Enqueue(n);
             }
         }
 
-        // 6) Составляем результат
-        var toCapture = new List<Hex>(count);
+        var toCapture = new List<IHex>(count);
+        
         foreach (var h in allHexes)
         {
             if (!barrier.Contains(h) && !visited.Contains(h))
                 toCapture.Add(h);
         }
-        // Включаем трейл
-        toCapture.AddRange(TrailHexes);
+        
+        toCapture.AddRange(trailHexes);
         return toCapture;
     }
 }

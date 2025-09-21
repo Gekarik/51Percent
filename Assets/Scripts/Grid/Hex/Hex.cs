@@ -4,42 +4,43 @@ using UnityEngine;
 public class Hex : MonoBehaviour, IHex
 {
     [SerializeField] private HexView _hexView;
+
     private HexState _state;
-
-    public event Action<ICharacter> StateChanged;
-
+    
+    public event Action<IHex> StateChanged;
+    
+    public Transform Transform => transform;
     public HexView HexView => _hexView;
     public HexState State => _state;
     public ICharacter Owner { get; private set; }
 
+    private void OnEnable()
+    {
+        StateChanged += _hexView.UpdateView;
+    }
+
+    private void OnDisable()
+    {
+        StateChanged -= _hexView.UpdateView;
+    }
+
     private void Awake()
     {
-        SetState(HexState.Empty);
-        _hexView.Init(this);
+        SetOwner(null, HexState.Empty);
     }
 
     public void SetOwner(ICharacter player, HexState hexState)
     {
-        Owner = player ?? throw new ArgumentNullException(nameof(player));
-        SetState(hexState);
+        Owner = player;
+        _state = hexState;
+        StateChanged?.Invoke(this);
     }
 
     public Bounds GetRendererBounds() => _hexView.GetBounds();
 
-    private void SetState(HexState state)
-    {
-        if (state == _state)
-            return;
-
-        _state = state;
-        
-        StateChanged?.Invoke(Owner);
-    }
-
     public void Reset()
     {
-        Owner = null;
-        SetState(HexState.Empty);
+        SetOwner(null, HexState.Empty);
         _hexView.Reset();
     }
 }

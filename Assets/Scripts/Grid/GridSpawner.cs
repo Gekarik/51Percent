@@ -15,11 +15,9 @@ public class GridSpawner : MonoBehaviour
         Clear();
         _bounds = _playableArea.bounds;
 
-        // Берём прямой размер меша в локальных единицах
         var meshFilter = _hexPrefab.HexView.GetComponent<MeshFilter>();
         var meshSize = meshFilter.sharedMesh.bounds.size;
 
-        // Переводим в мировые (умножаем на локальный scale)
         float hexWidth = meshSize.x * _hexRadius;
         float hexHeight = meshSize.z * _hexRadius;
 

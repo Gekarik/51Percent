@@ -20,7 +20,6 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
             throw new InvalidOperationException("Spawn prefab is not assigned");
 
         _pool = new ObjectPool<T>(_spawnPrefab, _container ?? transform);
-
     }
 
     protected virtual void OnEnable()

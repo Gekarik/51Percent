@@ -19,7 +19,7 @@ public class Mover : MonoBehaviour
         _vectorProvider = GetComponent<VectorProviderComponent>();
 
         if (_vectorProvider == null)
-            throw new InvalidOperationException("Нет компонента VectorProviderComponent на объекте");
+            throw new InvalidOperationException("No VectorProviderComponent");
     }
 
     private void Update()

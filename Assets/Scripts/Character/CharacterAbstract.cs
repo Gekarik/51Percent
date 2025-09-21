@@ -13,17 +13,16 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
     private Mover _mover;
     private Grabber _grabber;
 
-    //public event Action Died;
+    public Conquester Conquester => _conquester;
 
     public float Speed => _mover.PlayerSpeed.magnitude;
     public PlayerStatsComponent StatsComponent { get; private set; }
     public Color Color => _color;
     public CharacterState State => _state;
 
-    public void InitConquester(IHexGridProvider hexGrid, Hex startHex)
+    public void InitConquester(IHexGridProvider hexGrid)
     {
         _conquester.Init(hexGrid);
-        _conquester.GetStartTerritory(startHex);
     }
 
     protected void BaseInit()
@@ -32,8 +31,9 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
 
         SetCharacterState(CharacterState.Alive);
 
-        _mover = GetComponent<Mover>();
         _conquester = GetComponent<Conquester>();
+
+        _mover = GetComponent<Mover>();
 
         _grabber = GetComponent<Grabber>();
         InitGrabberEvents();
@@ -75,9 +75,9 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
 
     public void Die()
     {
-        _conquester.Reset();
         SetCharacterState(CharacterState.Died);
         gameObject.SetActive(false);
+        _conquester.Reset();
     }
 
     public void Kill()
