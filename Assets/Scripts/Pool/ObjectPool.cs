@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System;
 using UnityEngine;
 
 public class ObjectPool<T> where T : MonoBehaviour, IGrabbable
@@ -10,7 +9,7 @@ public class ObjectPool<T> where T : MonoBehaviour, IGrabbable
 
     public ObjectPool(T prefab, Transform container)
     {
-        _prefab = prefab ?? throw new ArgumentNullException(nameof(prefab));
+        _prefab = prefab ?? throw new System.ArgumentNullException(nameof(prefab));
         _container = container;
     }
 
@@ -23,7 +22,7 @@ public class ObjectPool<T> where T : MonoBehaviour, IGrabbable
             return item;
         }
 
-        var instance = UnityEngine.Object.Instantiate(_prefab, _container);
+        var instance = Object.Instantiate(_prefab, _container);
         return instance;
     }
 

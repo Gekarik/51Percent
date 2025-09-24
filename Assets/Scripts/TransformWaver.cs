@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using System;
 using UnityEngine;
 
 public class TransformWaver : IWaveAnimator
 {
     private readonly float _elementDuration;
     
-    private float _animationHeight = 0.3f;
+    private float _animationHeight = 0.6f;
     private float _totalWaveDuration = 0.4f;
     private float _overlapFactor = 0.5f; // 0 = полное наложение, 1 ~ последовательный
     

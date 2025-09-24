@@ -1,9 +1,8 @@
 ﻿using System;
-using UnityEngine;
 
 public interface IGrabbable
 {
-    event Action Collected;
+    event Action<IGrabbable> Collected;
     void Collect();
-    Transform Transform { get; }
+    GrabbableState State { get; }
 }

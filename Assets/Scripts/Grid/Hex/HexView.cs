@@ -30,9 +30,11 @@ public class HexView : MonoBehaviour, ICoroutineRunner
             _colorizer.ResetColor();
         else
         {
-            _hexViewAnimator.Pulse();
             _colorizer.SetColor(hex.Owner.Color);
         }
+        
+        if(hex.State==HexState.PartOfTrail)
+            _hexViewAnimator.Pulse();
     }
 
     public void Reset()

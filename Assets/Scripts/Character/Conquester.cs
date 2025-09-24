@@ -6,8 +6,8 @@ using UnityEngine;
 [RequireComponent(typeof(ICharacter))]
 public class Conquester : MonoBehaviour
 {
-    private TerritoryManager _territoryManager;
     private readonly List<Hex> _trailList = new List<Hex>();
+    private TerritoryManager _territoryManager;
 
     private ConquestAlgorithm _algorithm;
 
@@ -28,14 +28,27 @@ public class Conquester : MonoBehaviour
         _territoryManager.InitCharacter(_owner);
     }
 
+    private void OnEnable()
+    {
+        AreaCaptured += _territoryManager.OnAreaCaptured;
+    }
+
+    private void OnDisable()
+    {
+        AreaCaptured += _territoryManager.OnAreaCaptured;
+    }
+
     public void Init(IHexGridProvider grid)
     {
         _grid = grid ?? throw new ArgumentException();
-        AreaCaptured += _territoryManager.OnAreaCaptured;
+        
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        if (_owner == null || _owner.State != CharacterState.Alive)
+            return;
+        
         if (collision.gameObject.TryGetComponent(out Hex hex) == false)
             return;
 
@@ -97,8 +110,7 @@ public class Conquester : MonoBehaviour
         foreach (var hex in hexesToReset)
             hex.Reset();
         
-        _territoryManager.OnCharacterDied(_owner);//некорректно
-        AreaCaptured -= _territoryManager.OnAreaCaptured;
+        _territoryManager.OnCharacterDied(_owner);
         _trailList.Clear();
     }
 }

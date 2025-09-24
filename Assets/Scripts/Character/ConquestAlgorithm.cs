@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class ConquestAlgorithm: IConquestAlgorithm
+public class ConquestAlgorithm : IConquestAlgorithm
 {
-    public List<IHex> ComputeCapturedArea(IReadOnlyCollection<IHex> fixedHexes,
+    public List<IHex> ComputeCapturedArea(
+        IReadOnlyCollection<IHex> fixedHexes,
         IReadOnlyCollection<Hex> trailHexes,
         IHexGridProvider hexGridProvider)
     {
@@ -26,6 +27,7 @@ public class ConquestAlgorithm: IConquestAlgorithm
 
         var borderSeeds = new Queue<IHex>();
         var visited = new HashSet<IHex>();
+
         foreach (var h in allHexes)
         {
             if (neighborCounts[h] < maxNeighbors && !barrier.Contains(h))
@@ -38,26 +40,27 @@ public class ConquestAlgorithm: IConquestAlgorithm
         while (borderSeeds.Count > 0)
         {
             var current = borderSeeds.Dequeue();
-            
+
             foreach (var n in neighborMap[current])
             {
                 if (barrier.Contains(n) || visited.Contains(n))
                     continue;
-                
+
                 visited.Add(n);
                 borderSeeds.Enqueue(n);
             }
         }
 
         var toCapture = new List<IHex>(count);
-        
+
         foreach (var h in allHexes)
         {
             if (!barrier.Contains(h) && !visited.Contains(h))
                 toCapture.Add(h);
         }
-        
+
         toCapture.AddRange(trailHexes);
+
         return toCapture;
     }
 }

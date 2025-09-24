@@ -14,7 +14,7 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
     private ObjectPool<T> _pool;
     private Coroutine _spawnRoutine;
 
-    protected void Awake()
+    private void Awake()
     {
         if (_spawnPrefab == null)
             throw new InvalidOperationException("Spawn prefab is not assigned");
@@ -22,12 +22,12 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
         _pool = new ObjectPool<T>(_spawnPrefab, _container ?? transform);
     }
 
-    protected virtual void OnEnable()
+    private void OnEnable()
     {
         _spawnRoutine = StartCoroutine(SpawnLoop());
     }
 
-    protected virtual void OnDisable()
+    private void OnDisable()
     {
         if (_spawnRoutine != null)
             StopCoroutine(_spawnRoutine);
@@ -46,24 +46,25 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
 
     private void SpawnOnce()
     {
-        T instance = _pool.Get();
-        instance.transform.position = GetRandomPosition();
+        T item = _pool.Get();
+        item.transform.position = GetRandomPosition();
 
-        instance.Collected -= () => OnItemCollected(instance);
-        instance.Collected += () => OnItemCollected(instance);
+        item.Collected += OnItemCollected;
     }
 
-    protected virtual void OnItemCollected(T item)
+    private void OnItemCollected(IGrabbable grabbable)
     {
-        item.Collected -= () => OnItemCollected(item);
+        T item = grabbable as T;
+        grabbable.Collected -= OnItemCollected;
         _pool.Release(item);
     }
 
-    protected Vector3 GetRandomPosition()
+    private Vector3 GetRandomPosition()
     {
         Bounds bounds = _spawnArea.bounds;
         float x = UnityEngine.Random.Range(bounds.min.x, bounds.max.x);
         float z = UnityEngine.Random.Range(bounds.min.z, bounds.max.z);
+
         return new Vector3(x, bounds.center.y + _verticalOffset, z);
     }
 }

@@ -28,43 +28,36 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
     protected void BaseInit()
     {
         _color = ColorManager.GetRandomColor();
-
         SetCharacterState(CharacterState.Alive);
 
         _conquester = GetComponent<Conquester>();
-
         _mover = GetComponent<Mover>();
-
+        
         _grabber = GetComponent<Grabber>();
-        InitGrabberEvents();
-
+        _grabber.ItemCollected += OnItemCollected;
+        
         StatsComponent = GetComponent<PlayerStatsComponent>();
-
         _view.Init(this);
     }
-
-    private void InitGrabberEvents()
-    {
-        _grabber.CoinCollected += OnCoinCollected;
-        _grabber.BoosterCollected += OnBoosterCollected;
-    }
-
+    
     private void OnDisable()
     {
-        _grabber.CoinCollected -= OnCoinCollected;
-        _grabber.BoosterCollected -= OnBoosterCollected;
+        _grabber.ItemCollected -= OnItemCollected;
     }
 
-    private void OnCoinCollected(Coin coin)
+    private void OnItemCollected(IGrabbable item)
     {
-        StatsComponent.CollectCoin();
-    }
+        switch (item)
+        {
+            case Coin:
+                StatsComponent.CollectCoin();
+                break;
 
-    private void OnBoosterCollected(Booster booster)
-    {
-        throw new System.NotImplementedException();
+            case Booster:
+                break;
+        }
     }
-
+    
     protected void SetCharacterState(CharacterState state)
     {
         if (_state == state)
@@ -76,8 +69,11 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
     public void Die()
     {
         SetCharacterState(CharacterState.Died);
-        gameObject.SetActive(false);
+        _mover.enabled = false;
+        _grabber.enabled = false;
+        _conquester.enabled = false;
         _conquester.Reset();
+        gameObject.SetActive(false);
     }
 
     public void Kill()
@@ -87,8 +83,9 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
 
     protected void Reset()
     {
-        _conquester.Reset();
         _mover.enabled = false;
         _grabber.enabled = false;
+        _conquester.Reset();
+        _conquester.enabled = false;
     }
 }
