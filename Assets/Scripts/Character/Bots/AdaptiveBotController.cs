@@ -374,36 +374,38 @@ public class AdaptiveBotController : MonoBehaviour
     
     /// <summary>
     /// Вычисляет реальное расстояние для планирования путей.
-    /// GridSpawner применяет двойное масштабирование: в формулах позиций И в localScale
+    /// Если гексы действительно маленькие, увеличиваем множитель для разумных дистанций движения
     /// </summary>
     private float CalculateRealHexSpacing()
     {
-        // Найдем минимальное расстояние между любыми двумя гексами
-        float minDistance = float.MaxValue;
+        // Используем HexGrid.Distance для получения шага между соседними гексами
         var allHexes = _grid.AllHexes.ToList();
-        
-        // Ограничиваем выборку для производительности
-        int sampleSize = Mathf.Min(20, allHexes.Count);
-        
-        for (int i = 0; i < sampleSize; i++)
+        if (allHexes.Count < 2)
         {
-            for (int j = i + 1; j < sampleSize; j++)
-            {
-                float distance = Vector3.Distance(allHexes[i].transform.position, allHexes[j].transform.position);
-                if (distance > 0.001f && distance < minDistance) // Исключаем нулевые расстояния
-                {
-                    minDistance = distance;
-                }
-            }
-        }
-        
-        if (minDistance == float.MaxValue)
-        {
-            Debug.LogWarning($"Could not calculate real hex spacing, fallback to CellDiameter: {_grid.CellDiameter}");
+            Debug.LogWarning($"Not enough hexes for spacing calculation, using CellDiameter: {_grid.CellDiameter}");
             return _grid.CellDiameter;
         }
         
-        Debug.Log($"Real hex spacing calculated: {minDistance:F2} (vs CellDiameter: {_grid.CellDiameter:F2})");
-        return minDistance;
+        // Найдем первый гекс и его ближайшего соседа
+        var firstHex = allHexes[0];
+        var neighbors = _grid.GetNeighbors(firstHex).ToList();
+        
+        float neighborDistance = _grid.CellDiameter; // Fallback
+        if (neighbors.Count > 0)
+        {
+            neighborDistance = Vector3.Distance(firstHex.transform.position, neighbors[0].transform.position);
+        }
+        
+        // Если расстояние между соседями очень маленькое (меньше 1 unit), 
+        // используем множитель для создания разумных дистанций движения
+        float effectiveDistance = neighborDistance;
+        if (neighborDistance < 1.0f)
+        {
+            effectiveDistance = neighborDistance * 3.0f; // Увеличиваем в 3 раза для разумного движения
+            Debug.Log($"Small hex spacing detected: {neighborDistance:F2}, using multiplied distance: {effectiveDistance:F2}");
+        }
+        
+        Debug.Log($"Real hex spacing: neighbor={neighborDistance:F2}, effective={effectiveDistance:F2}, CellDiameter={_grid.CellDiameter:F2}");
+        return effectiveDistance;
     }
 }
