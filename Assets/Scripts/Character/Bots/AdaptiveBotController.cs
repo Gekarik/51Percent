@@ -188,11 +188,11 @@ public class AdaptiveBotController : MonoBehaviour
                 break;
                 
             case BotState.Expand:
-                var expansionTarget = FindExpansionTarget();
-                if (expansionTarget != null)
+                var expansionPath = CreateExpansionPath();
+                if (expansionPath != null)
                 {
-                    _pathProvider.SetHexTarget(expansionTarget);
-                    Debug.Log($"Bot {gameObject.name} expanding towards hex at logical distance: {_grid.Distance(GetNearestOwnedHex(), expansionTarget as Hex)} steps");
+                    _pathProvider.SetPath(expansionPath);
+                    Debug.Log($"Bot {gameObject.name} expanding with {expansionPath.Count} waypoints to radius {_config.maxTrailLength}");
                 }
                 break;
                 
@@ -267,12 +267,12 @@ public class AdaptiveBotController : MonoBehaviour
     }
     
     /// <summary>
-    /// Находит цель для расширения в заданном направлении (дальняя цель)
+    /// Создает путь расширения от центра территории на заданный радиус
     /// </summary>
-    private IHex FindExpansionTarget()
+    private List<IHex> CreateExpansionPath()
     {
         var ownedHexes = _conquester.FixedHexes;
-        Debug.Log($"Bot {gameObject.name} FindExpansionTarget: owned hexes count = {ownedHexes.Count}");
+        Debug.Log($"Bot {gameObject.name} CreateExpansionPath: owned hexes count = {ownedHexes.Count}");
         
         if (ownedHexes.Count == 0) 
         {
@@ -280,52 +280,51 @@ public class AdaptiveBotController : MonoBehaviour
             return null;
         }
         
-        // Выбираем случайный край территории как стартовую точку
-        var borderHexes = GetBorderHexes();
-        if (borderHexes.Count == 0)
+        // Находим центр территории
+        Vector3 territoryCenter = CalculateTerritoryCenter();
+        var centerHex = _grid.AllHexes.OrderBy(h => Vector3.Distance(h.transform.position, territoryCenter)).First();
+        
+        // Выбираем случайное направление для расширения
+        float randomAngle = _random.Next(0, 360) * Mathf.Deg2Rad;
+        Vector3 direction = new Vector3(Mathf.Cos(randomAngle), 0, Mathf.Sin(randomAngle));
+        
+        Debug.Log($"Bot {gameObject.name} expanding in direction: {direction} from center for {_config.maxTrailLength} steps");
+        
+        // Создаем путь в выбранном направлении на расстояние maxTrailLength
+        List<IHex> expansionPath = new List<IHex>();
+        Vector3 currentPos = territoryCenter;
+        
+        for (int step = 1; step <= _config.maxTrailLength; step++)
         {
-            Debug.LogWarning($"Bot {gameObject.name} no border hexes found!");
-            return null;
-        }
-        
-        var startHex = borderHexes[_random.Next(borderHexes.Count)];
-        
-        // Ищем цель НА ГРАНИЦЕ maxTrailLength, а не ближайшую
-        IHex bestTarget = null;
-        int targetDistance = _config.maxTrailLength; // Целевая дистанция
-        int bestScore = -1;
-        int emptyHexesFound = 0;
-        
-        Debug.Log($"Bot {gameObject.name} searching for target at ~{targetDistance} steps from border");
-        
-        foreach (var hex in _grid.AllHexes)
-        {
-            if (hex.State != HexState.Empty && hex.Owner == _character) continue; // Пропускаем свои гексы
-            emptyHexesFound++;
+            // Вычисляем следующую позицию
+            Vector3 nextPos = territoryCenter + direction * (step * 0.5f); // 0.5f - приблизительный размер гекса
             
-            int logicalDistance = _grid.Distance(startHex, hex as Hex);
+            // Находим ближайший гекс к этой позиции
+            var targetHex = _grid.AllHexes
+                .Where(h => h.Owner != _character) // Не идем на свои гексы
+                .OrderBy(h => Vector3.Distance(h.transform.position, nextPos))
+                .FirstOrDefault();
             
-            // Предпочитаем цели близко к maxTrailLength (дальние цели)
-            int distanceScore = 100 - Mathf.Abs(logicalDistance - targetDistance);
-            
-            // Бонус за пустые гексы
-            int stateScore = 0;
-            if (hex.State == HexState.Empty) stateScore = 50;
-            else if (hex.Owner != _character) stateScore = 30; // Вражеские гексы тоже можно захватывать
-            
-            int totalScore = distanceScore + stateScore;
-            
-            if (totalScore > bestScore && logicalDistance <= _config.maxTrailLength)
+            if (targetHex != null)
             {
-                bestScore = totalScore;
-                bestTarget = hex;
+                // Проверяем, что это не дубликат
+                if (expansionPath.Count == 0 || expansionPath.Last() != targetHex)
+                {
+                    expansionPath.Add(targetHex);
+                    
+                    // Если достигли хорошего расстояния от центра, можем остановиться
+                    int actualDistance = _grid.Distance(centerHex, targetHex as Hex);
+                    if (actualDistance >= _config.maxTrailLength)
+                    {
+                        Debug.Log($"Bot {gameObject.name} reached target radius at {actualDistance} steps");
+                        break;
+                    }
+                }
             }
         }
         
-        int finalDistance = bestTarget != null ? _grid.Distance(startHex, bestTarget as Hex) : -1;
-        Debug.Log($"Bot {gameObject.name} found target at {finalDistance} steps (score: {bestScore}, empty hexes: {emptyHexesFound})");
-        
-        return bestTarget;
+        Debug.Log($"Bot {gameObject.name} created expansion path with {expansionPath.Count} waypoints to radius {_config.maxTrailLength}");
+        return expansionPath;
     }
     
     /// <summary>
@@ -413,6 +412,25 @@ public class AdaptiveBotController : MonoBehaviour
         
         Debug.Log($"Bot {gameObject.name} created arc return path with {returnPath.Count} waypoints");
         return returnPath;
+    }
+    
+    /// <summary>
+    /// Вычисляет центр территории бота
+    /// </summary>
+    private Vector3 CalculateTerritoryCenter()
+    {
+        var ownedHexes = _conquester.FixedHexes;
+        if (ownedHexes.Count == 0) return transform.position;
+        
+        Vector3 center = Vector3.zero;
+        foreach (var hex in ownedHexes)
+        {
+            center += hex.transform.position;
+        }
+        center /= ownedHexes.Count;
+        
+        Debug.Log($"Bot {gameObject.name} territory center calculated at: ({center.x:F2}, {center.z:F2})");
+        return center;
     }
     
     /// <summary>
