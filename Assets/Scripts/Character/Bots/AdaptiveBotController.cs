@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 /// <summary>
@@ -42,7 +43,7 @@ public class AdaptiveBotController : MonoBehaviour
         if (mover != null)
         {
             // Используем рефлексию для установки приватного поля _speed
-            var speedField = typeof(Mover).GetField("_speed", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var speedField = typeof(Mover).GetField("_speed", BindingFlags.NonPublic | BindingFlags.Instance);
             if (speedField != null)
             {
                 speedField.SetValue(mover, _config.movementSpeed);
