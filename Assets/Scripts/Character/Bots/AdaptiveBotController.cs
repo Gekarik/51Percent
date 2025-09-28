@@ -22,7 +22,7 @@ public class AdaptiveBotController : MonoBehaviour
     private BotState _currentState = BotState.Idle;
     private float _stateTimer;
     private float _decisionTimer;
-    private const float DECISION_INTERVAL = 0.5f; // Принимаем решения каждые 0.5 секунд
+    private const float DECISION_INTERVAL = 1.5f; // Уменьшена частота до 1.5 секунд для производительности
     
     public BotState CurrentState => _currentState;
     public BotStateConfig Config => _config;
@@ -45,10 +45,13 @@ public class AdaptiveBotController : MonoBehaviour
     }
     
     /// <summary>
-    /// Основной цикл принятия решений бота
+    /// Основной цикл принятия решений бота (оптимизированный)
     /// </summary>
     private IEnumerator BotLoop()
     {
+        // Добавляем случайную задержку для распределения нагрузки между ботами
+        yield return new WaitForSeconds(_random.Next(0, 100) / 100f);
+        
         while (_character.State == CharacterState.Alive)
         {
             _decisionTimer += Time.deltaTime;
@@ -64,7 +67,8 @@ public class AdaptiveBotController : MonoBehaviour
             // Выполняем действия текущего состояния
             ExecuteCurrentState();
             
-            yield return null;
+            // Пропускаем несколько кадров для распределения нагрузки
+            yield return new WaitForSeconds(0.1f);
         }
     }
     
@@ -232,22 +236,37 @@ public class AdaptiveBotController : MonoBehaviour
     }
     
     /// <summary>
-    /// Создает путь для расширения территории
+    /// Создает простой путь для расширения территории (оптимизированный)
     /// </summary>
     private List<IHex> CreateExpansionPath()
     {
-        var safeTargets = _analyzer.FindSafeExpansionTargets(_character, transform.position, _config.maxTrailLength);
-        if (safeTargets.Count == 0) return null;
-        
         var ownedHexes = _conquester.FixedHexes;
         if (ownedHexes.Count == 0) return null;
         
-        // Выбираем случайную стартовую точку из собственной территории
-        var startHex = ownedHexes.ToArray()[_random.Next(ownedHexes.Count)] as IHex;
-        var targetHex = safeTargets[_random.Next(Mathf.Min(3, safeTargets.Count))]; // Выбираем из первых 3 целей
+        // Упрощенный алгоритм без сложного pathfinding для производительности
+        var startHex = ownedHexes.FirstOrDefault() as IHex;
+        if (startHex == null) return null;
         
-        // Строим простой путь
-        return Pathfinder.AStar(startHex, targetHex, _grid, h => h.State != HexState.Busy || h.Owner == _character);
+        // Ищем ближайший свободный гекс в радиусе
+        IHex targetHex = null;
+        float minDistance = float.MaxValue;
+        
+        foreach (var hex in _grid.AllHexes)
+        {
+            if (hex.State != HexState.Empty) continue;
+            
+            float distance = Vector3.Distance(startHex.transform.position, hex.transform.position);
+            if (distance < minDistance && distance <= _config.maxTrailLength * _grid.CellDiameter)
+            {
+                minDistance = distance;
+                targetHex = hex;
+            }
+        }
+        
+        if (targetHex == null) return null;
+        
+        // Создаем простой прямой путь вместо A*
+        return new List<IHex> { startHex, targetHex };
     }
     
     /// <summary>

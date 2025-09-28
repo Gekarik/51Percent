@@ -3,12 +3,19 @@ using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Анализирует текущую ситуацию на карте для принятия решений ботом
+/// Оптимизированный анализатор ситуации с кэшированием
 /// </summary>
 public class SituationAnalyzer
 {
     private readonly IHexGridProvider _grid;
     private readonly BotStateConfig _config;
+    
+    // Кэш для производительности
+    private IGrabbable[] _cachedResources;
+    private ICharacter[] _cachedEnemies;
+    private float _lastCacheUpdate;
+    private const float CACHE_UPDATE_INTERVAL = 2f; // Обновляем кэш каждые 2 секунды
+    private const int MAX_SEARCH_ITEMS = 20; // Максимум объектов для анализа
     
     public SituationAnalyzer(IHexGridProvider grid, BotStateConfig config)
     {
@@ -17,73 +24,135 @@ public class SituationAnalyzer
     }
     
     /// <summary>
-    /// Находит ближайшие ресурсы (монетки/бустеры)
+    /// Обновляет кэш объектов если необходимо
+    /// </summary>
+    private void UpdateCacheIfNeeded()
+    {
+        if (Time.time - _lastCacheUpdate > CACHE_UPDATE_INTERVAL || _cachedResources == null || _cachedEnemies == null)
+        {
+            // Кэшируем ресурсы (только активные)
+            _cachedResources = Object.FindObjectsOfType<MonoBehaviour>()
+                .OfType<IGrabbable>()
+                .Where(g => g != null && g.State == GrabbableState.Idle)
+                .Take(MAX_SEARCH_ITEMS)
+                .ToArray();
+                
+            // Кэшируем врагов (только живых)
+            _cachedEnemies = Object.FindObjectsOfType<MonoBehaviour>()
+                .OfType<ICharacter>()
+                .Where(c => c != null && c.State == CharacterState.Alive)
+                .Take(MAX_SEARCH_ITEMS)
+                .ToArray();
+                
+            _lastCacheUpdate = Time.time;
+        }
+    }
+
+    /// <summary>
+    /// Быстрый поиск ближайших ресурсов (с кэшированием)
     /// </summary>
     public List<IGrabbable> FindNearbyResources(Vector3 position, float range)
     {
-        var resources = new List<IGrabbable>();
+        UpdateCacheIfNeeded();
         
-        // Поиск всех grabbable объектов в сцене
-        var allGrabbables = Object.FindObjectsOfType<MonoBehaviour>()
-            .OfType<IGrabbable>()
-            .Where(g => g.State == GrabbableState.Idle);
-            
-        foreach (var resource in allGrabbables)
+        var resources = new List<IGrabbable>(5); // Предварительно выделяем память
+        float rangeSqr = range * range; // Избегаем корень для ускорения
+        
+        for (int i = 0; i < _cachedResources.Length; i++)
         {
+            var resource = _cachedResources[i];
+            if (resource == null || resource.State != GrabbableState.Idle) continue;
+            
             if (resource is MonoBehaviour mb)
             {
-                float distance = Vector3.Distance(position, mb.transform.position);
-                if (distance <= range)
+                float distanceSqr = (position - mb.transform.position).sqrMagnitude;
+                if (distanceSqr <= rangeSqr)
                 {
                     resources.Add(resource);
+                    if (resources.Count >= 5) break; // Ограничиваем количество
                 }
             }
         }
         
-        return resources.OrderBy(r => Vector3.Distance(position, ((MonoBehaviour)r).transform.position)).ToList();
+        // Простая сортировка только если нашли ресурсы
+        if (resources.Count > 1)
+        {
+            resources.Sort((a, b) => 
+            {
+                var aMb = a as MonoBehaviour;
+                var bMb = b as MonoBehaviour;
+                if (aMb == null || bMb == null) return 0;
+                
+                float distA = (position - aMb.transform.position).sqrMagnitude;
+                float distB = (position - bMb.transform.position).sqrMagnitude;
+                return distA.CompareTo(distB);
+            });
+        }
+        
+        return resources;
     }
     
     /// <summary>
-    /// Находит уязвимые вражеские трейлы для атаки
+    /// Быстрый поиск вражеских трейлов (оптимизированный)
     /// </summary>
     public List<IHex> FindVulnerableEnemyTrails(ICharacter self, Vector3 position, float range)
     {
-        var vulnerableTrails = new List<IHex>();
+        var vulnerableTrails = new List<IHex>(5); // Предварительно выделяем память
+        float rangeSqr = range * range;
+        int foundCount = 0;
         
+        // Ограничиваем поиск по сетке для производительности
         foreach (var hex in _grid.AllHexes)
         {
-            // Ищем гексы, которые являются частью чужого трейла
-            if (hex.State == HexState.PartOfTrail && hex.Owner != self && hex.Owner != null)
+            // Early exit если уже нашли достаточно
+            if (foundCount >= 5) break;
+            
+            // Быстрые проверки сначала
+            if (hex.State != HexState.PartOfTrail || hex.Owner == self || hex.Owner == null) 
+                continue;
+                
+            float distanceSqr = (position - hex.transform.position).sqrMagnitude;
+            if (distanceSqr <= rangeSqr)
             {
-                float distance = Vector3.Distance(position, hex.transform.position);
-                if (distance <= range)
-                {
-                    vulnerableTrails.Add(hex);
-                }
+                vulnerableTrails.Add(hex);
+                foundCount++;
             }
         }
         
-        return vulnerableTrails.OrderBy(h => Vector3.Distance(position, h.transform.position)).ToList();
+        // Сортируем только если нашли несколько
+        if (vulnerableTrails.Count > 1)
+        {
+            vulnerableTrails.Sort((a, b) => 
+            {
+                float distA = (position - a.transform.position).sqrMagnitude;
+                float distB = (position - b.transform.position).sqrMagnitude;
+                return distA.CompareTo(distB);
+            });
+        }
+        
+        return vulnerableTrails;
     }
     
     /// <summary>
-    /// Определяет, есть ли угроза рядом с текущим трейлом
+    /// Быстрая проверка угрозы от врагов (с кэшированием)
     /// </summary>
     public bool IsThreatenedByEnemy(ICharacter self, Vector3 position, float range)
     {
-        // Находим всех врагов поблизости
-        var enemies = Object.FindObjectsOfType<MonoBehaviour>()
-            .OfType<ICharacter>()
-            .Where(c => c != self && c.State == CharacterState.Alive);
-            
-        foreach (var enemy in enemies)
+        UpdateCacheIfNeeded();
+        
+        float rangeSqr = range * range;
+        
+        for (int i = 0; i < _cachedEnemies.Length; i++)
         {
+            var enemy = _cachedEnemies[i];
+            if (enemy == null || enemy == self || enemy.State != CharacterState.Alive) continue;
+            
             if (enemy is MonoBehaviour mb)
             {
-                float distance = Vector3.Distance(position, mb.transform.position);
-                if (distance <= range)
+                float distanceSqr = (position - mb.transform.position).sqrMagnitude;
+                if (distanceSqr <= rangeSqr)
                 {
-                    return true;
+                    return true; // Найдена угроза - выходим немедленно
                 }
             }
         }
@@ -92,33 +161,38 @@ public class SituationAnalyzer
     }
     
     /// <summary>
-    /// Находит безопасные гексы для расширения территории
+    /// Быстрый поиск безопасных гексов (упрощенный для производительности)
     /// </summary>
     public List<IHex> FindSafeExpansionTargets(ICharacter self, Vector3 position, int maxDistance)
     {
-        var safeTargets = new List<IHex>();
-        var ownedHexes = _grid.AllHexes.Where(h => h.Owner == self && h.State == HexState.Busy);
+        UpdateCacheIfNeeded();
         
+        var safeTargets = new List<IHex>(10);
+        float maxDistanceSqr = (maxDistance * _grid.CellDiameter) * (maxDistance * _grid.CellDiameter);
+        int foundCount = 0;
+        
+        // Ограниченный поиск для производительности
         foreach (var hex in _grid.AllHexes)
         {
-            // Проверяем только свободные гексы
-            if (hex.State != HexState.Empty)
-                continue;
-                
-            float distance = Vector3.Distance(position, hex.transform.position);
+            if (foundCount >= 10) break; // Максимум 10 целей
             
-            // Проверяем расстояние
-            if (distance > maxDistance * _grid.CellDiameter)
-                continue;
-                
-            // Проверяем, что рядом нет врагов
+            // Быстрые проверки
+            if (hex.State != HexState.Empty) continue;
+            
+            float distanceSqr = (position - hex.transform.position).sqrMagnitude;
+            if (distanceSqr > maxDistanceSqr) continue;
+            
+            // Упрощенная проверка безопасности - используем кэш врагов
             bool isSafe = true;
-            foreach (var enemy in Object.FindObjectsOfType<MonoBehaviour>().OfType<ICharacter>())
+            for (int i = 0; i < _cachedEnemies.Length && i < 5; i++) // Проверяем только первых 5 врагов
             {
-                if (enemy != self && enemy.State == CharacterState.Alive && enemy is MonoBehaviour mb)
+                var enemy = _cachedEnemies[i];
+                if (enemy == null || enemy == self) continue;
+                
+                if (enemy is MonoBehaviour mb)
                 {
-                    float enemyDistance = Vector3.Distance(hex.transform.position, mb.transform.position);
-                    if (enemyDistance < _config.detectionRange)
+                    float enemyDistSqr = (hex.transform.position - mb.transform.position).sqrMagnitude;
+                    if (enemyDistSqr < _config.detectionRange * _config.detectionRange)
                     {
                         isSafe = false;
                         break;
@@ -129,10 +203,22 @@ public class SituationAnalyzer
             if (isSafe)
             {
                 safeTargets.Add(hex);
+                foundCount++;
             }
         }
         
-        return safeTargets.OrderBy(h => Vector3.Distance(position, h.transform.position)).ToList();
+        // Простая сортировка только если нашли несколько
+        if (safeTargets.Count > 1)
+        {
+            safeTargets.Sort((a, b) => 
+            {
+                float distA = (position - a.transform.position).sqrMagnitude;
+                float distB = (position - b.transform.position).sqrMagnitude;
+                return distA.CompareTo(distB);
+            });
+        }
+        
+        return safeTargets;
     }
     
     /// <summary>
