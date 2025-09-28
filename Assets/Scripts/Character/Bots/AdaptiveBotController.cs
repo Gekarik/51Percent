@@ -250,7 +250,7 @@ public class AdaptiveBotController : MonoBehaviour
     }
     
     /// <summary>
-    /// Создает простой путь для расширения территории (оптимизированный)
+    /// Создает простой путь для расширения территории с использованием логических расстояний
     /// </summary>
     private List<IHex> CreateExpansionPath()
     {
@@ -271,45 +271,44 @@ public class AdaptiveBotController : MonoBehaviour
             return null;
         }
         
-        // Ищем ближайший свободный гекс
+        // Используем логические расстояния (количество шагов между гексами)
         IHex targetHex = null;
-        float minDistance = float.MaxValue;
+        int minLogicalDistance = int.MaxValue;
         int emptyHexesFound = 0;
+        int maxLogicalSteps = _config.maxTrailLength; // Количество шагов, а не физических единиц
         
-        // Используем реальное расстояние между соседними гексами для более точного расчета
-        float actualHexDistance = CalculateRealHexSpacing();
-        float maxAllowedDistance = _config.maxTrailLength * actualHexDistance;
+        Debug.Log($"Bot {gameObject.name} search params: maxTrailLength={maxLogicalSteps} steps");
         
-        Debug.Log($"Bot {gameObject.name} search params: maxTrailLength={_config.maxTrailLength}, cellDiameter={_grid.CellDiameter:F2}, actualHexDistance={actualHexDistance:F2}, maxDistance={maxAllowedDistance:F2}");
-        
-        // Сначала ищем в заданном радиусе
+        // Ищем пустые гексы в пределах логических шагов
         foreach (var hex in _grid.AllHexes)
         {
             if (hex.State != HexState.Empty) continue;
             emptyHexesFound++;
             
-            float distance = Vector3.Distance(startHex.transform.position, hex.transform.position);
-            if (distance < minDistance && distance <= maxAllowedDistance)
+            // Используем Distance() который возвращает количество логических шагов
+            int logicalDistance = _grid.Distance(startHex, hex as Hex);
+            
+            if (logicalDistance <= maxLogicalSteps && logicalDistance < minLogicalDistance)
             {
-                minDistance = distance;
+                minLogicalDistance = logicalDistance;
                 targetHex = hex;
             }
         }
         
-        // Если в радиусе ничего не нашли, берем просто ближайший пустой гекс
+        // Если в пределах логических шагов ничего не нашли, берем ближайший пустой гекс
         if (targetHex == null)
         {
-            Debug.LogWarning($"Bot {gameObject.name} no hexes in range {maxAllowedDistance:F2}, searching for any closest empty hex");
-            minDistance = float.MaxValue;
+            Debug.LogWarning($"Bot {gameObject.name} no hexes within {maxLogicalSteps} steps, searching for closest empty hex");
+            minLogicalDistance = int.MaxValue;
             
             foreach (var hex in _grid.AllHexes)
             {
                 if (hex.State != HexState.Empty) continue;
                 
-                float distance = Vector3.Distance(startHex.transform.position, hex.transform.position);
-                if (distance < minDistance)
+                int logicalDistance = _grid.Distance(startHex, hex as Hex);
+                if (logicalDistance < minLogicalDistance)
                 {
-                    minDistance = distance;
+                    minLogicalDistance = logicalDistance;
                     targetHex = hex;
                 }
             }
@@ -319,22 +318,22 @@ public class AdaptiveBotController : MonoBehaviour
         if (targetHex == null)
         {
             Debug.LogError($"Bot {gameObject.name} no empty hexes found! Trying any hex not owned by self");
-            minDistance = float.MaxValue;
+            minLogicalDistance = int.MaxValue;
             
             foreach (var hex in _grid.AllHexes)
             {
                 if (hex.Owner == _character) continue; // Не идем на свои гексы
                 
-                float distance = Vector3.Distance(startHex.transform.position, hex.transform.position);
-                if (distance < minDistance)
+                int logicalDistance = _grid.Distance(startHex, hex as Hex);
+                if (logicalDistance < minLogicalDistance)
                 {
-                    minDistance = distance;
+                    minLogicalDistance = logicalDistance;
                     targetHex = hex;
                 }
             }
         }
         
-        Debug.Log($"Bot {gameObject.name} found {emptyHexesFound} empty hexes, target distance: {minDistance:F2}");
+        Debug.Log($"Bot {gameObject.name} found {emptyHexesFound} empty hexes, target logical distance: {minLogicalDistance} steps");
         
         if (targetHex == null) 
         {
@@ -342,9 +341,9 @@ public class AdaptiveBotController : MonoBehaviour
             return null;
         }
         
-        // Создаем простой прямой путь вместо A*
+        // Создаем простой прямой путь
         var path = new List<IHex> { startHex, targetHex };
-        Debug.Log($"Bot {gameObject.name} created expansion path with {path.Count} waypoints");
+        Debug.Log($"Bot {gameObject.name} created expansion path with {path.Count} waypoints ({minLogicalDistance} logical steps)");
         return path;
     }
     
@@ -371,41 +370,5 @@ public class AdaptiveBotController : MonoBehaviour
         // Упрощенная версия - возвращаемся к ближайшей точке территории
         return CreateEscapePath();
     }
-    
-    /// <summary>
-    /// Вычисляет реальное расстояние для планирования путей.
-    /// Если гексы действительно маленькие, увеличиваем множитель для разумных дистанций движения
-    /// </summary>
-    private float CalculateRealHexSpacing()
-    {
-        // Используем HexGrid.Distance для получения шага между соседними гексами
-        var allHexes = _grid.AllHexes.ToList();
-        if (allHexes.Count < 2)
-        {
-            Debug.LogWarning($"Not enough hexes for spacing calculation, using CellDiameter: {_grid.CellDiameter}");
-            return _grid.CellDiameter;
-        }
-        
-        // Найдем первый гекс и его ближайшего соседа
-        var firstHex = allHexes[0];
-        var neighbors = _grid.GetNeighbors(firstHex).ToList();
-        
-        float neighborDistance = _grid.CellDiameter; // Fallback
-        if (neighbors.Count > 0)
-        {
-            neighborDistance = Vector3.Distance(firstHex.transform.position, neighbors[0].transform.position);
-        }
-        
-        // Если расстояние между соседями очень маленькое (меньше 1 unit), 
-        // используем множитель для создания разумных дистанций движения
-        float effectiveDistance = neighborDistance;
-        if (neighborDistance < 1.0f)
-        {
-            effectiveDistance = neighborDistance * 3.0f; // Увеличиваем в 3 раза для разумного движения
-            Debug.Log($"Small hex spacing detected: {neighborDistance:F2}, using multiplied distance: {effectiveDistance:F2}");
-        }
-        
-        Debug.Log($"Real hex spacing: neighbor={neighborDistance:F2}, effective={effectiveDistance:F2}, CellDiameter={_grid.CellDiameter:F2}");
-        return effectiveDistance;
-    }
+
 }
