@@ -23,7 +23,7 @@ public class AdaptiveBotController : MonoBehaviour
     private BotState _currentState = BotState.Idle;
     private float _stateTimer;
     private float _decisionTimer;
-    private const float DECISION_INTERVAL = 1.5f; // Уменьшена частота до 1.5 секунд для производительности
+    private const float DECISION_INTERVAL = 0.8f; // Более частые решения для плавности
     
     public BotState CurrentState => _currentState;
     public BotStateConfig Config => _config;
@@ -36,6 +36,19 @@ public class AdaptiveBotController : MonoBehaviour
         
         // Инициализируем рандом с уникальным семенем для каждого бота
         _random = new System.Random(GetInstanceID());
+        
+        // Настраиваем скорость движения
+        var mover = GetComponent<Mover>();
+        if (mover != null)
+        {
+            // Используем рефлексию для установки приватного поля _speed
+            var speedField = typeof(Mover).GetField("_speed", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (speedField != null)
+            {
+                speedField.SetValue(mover, _config.movementSpeed);
+                Debug.Log($"Bot {gameObject.name} speed set to {_config.movementSpeed}");
+            }
+        }
     }
     
     public void Init(IHexGridProvider gridProvider)
@@ -69,7 +82,7 @@ public class AdaptiveBotController : MonoBehaviour
             ExecuteCurrentState();
             
             // Пропускаем несколько кадров для распределения нагрузки
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.2f);
         }
     }
     
