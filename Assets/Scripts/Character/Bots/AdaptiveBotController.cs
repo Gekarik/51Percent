@@ -188,10 +188,11 @@ public class AdaptiveBotController : MonoBehaviour
                 break;
                 
             case BotState.Expand:
-                var expansionPath = CreateExpansionPath();
-                if (expansionPath != null)
+                var expansionTarget = FindExpansionTarget();
+                if (expansionTarget != null)
                 {
-                    _pathProvider.SetPath(expansionPath);
+                    _pathProvider.SetHexTarget(expansionTarget);
+                    Debug.Log($"Bot {gameObject.name} expanding towards hex at logical distance: {_grid.Distance(GetNearestOwnedHex(), expansionTarget as Hex)} steps");
                 }
                 break;
                 
@@ -250,12 +251,12 @@ public class AdaptiveBotController : MonoBehaviour
     }
     
     /// <summary>
-    /// Создает простой путь для расширения территории с использованием логических расстояний
+    /// Находит цель для расширения в заданном направлении (дальняя цель)
     /// </summary>
-    private List<IHex> CreateExpansionPath()
+    private IHex FindExpansionTarget()
     {
         var ownedHexes = _conquester.FixedHexes;
-        Debug.Log($"Bot {gameObject.name} CreateExpansionPath: owned hexes count = {ownedHexes.Count}");
+        Debug.Log($"Bot {gameObject.name} FindExpansionTarget: owned hexes count = {ownedHexes.Count}");
         
         if (ownedHexes.Count == 0) 
         {
@@ -263,88 +264,85 @@ public class AdaptiveBotController : MonoBehaviour
             return null;
         }
         
-        // Упрощенный алгоритм без сложного pathfinding для производительности
-        var startHex = ownedHexes.FirstOrDefault() as IHex;
-        if (startHex == null) 
+        // Выбираем случайный край территории как стартовую точку
+        var borderHexes = GetBorderHexes();
+        if (borderHexes.Count == 0)
         {
-            Debug.LogWarning($"Bot {gameObject.name} start hex is null!");
+            Debug.LogWarning($"Bot {gameObject.name} no border hexes found!");
             return null;
         }
         
-        // Используем логические расстояния (количество шагов между гексами)
-        IHex targetHex = null;
-        int minLogicalDistance = int.MaxValue;
+        var startHex = borderHexes[_random.Next(borderHexes.Count)];
+        
+        // Ищем цель НА ГРАНИЦЕ maxTrailLength, а не ближайшую
+        IHex bestTarget = null;
+        int targetDistance = _config.maxTrailLength; // Целевая дистанция
+        int bestScore = -1;
         int emptyHexesFound = 0;
-        int maxLogicalSteps = _config.maxTrailLength; // Количество шагов, а не физических единиц
         
-        Debug.Log($"Bot {gameObject.name} search params: maxTrailLength={maxLogicalSteps} steps");
+        Debug.Log($"Bot {gameObject.name} searching for target at ~{targetDistance} steps from border");
         
-        // Ищем пустые гексы в пределах логических шагов
         foreach (var hex in _grid.AllHexes)
         {
-            if (hex.State != HexState.Empty) continue;
+            if (hex.State != HexState.Empty && hex.Owner == _character) continue; // Пропускаем свои гексы
             emptyHexesFound++;
             
-            // Используем Distance() который возвращает количество логических шагов
             int logicalDistance = _grid.Distance(startHex, hex as Hex);
             
-            if (logicalDistance <= maxLogicalSteps && logicalDistance < minLogicalDistance)
-            {
-                minLogicalDistance = logicalDistance;
-                targetHex = hex;
-            }
-        }
-        
-        // Если в пределах логических шагов ничего не нашли, берем ближайший пустой гекс
-        if (targetHex == null)
-        {
-            Debug.LogWarning($"Bot {gameObject.name} no hexes within {maxLogicalSteps} steps, searching for closest empty hex");
-            minLogicalDistance = int.MaxValue;
+            // Предпочитаем цели близко к maxTrailLength (дальние цели)
+            int distanceScore = 100 - Mathf.Abs(logicalDistance - targetDistance);
             
-            foreach (var hex in _grid.AllHexes)
-            {
-                if (hex.State != HexState.Empty) continue;
-                
-                int logicalDistance = _grid.Distance(startHex, hex as Hex);
-                if (logicalDistance < minLogicalDistance)
-                {
-                    minLogicalDistance = logicalDistance;
-                    targetHex = hex;
-                }
-            }
-        }
-        
-        // Если все еще ничего не нашли, пробуем любые гексы (не только Empty)
-        if (targetHex == null)
-        {
-            Debug.LogError($"Bot {gameObject.name} no empty hexes found! Trying any hex not owned by self");
-            minLogicalDistance = int.MaxValue;
+            // Бонус за пустые гексы
+            int stateScore = 0;
+            if (hex.State == HexState.Empty) stateScore = 50;
+            else if (hex.Owner != _character) stateScore = 30; // Вражеские гексы тоже можно захватывать
             
-            foreach (var hex in _grid.AllHexes)
+            int totalScore = distanceScore + stateScore;
+            
+            if (totalScore > bestScore && logicalDistance <= _config.maxTrailLength)
             {
-                if (hex.Owner == _character) continue; // Не идем на свои гексы
-                
-                int logicalDistance = _grid.Distance(startHex, hex as Hex);
-                if (logicalDistance < minLogicalDistance)
-                {
-                    minLogicalDistance = logicalDistance;
-                    targetHex = hex;
-                }
+                bestScore = totalScore;
+                bestTarget = hex;
             }
         }
         
-        Debug.Log($"Bot {gameObject.name} found {emptyHexesFound} empty hexes, target logical distance: {minLogicalDistance} steps");
+        int finalDistance = bestTarget != null ? _grid.Distance(startHex, bestTarget as Hex) : -1;
+        Debug.Log($"Bot {gameObject.name} found target at {finalDistance} steps (score: {bestScore}, empty hexes: {emptyHexesFound})");
         
-        if (targetHex == null) 
+        return bestTarget;
+    }
+    
+    /// <summary>
+    /// Получает ближайший принадлежащий боту гекс
+    /// </summary>
+    private IHex GetNearestOwnedHex()
+    {
+        var ownedHexes = _conquester.FixedHexes;
+        if (ownedHexes.Count == 0) return null;
+        
+        return ownedHexes.OrderBy(h => Vector3.Distance(transform.position, h.transform.position)).First() as IHex;
+    }
+    
+    /// <summary>
+    /// Получает гексы на границе территории
+    /// </summary>
+    private List<IHex> GetBorderHexes()
+    {
+        var ownedHexes = _conquester.FixedHexes.Cast<IHex>().ToList();
+        var borderHexes = new List<IHex>();
+        
+        foreach (var hex in ownedHexes)
         {
-            Debug.LogWarning($"Bot {gameObject.name} no suitable target hex found!");
-            return null;
+            var neighbors = _grid.GetNeighbors(hex);
+            bool isBorder = neighbors.Any(n => n.Owner != _character);
+            
+            if (isBorder)
+            {
+                borderHexes.Add(hex);
+            }
         }
         
-        // Создаем простой прямой путь
-        var path = new List<IHex> { startHex, targetHex };
-        Debug.Log($"Bot {gameObject.name} created expansion path with {path.Count} waypoints ({minLogicalDistance} logical steps)");
-        return path;
+        return borderHexes;
     }
     
     /// <summary>
