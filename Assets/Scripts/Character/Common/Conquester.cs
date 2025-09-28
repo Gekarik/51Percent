@@ -35,7 +35,7 @@ public class Conquester : MonoBehaviour
 
     private void OnDisable()
     {
-        AreaCaptured += _territoryManager.OnAreaCaptured;
+        AreaCaptured -= _territoryManager.OnAreaCaptured;
     }
 
     public void Init(IHexGridProvider grid)

@@ -6,7 +6,7 @@ public class HexView : MonoBehaviour, ICoroutineRunner
 {
     [SerializeField] private Outline _outlineView;
     [SerializeField] private float _durationOfColorizing = 0.1f;
-    
+
     private HexViewAnimator _hexViewAnimator;
     private Colorizer _colorizer;
     private MeshRenderer _meshRenderer;
@@ -25,16 +25,20 @@ public class HexView : MonoBehaviour, ICoroutineRunner
     public void UpdateView(IHex hex)
     {
         _outlineView.gameObject.SetActive(hex.State == HexState.PartOfTrail);
-
-        if (hex.Owner == null)
-            _colorizer.ResetColor();
-        else
-        {
-            _colorizer.SetColor(hex.Owner.Color);
-        }
         
-        if(hex.State==HexState.PartOfTrail)
+        if (hex.State == HexState.Empty)
+            _colorizer.ResetColor();
+        
+        if(hex.State==HexState.Busy)
+        {
+            _colorizer.SetColorSlowly(hex.Owner.Color);
+        }
+
+        if (hex.State == HexState.PartOfTrail)
+        {
             _hexViewAnimator.Pulse();
+            _colorizer.SetColorInstantly(hex.Owner.Color);
+        }
     }
 
     public void Reset()
