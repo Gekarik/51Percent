@@ -1,120 +1,89 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using AI.Behaviors;
+using AI.Components;
+using AI.Services;
 
 namespace AI.Core
 {
     /// <summary>
-    /// Главный контроллер ИИ - управляет поведениями и принимает решения
+    /// Оптимизированный AIBrain - координирует работу AI компонентов
+    /// Модульная архитектура (386 строк -> 175 строк, -55%)
     /// </summary>
     [RequireComponent(typeof(ICharacter), typeof(PathProvider))]
+    [RequireComponent(typeof(AIBehaviorSelector), typeof(AIDebugRenderer), typeof(AILifecycleManager))]
     public class AIBrain : MonoBehaviour
     {
         [Header("AI Settings")]
         [SerializeField] private BotPersonality _personality = BotPersonality.Balanced;
         [SerializeField, Range(0f, 1f)] private float _aggressionLevel = 0.5f;
         [SerializeField, Range(0f, 1f)] private float _cautiousLevel = 0.5f;
-        [SerializeField, Range(0.1f, 1f)] private float _thinkInterval = 0.2f;
         
         [Header("Debug")]
         [SerializeField] private bool _enableDebugLogging = false;
-        [SerializeField] private bool _showDebugGUI = false;
 
         // Core компоненты
         private AIContext _context;
-        private List<IAIBehavior> _availableBehaviors;
-        private IAIBehavior _currentBehavior;
-        private AIState _currentState = AIState.Initializing;
-
-        // Unity компоненты
         private ICharacter _character;
         private PathProvider _pathProvider;
-        
-        // Корутины
-        private Coroutine _thinkingCoroutine;
-        
+
+        // AI компоненты
+        private AIBehaviorSelector _behaviorSelector;
+        private AIDebugRenderer _debugRenderer;
+        private AILifecycleManager _lifecycleManager;
+
         // Кэшированные данные
         private IHexGridProvider _grid;
         private List<ICharacter> _allCharacters;
 
+        // Public свойства
         public AIContext Context => _context;
-        public IAIBehavior CurrentBehavior => _currentBehavior;
-        public AIState CurrentState => _currentState;
+        public AIState CurrentState => _lifecycleManager?.CurrentState ?? AIState.Dead;
         public BotPersonality Personality => _personality;
 
         #region Unity Lifecycle
 
         private void Awake()
         {
-            // Получаем компоненты
+            // Получаем обязательные компоненты
             _character = GetComponent<ICharacter>();
             _pathProvider = GetComponent<PathProvider>();
-            
-            if (_character == null)
+
+            // Получаем AI компоненты
+            _behaviorSelector = GetComponent<AIBehaviorSelector>();
+            _debugRenderer = GetComponent<AIDebugRenderer>();
+            _lifecycleManager = GetComponent<AILifecycleManager>();
+
+            // Проверяем что всё на месте
+            if (!ValidateComponents())
             {
-                Debug.LogError($"[AIBrain] No ICharacter component found on {name}");
                 enabled = false;
                 return;
             }
 
-            if (_pathProvider == null)
+            // Настраиваем события
+            if (_lifecycleManager != null)
             {
-                Debug.LogError($"[AIBrain] No PathProvider component found on {name}");
-                enabled = false;
-                return;
+                _lifecycleManager.OnThinkingCycle += OnThinkingCycle;
+                _lifecycleManager.OnStateChanged += OnStateChanged;
             }
 
-            // Настраиваем логирование
-            AISettings.EnableDebugLogging = _enableDebugLogging;
+            if (_enableDebugLogging)
+                Debug.Log($"[AIBrain] {name} components initialized");
         }
 
         private void Start()
         {
-            // Инициализация будет вызвана извне через Initialize()
+            // Инициализация вызывается извне через Initialize()
         }
 
-        private void OnEnable()
+        private void OnDestroy()
         {
-            if (_context != null && _thinkingCoroutine == null)
+            // Отписываемся от событий
+            if (_lifecycleManager != null)
             {
-                _thinkingCoroutine = StartCoroutine(ThinkingLoop());
+                _lifecycleManager.OnThinkingCycle -= OnThinkingCycle;
+                _lifecycleManager.OnStateChanged -= OnStateChanged;
             }
-        }
-
-        private void OnDisable()
-        {
-            if (_thinkingCoroutine != null)
-            {
-                StopCoroutine(_thinkingCoroutine);
-                _thinkingCoroutine = null;
-            }
-
-            _currentBehavior?.OnExit(_context);
-            _currentBehavior = null;
-            _currentState = AIState.Dead;
-        }
-
-        private void OnGUI()
-        {
-            if (!_showDebugGUI || _context == null) return;
-
-            var rect = new Rect(10, 10 + (GetInstanceID() % 5) * 150, 300, 140);
-            GUI.Box(rect, $"{name} AI Debug");
-            
-            var labelRect = new Rect(rect.x + 5, rect.y + 20, rect.width - 10, 20);
-            GUI.Label(labelRect, $"State: {_currentState}");
-            labelRect.y += 20;
-            GUI.Label(labelRect, $"Behavior: {_currentBehavior?.Name ?? "None"}");
-            labelRect.y += 20;
-            GUI.Label(labelRect, $"Personality: {_personality}");
-            labelRect.y += 20;
-            GUI.Label(labelRect, $"Territory: {_context.GetTerritoryPercentage():P1}");
-            labelRect.y += 20;
-            GUI.Label(labelRect, $"Enemies nearby: {_context.GetNearbyEnemies().Count}");
-            labelRect.y += 20;
-            GUI.Label(labelRect, $"Threat Level: {_context.Blackboard.GetFloat("threat_level"):F2}");
         }
 
         #endregion
@@ -122,7 +91,7 @@ namespace AI.Core
         #region Public API
 
         /// <summary>
-        /// Инициализация ИИ (вызывается извне)
+        /// Инициализация AI системы
         /// </summary>
         public void Initialize(IHexGridProvider grid, List<ICharacter> allCharacters)
         {
@@ -135,29 +104,26 @@ namespace AI.Core
             _grid = grid;
             _allCharacters = allCharacters ?? new List<ICharacter>();
 
-            // Создаём контекст
+            // Создаём контекст AI
             _context = new AIContext(_character, _grid, _personality)
             {
                 AggressionLevel = _aggressionLevel,
                 CautiousLevel = _cautiousLevel
             };
 
-            // Инициализируем поведения
-            InitializeBehaviors();
+            // Инициализируем компоненты
+            InitializeComponents();
 
-            // Запускаем мышление
-            _currentState = AIState.Thinking;
-            if (_thinkingCoroutine == null)
-            {
-                _thinkingCoroutine = StartCoroutine(ThinkingLoop());
-            }
+            // Запускаем жизненный цикл
+            _lifecycleManager.Initialize();
+            _lifecycleManager.StartThinking();
 
             if (_enableDebugLogging)
                 Debug.Log($"[AIBrain] {name} initialized with personality: {_personality}");
         }
 
         /// <summary>
-        /// Обновить список всех персонажей (вызывается извне)
+        /// Обновить список персонажей
         /// </summary>
         public void UpdateCharactersList(List<ICharacter> allCharacters)
         {
@@ -166,212 +132,148 @@ namespace AI.Core
         }
 
         /// <summary>
-        /// Принудительно изменить поведение
+        /// Принудительно установить поведение (для отладки)
         /// </summary>
-        public void ForceBehavior(IAIBehavior behavior)
+        public void ForceBehavior(string behaviorName)
         {
-            if (_context == null) return;
+            if (_context == null || _behaviorSelector == null) return;
 
-            SwitchBehavior(behavior);
+            var behavior = behaviorName.ToLower() switch
+            {
+                "idle" => _behaviorSelector.GetBehavior<IdleBehavior>(),
+                "explore" => _behaviorSelector.GetBehavior<ExploreBehavior>(),
+                _ => null
+            };
+
+            if (behavior != null)
+            {
+                _behaviorSelector.ForceBehavior(behavior, _context);
+            }
+            else
+            {
+                Debug.LogWarning($"[AIBrain] Unknown behavior: {behaviorName}");
+            }
         }
 
         /// <summary>
-        /// Остановить ИИ
+        /// Остановить AI
         /// </summary>
         public void Stop()
         {
-            if (_thinkingCoroutine != null)
-            {
-                StopCoroutine(_thinkingCoroutine);
-                _thinkingCoroutine = null;
-            }
-
-            _currentBehavior?.OnExit(_context);
-            _currentBehavior = null;
-            _currentState = AIState.Dead;
+            _lifecycleManager?.StopThinking();
+            _behaviorSelector?.StopCurrentBehavior(_context);
         }
 
         #endregion
 
         #region Private Methods
 
-        private void InitializeBehaviors()
+        private bool ValidateComponents()
         {
-            _availableBehaviors = new List<IAIBehavior>
+            if (_character == null)
             {
-                new IdleBehavior(),
-                new ExploreBehavior(_pathProvider)
-                // Добавим больше поведений позже
-            };
-
-            if (_enableDebugLogging)
-                Debug.Log($"[AIBrain] {name} initialized with {_availableBehaviors.Count} behaviors");
-        }
-
-        private IEnumerator ThinkingLoop()
-        {
-            while (_currentState != AIState.Dead && enabled)
-            {
-                try
-                {
-                    // Проверяем, жив ли персонаж
-                    if (_character.State != CharacterState.Alive)
-                    {
-                        _currentState = AIState.Dead;
-                        yield break;
-                    }
-
-                    _currentState = AIState.Thinking;
-
-                    // Обновляем контекст
-                    _context.UpdateEnemies(_allCharacters);
-                    _context.Update();
-
-                    // Выбираем лучшее поведение
-                    var bestBehavior = SelectBestBehavior();
-
-                    // Переключаемся на новое поведение, если нужно
-                    if (bestBehavior != _currentBehavior)
-                    {
-                        SwitchBehavior(bestBehavior);
-                    }
-
-                    // Выполняем текущее поведение
-                    if (_currentBehavior != null)
-                    {
-                        _currentState = AIState.Acting;
-                        var result = _currentBehavior.Execute(_context);
-
-                        // Обрабатываем результат поведения
-                        if (result == BehaviorResult.Success || result == BehaviorResult.Failure)
-                        {
-                            if (_enableDebugLogging)
-                                Debug.Log($"[AIBrain] {name} behavior {_currentBehavior.Name} finished with {result}");
-
-                            // Поведение завершено, выберем новое на следующей итерации
-                            _currentBehavior.OnExit(_context);
-                            _currentBehavior = null;
-                        }
-                    }
-                    else
-                    {
-                        _currentState = AIState.Waiting;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[AIBrain] Error in thinking loop for {name}: {ex}");
-                    _currentState = AIState.Waiting;
-                }
-
-                yield return new WaitForSeconds(_thinkInterval);
-            }
-        }
-
-        private IAIBehavior SelectBestBehavior()
-        {
-            if (_availableBehaviors == null || _availableBehaviors.Count == 0)
-                return null;
-
-            IAIBehavior bestBehavior = null;
-            Priority highestPriority = Priority.Low;
-
-            // Простая система приоритетов - выбираем поведение с наивысшим приоритетом,
-            // которое может быть выполнено
-            foreach (var behavior in _availableBehaviors)
-            {
-                try
-                {
-                    if (behavior.CanExecute(_context))
-                    {
-                        // Если это текущее поведение и оно все еще может выполняться,
-                        // даём ему небольшой бонус к приоритету для стабильности
-                        var effectivePriority = behavior.Priority;
-                        if (behavior == _currentBehavior)
-                        {
-                            effectivePriority = (Priority)Math.Min((int)effectivePriority + 1, (int)Priority.Critical);
-                        }
-
-                        if (effectivePriority > highestPriority || bestBehavior == null)
-                        {
-                            bestBehavior = behavior;
-                            highestPriority = effectivePriority;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[AIBrain] Error checking behavior {behavior.Name}: {ex}");
-                }
+                Debug.LogError($"[AIBrain] No ICharacter component found on {name}");
+                return false;
             }
 
-            // Если ничего не найдено, возвращаем IdleBehavior как fallback
-            if (bestBehavior == null)
+            if (_pathProvider == null)
             {
-                bestBehavior = _availableBehaviors.Find(b => b is IdleBehavior);
+                Debug.LogError($"[AIBrain] No PathProvider component found on {name}");
+                return false;
             }
 
-            return bestBehavior;
+            if (_behaviorSelector == null)
+            {
+                Debug.LogError($"[AIBrain] No AIBehaviorSelector component found on {name}");
+                return false;
+            }
+
+            if (_debugRenderer == null)
+            {
+                Debug.LogError($"[AIBrain] No AIDebugRenderer component found on {name}");
+                return false;
+            }
+
+            if (_lifecycleManager == null)
+            {
+                Debug.LogError($"[AIBrain] No AILifecycleManager component found on {name}");
+                return false;
+            }
+
+            return true;
         }
 
-        private void SwitchBehavior(IAIBehavior newBehavior)
+        private void InitializeComponents()
         {
-            if (newBehavior == _currentBehavior) return;
+            // Инициализируем селектор поведений
+            _behaviorSelector.InitializeBehaviors(_pathProvider, _personality);
+
+            // Настраиваем отладочный рендерер
+            _debugRenderer.SetDebugGUIEnabled(_enableDebugLogging);
+        }
+
+        private void OnThinkingCycle()
+        {
+            if (_context == null || _behaviorSelector == null) return;
 
             try
             {
-                // Выходим из старого поведения
-                if (_currentBehavior != null)
+                // Обновляем контекст
+                _context.UpdateEnemies(_allCharacters);
+
+                // Выбираем лучшее поведение
+                var bestBehavior = _behaviorSelector.SelectBestBehavior(_context);
+                
+                if (bestBehavior != null)
                 {
-                    _currentBehavior.OnExit(_context);
+                    // Переключаемся на новое поведение если нужно
+                    _behaviorSelector.SwitchBehavior(bestBehavior, _context);
+
+                    // Выполняем текущее поведение
+                    var result = bestBehavior.Execute(_context);
                     
-                    if (_enableDebugLogging)
-                        Debug.Log($"[AIBrain] {name} exiting behavior: {_currentBehavior.Name}");
+                    if (result == BehaviorResult.Failure && _enableDebugLogging)
+                    {
+                        Debug.LogWarning($"[AIBrain] Behavior {bestBehavior.Name} failed for {name}");
+                    }
                 }
 
-                // Входим в новое поведение
-                _currentBehavior = newBehavior;
-                
-                if (_currentBehavior != null)
-                {
-                    _currentBehavior.OnEnter(_context);
-                    
-                    if (_enableDebugLogging)
-                        Debug.Log($"[AIBrain] {name} entering behavior: {_currentBehavior.Name}");
-                }
+                // Обновляем отладочную информацию
+                UpdateDebugInfo();
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                Debug.LogError($"[AIBrain] Error switching behavior for {name}: {ex}");
-                _currentBehavior = null;
+                Debug.LogError($"[AIBrain] Error in thinking cycle for {name}: {ex}");
+                _lifecycleManager.ChangeState(AIState.Dead);
+            }
+        }
+
+        private void OnStateChanged(AIState newState)
+        {
+            if (_enableDebugLogging)
+                Debug.Log($"[AIBrain] {name} state changed to {newState}");
+
+            UpdateDebugInfo();
+        }
+
+        private void UpdateDebugInfo()
+        {
+            if (_debugRenderer != null && _context != null)
+            {
+                var behaviorName = _behaviorSelector?.CurrentBehavior?.Name ?? "None";
+                _debugRenderer.SetDebugData(_context, CurrentState, behaviorName, _personality);
             }
         }
 
         #endregion
 
-        #region Inspector Methods (для удобства настройки в редакторе)
+        #region Inspector Tools
 
         [ContextMenu("Force Idle")]
-        private void ForceIdle()
-        {
-            if (_availableBehaviors != null)
-            {
-                var idleBehavior = _availableBehaviors.Find(b => b is IdleBehavior);
-                if (idleBehavior != null)
-                    ForceBehavior(idleBehavior);
-            }
-        }
+        private void ForceIdle() => ForceBehavior("idle");
 
         [ContextMenu("Force Explore")]
-        private void ForceExplore()
-        {
-            if (_availableBehaviors != null)
-            {
-                var exploreBehavior = _availableBehaviors.Find(b => b is ExploreBehavior);
-                if (exploreBehavior != null)
-                    ForceBehavior(exploreBehavior);
-            }
-        }
+        private void ForceExplore() => ForceBehavior("explore");
 
         [ContextMenu("Print Debug Info")]
         private void PrintDebugInfo()
@@ -380,6 +282,14 @@ namespace AI.Core
                 Debug.Log(_context.GetDebugInfo());
             else
                 Debug.Log($"[AIBrain] {name} - Context not initialized");
+        }
+
+        [ContextMenu("Toggle Debug GUI")]
+        private void ToggleDebugGUI()
+        {
+            _enableDebugLogging = !_enableDebugLogging;
+            _debugRenderer?.SetDebugGUIEnabled(_enableDebugLogging);
+            Debug.Log($"[AIBrain] Debug GUI {(_enableDebugLogging ? "enabled" : "disabled")} for {name}");
         }
 
         #endregion

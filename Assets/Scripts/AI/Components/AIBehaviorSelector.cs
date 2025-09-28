@@ -30,7 +30,7 @@ namespace AI.Components
             _availableBehaviors = new List<IAIBehavior>
             {
                 new IdleBehavior(pathProvider),
-                new ExploreBehaviorNew(pathProvider)  // Используем новую оптимизированную версию
+                new ExploreBehavior(pathProvider)
                 // TODO: Добавить другие поведения когда будут готовы
                 // new AttackBehavior(pathProvider),
                 // new DefendBehavior(pathProvider),

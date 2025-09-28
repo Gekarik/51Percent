@@ -26,8 +26,8 @@
 ```
 Assets/Scripts/AI/
 ├── Core/                           # Основные классы
-│   ├── AIBrainNew.cs              # Главный координатор AI (175 строк)
-│   ├── AIManagerNew.cs            # Менеджер AI системы (150 строк)
+│   ├── AIBrain.cs                 # Главный координатор AI (175 строк)
+│   ├── AIManager.cs               # Менеджер AI системы (150 строк)
 │   ├── AIContext.cs               # Контекст и анализ ситуации
 │   ├── AIEnums.cs                 # Перечисления и константы
 │   └── Blackboard.cs              # Общая память для AI
@@ -45,7 +45,7 @@ Assets/Scripts/AI/
 ├── Behaviors/                      # Поведения ботов
 │   ├── BaseBehavior.cs            # Базовый класс поведений
 │   ├── IdleBehavior.cs            # Поведение ожидания
-│   └── ExploreBehaviorNew.cs      # Новое поведение исследования (120 строк)
+│   └── ExploreBehavior.cs      # Новое поведение исследования (120 строк)
 └── NewAIEnemy.cs                  # Класс AI врага
 ```
 
@@ -56,7 +56,7 @@ Assets/Scripts/AI/
 ```csharp
 // В сцене создаём GameObject с компонентами:
 AIManager (GameObject)
-├── AIManagerNew.cs
+├── AIManager.cs
 ├── AIBotRegistry.cs  
 └── AIStatisticsCollector.cs
 ```
@@ -78,7 +78,7 @@ AIServiceContainer (GameObject)
 // На каждом боте:
 Enemy (GameObject)
 ├── NewAIEnemy.cs
-├── AIBrainNew.cs
+├── AIBrain.cs
 ├── AIBehaviorSelector.cs
 ├── AIDebugRenderer.cs
 ├── AILifecycleManager.cs
@@ -90,7 +90,7 @@ Enemy (GameObject)
 
 ```csharp
 // AIManager автоматически найдёт всех ботов и инициализирует их
-var aiManager = FindObjectOfType<AIManagerNew>();
+var aiManager = FindObjectOfType<AIManager>();
 aiManager.RefreshSystem(); // Принудительное обновление если нужно
 ```
 
@@ -208,8 +208,8 @@ aiManager.GetComponent<AIStatisticsCollector>().UpdateStatistics();
 
 Все компоненты имеют контекстные меню в Inspector:
 
-- **AIBrainNew**: "Force Idle", "Force Explore", "Print Debug Info"
-- **AIManagerNew**: "Refresh AI System", "Test Service Integration" 
+- **AIBrain**: "Force Idle", "Force Explore", "Print Debug Info"
+- **AIManager**: "Refresh AI System", "Test Service Integration" 
 - **AIServiceContainer**: "Validate Services", "Reinitialize Services"
 
 ### **Логирование**
@@ -273,7 +273,7 @@ public void Services_AreProperlyInitialized()
 
 ```csharp
 // Заменить на ботах:
-AIBrain → AIBrainNew + компоненты
+AIBrain → AIBrain + компоненты
 EnemyAIController → NewAIEnemy
 ```
 
@@ -288,7 +288,7 @@ AIServiceContainer с сервисами
 
 ```csharp
 // Заменить:
-AIManager → AIManagerNew + компоненты
+AIManager → AIManager + компоненты
 ```
 
 ## 🔮 Планы Развития
