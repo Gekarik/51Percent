@@ -275,9 +275,12 @@ public class AdaptiveBotController : MonoBehaviour
         IHex targetHex = null;
         float minDistance = float.MaxValue;
         int emptyHexesFound = 0;
-        float maxAllowedDistance = _config.maxTrailLength * _grid.CellDiameter;
         
-        Debug.Log($"Bot {gameObject.name} search params: maxTrailLength={_config.maxTrailLength}, cellDiameter={_grid.CellDiameter:F2}, maxDistance={maxAllowedDistance:F2}");
+        // Используем реальное расстояние между соседними гексами для более точного расчета
+        float actualHexDistance = CalculateAverageNeighborDistance(startHex);
+        float maxAllowedDistance = _config.maxTrailLength * actualHexDistance;
+        
+        Debug.Log($"Bot {gameObject.name} search params: maxTrailLength={_config.maxTrailLength}, cellDiameter={_grid.CellDiameter:F2}, actualHexDistance={actualHexDistance:F2}, maxDistance={maxAllowedDistance:F2}");
         
         // Сначала ищем в заданном радиусе
         foreach (var hex in _grid.AllHexes)
@@ -367,5 +370,29 @@ public class AdaptiveBotController : MonoBehaviour
     {
         // Упрощенная версия - возвращаемся к ближайшей точке территории
         return CreateEscapePath();
+    }
+    
+    /// <summary>
+    /// Вычисляет среднее расстояние до соседних гексов для более точного планирования
+    /// </summary>
+    private float CalculateAverageNeighborDistance(IHex startHex)
+    {
+        var neighbors = _grid.GetNeighbors(startHex).ToList();
+        if (neighbors.Count == 0)
+        {
+            // Fallback на CellDiameter если нет соседей
+            Debug.LogWarning($"No neighbors found for hex, using CellDiameter: {_grid.CellDiameter}");
+            return _grid.CellDiameter;
+        }
+        
+        float totalDistance = 0f;
+        foreach (var neighbor in neighbors)
+        {
+            totalDistance += Vector3.Distance(startHex.transform.position, neighbor.transform.position);
+        }
+        
+        float averageDistance = totalDistance / neighbors.Count;
+        Debug.Log($"Calculated average neighbor distance: {averageDistance:F2} from {neighbors.Count} neighbors");
+        return averageDistance;
     }
 }
