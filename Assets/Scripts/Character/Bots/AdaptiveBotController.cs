@@ -238,12 +238,28 @@ public class AdaptiveBotController : MonoBehaviour
                 
             case BotState.Collect:
             case BotState.Attack:
+                // Проверяем, завершено ли движение
+                if (_pathProvider.IsDone)
+                {
+                    ChangeState(BotState.Idle);
+                }
+                break;
+                
             case BotState.Expand:
+                // Когда достигли цели расширения, нужно вернуться чтобы зафиксировать территорию
+                if (_pathProvider.IsDone)
+                {
+                    Debug.Log($"Bot {gameObject.name} reached expansion target, returning to base to secure territory");
+                    ChangeState(BotState.Return);
+                }
+                break;
+                
             case BotState.Escape:
             case BotState.Return:
                 // Проверяем, завершено ли движение
                 if (_pathProvider.IsDone)
                 {
+                    Debug.Log($"Bot {gameObject.name} completed {_currentState} state, territory should now be secured");
                     ChangeState(BotState.Idle);
                 }
                 break;
@@ -361,12 +377,87 @@ public class AdaptiveBotController : MonoBehaviour
     }
     
     /// <summary>
-    /// Создает путь для возврата на территорию
+    /// Создает дуговой путь для возврата на территорию
     /// </summary>
     private List<IHex> CreateReturnPath()
     {
-        // Упрощенная версия - возвращаемся к ближайшей точке территории
-        return CreateEscapePath();
+        var ownedHexes = _conquester.FixedHexes;
+        if (ownedHexes.Count == 0) 
+        {
+            Debug.LogWarning($"Bot {gameObject.name} has no owned hexes for return!");
+            return null;
+        }
+        
+        // Находим ближайшую точку нашей территории
+        var targetHex = ownedHexes.OrderBy(h => Vector3.Distance(transform.position, h.transform.position)).First() as IHex;
+        var currentPos = transform.position;
+        var targetPos = targetHex.transform.position;
+        
+        // Создаем дуговой путь с помощью синуса
+        List<Vector3> arcPoints = CreateArcPath(currentPos, targetPos, _config.maxTrailLength / 3);
+        
+        // Конвертируем точки дуги в гексы
+        List<IHex> returnPath = new List<IHex>();
+        
+        foreach (var point in arcPoints)
+        {
+            // Находим ближайший гекс к точке дуги
+            var closestHex = _grid.AllHexes.OrderBy(h => Vector3.Distance(h.transform.position, point)).First();
+            
+            // Добавляем только если это не дубликат и не наш гекс
+            if (returnPath.Count == 0 || returnPath.Last() != closestHex)
+            {
+                returnPath.Add(closestHex);
+            }
+        }
+        
+        Debug.Log($"Bot {gameObject.name} created arc return path with {returnPath.Count} waypoints");
+        return returnPath;
+    }
+    
+    /// <summary>
+    /// Создает дуговой путь между двумя точками используя синус
+    /// </summary>
+    private List<Vector3> CreateArcPath(Vector3 start, Vector3 end, int numPoints)
+    {
+        List<Vector3> arcPoints = new List<Vector3>();
+        
+        if (numPoints < 2)
+        {
+            arcPoints.Add(start);
+            arcPoints.Add(end);
+            return arcPoints;
+        }
+        
+        Vector3 direction = (end - start).normalized;
+        float distance = Vector3.Distance(start, end);
+        
+        // Создаем перпендикулярный вектор для дуги (в плоскости XZ)
+        Vector3 perpendicular = new Vector3(-direction.z, 0, direction.x);
+        
+        // Амплитуда дуги (случайная сторона и высота)
+        float amplitude = distance * 0.3f; // 30% от расстояния
+        int side = _random.Next(0, 2) == 0 ? -1 : 1; // Случайная сторона дуги
+        amplitude *= side;
+        
+        for (int i = 0; i <= numPoints; i++)
+        {
+            float t = (float)i / numPoints; // От 0 до 1
+            
+            // Линейная интерполяция базовой точки
+            Vector3 basePoint = Vector3.Lerp(start, end, t);
+            
+            // Синусоидальное отклонение (максимум в середине пути)
+            float sineOffset = Mathf.Sin(t * Mathf.PI) * amplitude;
+            
+            // Добавляем отклонение перпендикулярно направлению
+            Vector3 arcPoint = basePoint + perpendicular * sineOffset;
+            
+            arcPoints.Add(arcPoint);
+        }
+        
+        Debug.Log($"Created arc path with {arcPoints.Count} points, amplitude: {amplitude:F2}");
+        return arcPoints;
     }
 
 }
