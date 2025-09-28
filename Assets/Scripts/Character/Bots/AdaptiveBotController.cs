@@ -271,21 +271,63 @@ public class AdaptiveBotController : MonoBehaviour
             return null;
         }
         
-        // Ищем ближайший свободный гекс в радиусе
+        // Ищем ближайший свободный гекс
         IHex targetHex = null;
         float minDistance = float.MaxValue;
         int emptyHexesFound = 0;
+        float maxAllowedDistance = _config.maxTrailLength * _grid.CellDiameter;
         
+        Debug.Log($"Bot {gameObject.name} search params: maxTrailLength={_config.maxTrailLength}, cellDiameter={_grid.CellDiameter:F2}, maxDistance={maxAllowedDistance:F2}");
+        
+        // Сначала ищем в заданном радиусе
         foreach (var hex in _grid.AllHexes)
         {
             if (hex.State != HexState.Empty) continue;
             emptyHexesFound++;
             
             float distance = Vector3.Distance(startHex.transform.position, hex.transform.position);
-            if (distance < minDistance && distance <= _config.maxTrailLength * _grid.CellDiameter)
+            if (distance < minDistance && distance <= maxAllowedDistance)
             {
                 minDistance = distance;
                 targetHex = hex;
+            }
+        }
+        
+        // Если в радиусе ничего не нашли, берем просто ближайший пустой гекс
+        if (targetHex == null)
+        {
+            Debug.LogWarning($"Bot {gameObject.name} no hexes in range {maxAllowedDistance:F2}, searching for any closest empty hex");
+            minDistance = float.MaxValue;
+            
+            foreach (var hex in _grid.AllHexes)
+            {
+                if (hex.State != HexState.Empty) continue;
+                
+                float distance = Vector3.Distance(startHex.transform.position, hex.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    targetHex = hex;
+                }
+            }
+        }
+        
+        // Если все еще ничего не нашли, пробуем любые гексы (не только Empty)
+        if (targetHex == null)
+        {
+            Debug.LogError($"Bot {gameObject.name} no empty hexes found! Trying any hex not owned by self");
+            minDistance = float.MaxValue;
+            
+            foreach (var hex in _grid.AllHexes)
+            {
+                if (hex.Owner == _character) continue; // Не идем на свои гексы
+                
+                float distance = Vector3.Distance(startHex.transform.position, hex.transform.position);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    targetHex = hex;
+                }
             }
         }
         

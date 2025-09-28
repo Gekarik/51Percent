@@ -13,7 +13,7 @@ public class BotStateConfig
     [Header("Behavior Settings")]
     [Range(0.1f, 3f)] public float idleTime = 1f;
     [Range(1f, 10f)] public float detectionRange = 5f;
-    [Range(2, 8)] public int maxTrailLength = 5;
+    [Range(2, 20)] public int maxTrailLength = 10;
     
     [Header("Aggression Levels (0-100)")]
     [Range(0, 100)] public int overallAggression = 50;
