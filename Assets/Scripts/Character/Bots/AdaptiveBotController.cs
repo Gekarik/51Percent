@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 
 /// <summary>
@@ -37,19 +36,6 @@ public class AdaptiveBotController : MonoBehaviour
         
         // Инициализируем рандом с уникальным семенем для каждого бота
         _random = new System.Random(GetInstanceID());
-        
-        // Настраиваем скорость движения
-        var mover = GetComponent<Mover>();
-        if (mover != null)
-        {
-            // Используем рефлексию для установки приватного поля _speed
-            var speedField = typeof(Mover).GetField("_speed", BindingFlags.NonPublic | BindingFlags.Instance);
-            if (speedField != null)
-            {
-                speedField.SetValue(mover, _config.movementSpeed);
-                Debug.Log($"Bot {gameObject.name} speed set to {_config.movementSpeed}");
-            }
-        }
     }
     
     public void Init(IHexGridProvider gridProvider)
@@ -291,7 +277,7 @@ public class AdaptiveBotController : MonoBehaviour
         int emptyHexesFound = 0;
         
         // Используем реальное расстояние между соседними гексами для более точного расчета
-        float actualHexDistance = CalculateAverageNeighborDistance(startHex);
+        float actualHexDistance = CalculateRealHexSpacing();
         float maxAllowedDistance = _config.maxTrailLength * actualHexDistance;
         
         Debug.Log($"Bot {gameObject.name} search params: maxTrailLength={_config.maxTrailLength}, cellDiameter={_grid.CellDiameter:F2}, actualHexDistance={actualHexDistance:F2}, maxDistance={maxAllowedDistance:F2}");
@@ -387,26 +373,37 @@ public class AdaptiveBotController : MonoBehaviour
     }
     
     /// <summary>
-    /// Вычисляет среднее расстояние до соседних гексов для более точного планирования
+    /// Вычисляет реальное расстояние для планирования путей.
+    /// GridSpawner применяет двойное масштабирование: в формулах позиций И в localScale
     /// </summary>
-    private float CalculateAverageNeighborDistance(IHex startHex)
+    private float CalculateRealHexSpacing()
     {
-        var neighbors = _grid.GetNeighbors(startHex).ToList();
-        if (neighbors.Count == 0)
+        // Найдем минимальное расстояние между любыми двумя гексами
+        float minDistance = float.MaxValue;
+        var allHexes = _grid.AllHexes.ToList();
+        
+        // Ограничиваем выборку для производительности
+        int sampleSize = Mathf.Min(20, allHexes.Count);
+        
+        for (int i = 0; i < sampleSize; i++)
         {
-            // Fallback на CellDiameter если нет соседей
-            Debug.LogWarning($"No neighbors found for hex, using CellDiameter: {_grid.CellDiameter}");
+            for (int j = i + 1; j < sampleSize; j++)
+            {
+                float distance = Vector3.Distance(allHexes[i].transform.position, allHexes[j].transform.position);
+                if (distance > 0.001f && distance < minDistance) // Исключаем нулевые расстояния
+                {
+                    minDistance = distance;
+                }
+            }
+        }
+        
+        if (minDistance == float.MaxValue)
+        {
+            Debug.LogWarning($"Could not calculate real hex spacing, fallback to CellDiameter: {_grid.CellDiameter}");
             return _grid.CellDiameter;
         }
         
-        float totalDistance = 0f;
-        foreach (var neighbor in neighbors)
-        {
-            totalDistance += Vector3.Distance(startHex.transform.position, neighbor.transform.position);
-        }
-        
-        float averageDistance = totalDistance / neighbors.Count;
-        Debug.Log($"Calculated average neighbor distance: {averageDistance:F2} from {neighbors.Count} neighbors");
-        return averageDistance;
+        Debug.Log($"Real hex spacing calculated: {minDistance:F2} (vs CellDiameter: {_grid.CellDiameter:F2})");
+        return minDistance;
     }
 }

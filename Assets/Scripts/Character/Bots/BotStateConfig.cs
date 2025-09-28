@@ -14,7 +14,6 @@ public class BotStateConfig
     [Range(0.1f, 3f)] public float idleTime = 1f;
     [Range(1f, 10f)] public float detectionRange = 5f;
     [Range(2, 30)] public int maxTrailLength = 20;
-    [Range(1f, 8f)] public float movementSpeed = 3f;
     
     [Header("Aggression Levels (0-100)")]
     [Range(0, 100)] public int overallAggression = 50;
