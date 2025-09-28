@@ -56,7 +56,7 @@ public class IoGameBot : CharacterAbstract
     private IEnumerator BotLoop()
     {
         // Рандомная задержка для распределения нагрузки
-        yield return new WaitForSeconds(_random.NextSingle() * 0.5f);
+        yield return new WaitForSeconds(_random.Next(0, 100) / 100f * 0.5f);
         
         while (State == CharacterState.Alive)
         {
@@ -138,10 +138,14 @@ public class IoGameBot : CharacterAbstract
         
         // Проверяем критические монетки рядом
         var criticalResource = FindNearbyResource();
-        if (criticalResource != null && Vector3.Distance(transform.position, criticalResource.transform.position) < _config.collectRadius * 0.5f)
+        if (criticalResource != null)
         {
-            SetCollectTarget(criticalResource);
-            return;
+            var resourceTransform = (criticalResource as MonoBehaviour)?.transform;
+            if (resourceTransform != null && Vector3.Distance(transform.position, resourceTransform.position) < _config.collectRadius * 0.5f)
+            {
+                SetCollectTarget(criticalResource);
+                return;
+            }
         }
     }
     
@@ -158,7 +162,22 @@ public class IoGameBot : CharacterAbstract
     {
         // Проверяем завершение сбора или недоступность ресурса
         var resource = FindNearbyResource();
-        if (resource == null || Vector3.Distance(transform.position, resource.transform.position) > _config.collectRadius)
+        if (resource == null)
+        {
+            // Решаем что делать дальше
+            if (IsOnOwnTerritory())
+            {
+                _currentState = BotState.Home;
+            }
+            else
+            {
+                StartReturnHome();
+            }
+            return;
+        }
+        
+        var resourceTransform = (resource as MonoBehaviour)?.transform;
+        if (resourceTransform == null || Vector3.Distance(transform.position, resourceTransform.position) > _config.collectRadius)
         {
             // Решаем что делать дальше
             if (IsOnOwnTerritory())
@@ -216,7 +235,7 @@ public class IoGameBot : CharacterAbstract
             
             // Добавляем кривизну (синусоида + случайность)
             float curveOffset = Mathf.Sin(t * Mathf.PI) * curvature;
-            curveOffset += (_random.NextSingle() - 0.5f) * curvature * 0.3f; // 30% случайности
+            curveOffset += (_random.Next(0, 100) / 100f - 0.5f) * curvature * 0.3f; // 30% случайности
             
             // Перпендикулярное направление для кривизны
             Vector3 perpendicular = new Vector3(-direction.z, 0, direction.x);
