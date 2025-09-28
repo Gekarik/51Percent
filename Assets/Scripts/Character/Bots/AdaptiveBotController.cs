@@ -11,6 +11,7 @@ using UnityEngine;
 public class AdaptiveBotController : MonoBehaviour
 {
     [SerializeField] private BotStateConfig _config = new BotStateConfig();
+    [SerializeField] private bool _enableDebugLogs = false;
     
     private Conquester _conquester;
     private AdaptivePathProvider _pathProvider;
@@ -79,11 +80,15 @@ public class AdaptiveBotController : MonoBehaviour
     {
         Vector3 position = transform.position;
         
+        // Debug информация
+        if (_enableDebugLogs) Debug.Log($"Bot {gameObject.name} deciding state. Current: {_currentState}, Timer: {_stateTimer:F1}");
+        
         // 1. Проверяем критические ситуации (побег)
         if (_analyzer.IsThreatenedByEnemy(_character, position, _config.detectionRange))
         {
             if (_random.Next(0, 100) < _config.escapeThreshold)
             {
+                Debug.Log($"Bot {gameObject.name} escaping from threat!");
                 ChangeState(BotState.Escape);
                 return;
             }
@@ -110,6 +115,7 @@ public class AdaptiveBotController : MonoBehaviour
             }
             
             statePriorities[state] = priority;
+            if (_enableDebugLogs) Debug.Log($"State {state} priority: {priority}");
         }
         
         // 3. Выбираем состояние с наивысшим приоритетом
@@ -125,10 +131,18 @@ public class AdaptiveBotController : MonoBehaviour
             }
         }
         
-        // 4. Меняем состояние, если приоритет достаточно высок
+        if (_enableDebugLogs) Debug.Log($"Best state: {bestState} with priority {maxPriority}");
+        
+        // 4. Меняем состояние, если приоритет достаточно высок или долго в idle
         if (maxPriority > 30 || _stateTimer > _config.idleTime * 2)
         {
             ChangeState(bestState);
+        }
+        else if (maxPriority <= 30)
+        {
+            // Принудительно активируем Expand если нет других приоритетов
+            if (_enableDebugLogs) Debug.Log($"Forcing Expand state due to low priorities");
+            ChangeState(BotState.Expand);
         }
     }
     
@@ -241,19 +255,31 @@ public class AdaptiveBotController : MonoBehaviour
     private List<IHex> CreateExpansionPath()
     {
         var ownedHexes = _conquester.FixedHexes;
-        if (ownedHexes.Count == 0) return null;
+        Debug.Log($"Bot {gameObject.name} CreateExpansionPath: owned hexes count = {ownedHexes.Count}");
+        
+        if (ownedHexes.Count == 0) 
+        {
+            Debug.LogWarning($"Bot {gameObject.name} has no owned hexes! Cannot expand.");
+            return null;
+        }
         
         // Упрощенный алгоритм без сложного pathfinding для производительности
         var startHex = ownedHexes.FirstOrDefault() as IHex;
-        if (startHex == null) return null;
+        if (startHex == null) 
+        {
+            Debug.LogWarning($"Bot {gameObject.name} start hex is null!");
+            return null;
+        }
         
         // Ищем ближайший свободный гекс в радиусе
         IHex targetHex = null;
         float minDistance = float.MaxValue;
+        int emptyHexesFound = 0;
         
         foreach (var hex in _grid.AllHexes)
         {
             if (hex.State != HexState.Empty) continue;
+            emptyHexesFound++;
             
             float distance = Vector3.Distance(startHex.transform.position, hex.transform.position);
             if (distance < minDistance && distance <= _config.maxTrailLength * _grid.CellDiameter)
@@ -263,10 +289,18 @@ public class AdaptiveBotController : MonoBehaviour
             }
         }
         
-        if (targetHex == null) return null;
+        Debug.Log($"Bot {gameObject.name} found {emptyHexesFound} empty hexes, target distance: {minDistance:F2}");
+        
+        if (targetHex == null) 
+        {
+            Debug.LogWarning($"Bot {gameObject.name} no suitable target hex found!");
+            return null;
+        }
         
         // Создаем простой прямой путь вместо A*
-        return new List<IHex> { startHex, targetHex };
+        var path = new List<IHex> { startHex, targetHex };
+        Debug.Log($"Bot {gameObject.name} created expansion path with {path.Count} waypoints");
+        return path;
     }
     
     /// <summary>

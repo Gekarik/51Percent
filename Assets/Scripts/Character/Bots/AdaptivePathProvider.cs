@@ -73,6 +73,7 @@ public class AdaptivePathProvider : VectorProviderComponent
     {
         Vector3 targetPosition = Vector3.zero;
         bool hasTarget = false;
+        string targetType = "none";
         
         // Приоритет: ресурс > конкретный гекс > путь из точек
         if (_targetResource != null && _targetResource is MonoBehaviour resourceMb)
@@ -82,25 +83,30 @@ public class AdaptivePathProvider : VectorProviderComponent
             {
                 targetPosition = resourceMb.transform.position;
                 hasTarget = true;
+                targetType = "resource";
             }
             else
             {
                 _targetResource = null; // Ресурс собран, сбрасываем цель
+                Debug.Log($"Bot {gameObject.name}: Resource target lost (collected)");
             }
         }
         else if (_targetHex != null)
         {
             targetPosition = _targetHex.transform.position;
             hasTarget = true;
+            targetType = "hex";
         }
         else if (_currentWaypoint < _waypoints.Count)
         {
             targetPosition = _waypoints[_currentWaypoint];
             hasTarget = true;
+            targetType = $"waypoint {_currentWaypoint}/{_waypoints.Count}";
         }
         
         if (!hasTarget)
         {
+            Debug.LogWarning($"Bot {gameObject.name}: No target found! Resource: {_targetResource != null}, Hex: {_targetHex != null}, Waypoints: {_waypoints.Count}");
             return Vector3.zero;
         }
         
@@ -108,12 +114,19 @@ public class AdaptivePathProvider : VectorProviderComponent
         Vector3 direction = targetPosition - transform.position;
         direction.y = 0; // Игнорируем высоту
         
+        // Debug информация (только иногда, чтобы не спамить)
+        if (Time.frameCount % 60 == 0) // Каждую секунду
+        {
+            Debug.Log($"Bot {gameObject.name}: Moving to {targetType} at {targetPosition}, distance: {direction.magnitude:F2}");
+        }
+        
         // Проверяем, достигли ли цели
         if (direction.magnitude < _waypointReachDistance)
         {
             if (_targetResource != null || _targetHex != null)
             {
                 // Достигли целевого ресурса/гекса
+                Debug.Log($"Bot {gameObject.name}: Reached {targetType} target");
                 _targetResource = null;
                 _targetHex = null;
             }
@@ -121,6 +134,7 @@ public class AdaptivePathProvider : VectorProviderComponent
             {
                 // Переходим к следующей точке маршрута
                 _currentWaypoint++;
+                Debug.Log($"Bot {gameObject.name}: Advanced to waypoint {_currentWaypoint}");
             }
             
             return Vector3.zero;

@@ -31,20 +31,25 @@ public class SituationAnalyzer
         if (Time.time - _lastCacheUpdate > CACHE_UPDATE_INTERVAL || _cachedResources == null || _cachedEnemies == null)
         {
             // Кэшируем ресурсы (только активные)
-            _cachedResources = Object.FindObjectsOfType<MonoBehaviour>()
+            var resources = Object.FindObjectsOfType<MonoBehaviour>()
                 .OfType<IGrabbable>()
                 .Where(g => g != null && g.State == GrabbableState.Idle)
                 .Take(MAX_SEARCH_ITEMS)
                 .ToArray();
+            _cachedResources = resources ?? new IGrabbable[0];
                 
             // Кэшируем врагов (только живых)
-            _cachedEnemies = Object.FindObjectsOfType<MonoBehaviour>()
+            var enemies = Object.FindObjectsOfType<MonoBehaviour>()
                 .OfType<ICharacter>()
                 .Where(c => c != null && c.State == CharacterState.Alive)
                 .Take(MAX_SEARCH_ITEMS)
                 .ToArray();
+            _cachedEnemies = enemies ?? new ICharacter[0];
                 
             _lastCacheUpdate = Time.time;
+            
+            // Debug информация (только для диагностики)
+            // Debug.Log($"Cache updated: {_cachedResources.Length} resources, {_cachedEnemies.Length} enemies");
         }
     }
 
