@@ -8,7 +8,7 @@ public class AdaptivePathProvider : VectorProviderComponent
 {
     private readonly List<Vector3> _waypoints = new List<Vector3>();
     private int _currentWaypoint = 0;
-    private float _waypointReachDistance = 0.5f;
+    private float _waypointReachDistance = 0.1f;
     
     // Для движения к ресурсам
     private IGrabbable _targetResource;
@@ -117,7 +117,7 @@ public class AdaptivePathProvider : VectorProviderComponent
         // Debug информация (только иногда, чтобы не спамить)
         if (Time.frameCount % 60 == 0) // Каждую секунду
         {
-            Debug.Log($"Bot {gameObject.name}: Moving to {targetType} at {targetPosition}, distance: {direction.magnitude:F2}");
+            Debug.Log($"Bot {gameObject.name}: Moving to {targetType} at ({targetPosition.x:F2}, {targetPosition.y:F2}, {targetPosition.z:F2}), distance: {direction.magnitude:F2}");
         }
         
         // Проверяем, достигли ли цели
@@ -134,7 +134,13 @@ public class AdaptivePathProvider : VectorProviderComponent
             {
                 // Переходим к следующей точке маршрута
                 _currentWaypoint++;
-                Debug.Log($"Bot {gameObject.name}: Advanced to waypoint {_currentWaypoint}");
+                Debug.Log($"Bot {gameObject.name}: Advanced to waypoint {_currentWaypoint}/{_waypoints.Count} (distance was {direction.magnitude:F3})");
+                
+                // Если это был последний waypoint
+                if (_currentWaypoint >= _waypoints.Count)
+                {
+                    Debug.Log($"Bot {gameObject.name}: Completed all waypoints! Path finished.");
+                }
             }
             
             return Vector3.zero;
