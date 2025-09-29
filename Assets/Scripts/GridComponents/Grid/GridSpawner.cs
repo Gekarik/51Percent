@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GridSpawner : MonoBehaviour
+public class GridSpawner : MonoBehaviour, IMapBounds
 {
     [SerializeField] private Hex _hexPrefab;
     [SerializeField] private float _hexRadius;
@@ -55,5 +55,31 @@ public class GridSpawner : MonoBehaviour
     {
         for (int i = _container.childCount - 1; i >= 0; i--)
             DestroyImmediate(_container.GetChild(i).gameObject);
+    }
+    
+    // IMapBounds implementation
+    public Bounds PlayableArea 
+    { 
+        get 
+        { 
+            if (_bounds.size == Vector3.zero)
+                _bounds = _playableArea.bounds;
+            return _bounds; 
+        } 
+    }
+    
+    public bool IsInBounds(Vector3 position)
+    {
+        return PlayableArea.Contains(position);
+    }
+    
+    public Vector3 ClampToBounds(Vector3 position)
+    {
+        var bounds = PlayableArea;
+        return new Vector3(
+            Mathf.Clamp(position.x, bounds.min.x, bounds.max.x),
+            position.y,
+            Mathf.Clamp(position.z, bounds.min.z, bounds.max.z)
+        );
     }
 }

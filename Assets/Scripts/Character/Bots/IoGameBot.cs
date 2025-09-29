@@ -26,6 +26,7 @@ public class IoGameBot : CharacterAbstract
     private IoGameBotPathProvider _pathProvider;
     private TerritoryManager _territoryManager;
     private IHexGridProvider _grid;
+    private IMapBounds _mapBounds;
     private System.Random _random;
     
     // Кэш для производительности
@@ -47,6 +48,13 @@ public class IoGameBot : CharacterAbstract
     public void Init(IHexGridProvider grid)
     {
         _grid = grid;
+        _mapBounds = FindObjectOfType<GridSpawner>(); // Находим границы карты
+        
+        if (_mapBounds == null)
+        {
+            Debug.LogError($"Bot {name}: GridSpawner with IMapBounds not found!");
+        }
+        
         StartCoroutine(BotLoop());
     }
     
@@ -219,12 +227,24 @@ public class IoGameBot : CharacterAbstract
     }
     
     /// <summary>
-    /// Создает изогнутый путь с заданными параметрами
+    /// Создает изогнутый путь с заданными параметрами и учетом границ карты
     /// </summary>
     private List<Vector3> CreateCurvedPath(Vector3 start, Vector3 direction, float distance, float curvature)
     {
         var path = new List<Vector3>();
         int steps = Mathf.RoundToInt(distance * 5); // 5 точек на единицу расстояния
+        
+        // Проверяем, не выйдет ли путь за границы
+        if (_mapBounds != null)
+        {
+            Vector3 endPoint = start + direction * distance;
+            if (!_mapBounds.IsInBounds(endPoint))
+            {
+                // Сокращаем дистанцию, чтобы остаться в границах
+                distance = GetMaxDistanceInBounds(start, direction);
+                Debug.Log($"Bot {name}: Adjusted path distance to {distance:F1} to stay in bounds");
+            }
+        }
         
         for (int i = 0; i <= steps; i++)
         {
@@ -241,11 +261,67 @@ public class IoGameBot : CharacterAbstract
             Vector3 perpendicular = new Vector3(-direction.z, 0, direction.x);
             Vector3 curvedPoint = basePoint + perpendicular * curveOffset;
             
+            // Ограничиваем каждую точку границами карты
+            if (_mapBounds != null)
+            {
+                curvedPoint = _mapBounds.ClampToBounds(curvedPoint);
+            }
+            
             path.Add(curvedPoint);
         }
         
         Debug.Log($"Bot {name}: Created curved path with {path.Count} points, distance: {distance:F1}, curvature: {curvature:F1}");
         return path;
+    }
+    
+    /// <summary>
+    /// Вычисляет максимальную дистанцию в заданном направлении без выхода за границы
+    /// </summary>
+    private float GetMaxDistanceInBounds(Vector3 start, Vector3 direction)
+    {
+        if (_mapBounds == null) return _config.aggressiveness;
+        
+        var bounds = _mapBounds.PlayableArea;
+        float maxDistance = _config.aggressiveness;
+        
+        // Находим пересечение луча с границами карты
+        float[] distances = {
+            GetRayBoxIntersection(start, direction, bounds.min, bounds.max)
+        };
+        
+        foreach (float d in distances)
+        {
+            if (d > 0 && d < maxDistance)
+            {
+                maxDistance = d * 0.9f; // 90% от расстояния до границы для безопасности
+            }
+        }
+        
+        return Mathf.Max(1f, maxDistance); // Минимум 1 единица движения
+    }
+    
+    /// <summary>
+    /// Вычисляет пересечение луча с ящиком (AABB)
+    /// </summary>
+    private float GetRayBoxIntersection(Vector3 rayStart, Vector3 rayDir, Vector3 boxMin, Vector3 boxMax)
+    {
+        // Простое вычисление пересечения луча с AABB box
+        float t1 = (boxMin.x - rayStart.x) / rayDir.x;
+        float t2 = (boxMax.x - rayStart.x) / rayDir.x;
+        float t3 = (boxMin.z - rayStart.z) / rayDir.z;
+        float t4 = (boxMax.z - rayStart.z) / rayDir.z;
+        
+        float tmin = Mathf.Max(Mathf.Min(t1, t2), Mathf.Min(t3, t4));
+        float tmax = Mathf.Min(Mathf.Max(t1, t2), Mathf.Max(t3, t4));
+        
+        // Если tmax < 0, луч направлен в противоположную сторону
+        if (tmax < 0) return -1f;
+        
+        // Если tmin > tmax, нет пересечения
+        if (tmin > tmax) return -1f;
+        
+        // Возвращаем ближайшую точку пересечения
+        return tmin > 0 ? tmin : tmax;
     }
     
     /// <summary>
