@@ -1,7 +1,6 @@
 using TMPro;
 using UnityEngine;
 
-[RequireComponent(typeof(Canvas))]
 public class PlayerStatsView : MonoBehaviour
 {
     [SerializeField] private TMP_Text _coinsText;
@@ -16,7 +15,7 @@ public class PlayerStatsView : MonoBehaviour
 
     public void SetCamera(Camera cam)
     {
-        _canvas.renderMode = RenderMode.ScreenSpaceCamera;
+        _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         _canvas.worldCamera = cam;
     }
 

@@ -41364,7 +41364,7 @@ MonoBehaviour:
   _prefab: {fileID: 1636724846439854639, guid: ec4fa1c971502c54a96f26e998ae1108, type: 3}
   _grid: {fileID: 1321929594}
   _territoryManager: {fileID: 2035294443}
-  _uiPrefab: {fileID: 8510952131642217490, guid: af8e75336395bbe4f989ccdcfbca5a5e, type: 3}
+  _uiPrefab: {fileID: 5315387417272389926, guid: af8e75336395bbe4f989ccdcfbca5a5e, type: 3}
 --- !u!1 &382045570
 GameObject:
   m_ObjectHideFlags: 0
