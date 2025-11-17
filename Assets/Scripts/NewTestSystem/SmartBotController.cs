@@ -207,7 +207,7 @@ public class SmartBotController : MonoBehaviour
             case BotState.Attacking:
                 // Если цель уничтожена или далеко
                 if (_targetEnemy == null || _targetEnemy.State != CharacterState.Alive ||
-                    Vector3.Distance(transform.position, _targetEnemy.transform.position) > sightRange * 1.5f)
+                    Vector3.Distance(transform.position, _targetEnemy.Transform.position) > sightRange * 1.5f)
                 {
                     currentState = BotState.Idle;
                 }
@@ -313,13 +313,13 @@ public class SmartBotController : MonoBehaviour
         // Находим ближайшую монетку/бустер
         _targetItem = _nearbyItems
             .Where(item => item != null && item.State == GrabbableState.Idle)
-            .OrderBy(item => Vector3.Distance(transform.position, item.transform.position))
+            .OrderBy(item => Vector3.Distance(transform.position, item.Transform.position))
             .FirstOrDefault();
 
         if (_targetItem != null)
         {
             // Строим путь к монетке
-            var targetHex = GetNearestHex(_targetItem.transform.position);
+            var targetHex = GetNearestHex(_targetItem.Transform.position);
             if (targetHex != null)
             {
                 var myHex = GetNearestHex(transform.position);
@@ -339,7 +339,7 @@ public class SmartBotController : MonoBehaviour
         // Находим ближайшего врага с trail
         _targetEnemy = _nearbyEnemies
             .Where(e => e != null && e.State == CharacterState.Alive)
-            .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
+            .OrderBy(e => Vector3.Distance(transform.position, e.Transform.position))
             .FirstOrDefault();
 
         if (_targetEnemy != null)
@@ -353,7 +353,7 @@ public class SmartBotController : MonoBehaviour
         // Выбираем самого слабого врага или с большой территорией
         _targetEnemy = _nearbyEnemies
             .Where(e => e != null && e.State == CharacterState.Alive)
-            .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
+            .OrderBy(e => Vector3.Distance(transform.position, e.Transform.position))
             .FirstOrDefault();
 
         if (_targetEnemy != null)
@@ -386,7 +386,7 @@ public class SmartBotController : MonoBehaviour
         // Если путь закончен, но монетка все еще далеко, строим новый путь
         if (_pathProvider.IsDone)
         {
-            float distance = Vector3.Distance(transform.position, _targetItem.transform.position);
+            float distance = Vector3.Distance(transform.position, _targetItem.Transform.position);
             if (distance > 2f)
             {
                 StartCollecting(); // Пересчитываем путь
@@ -457,7 +457,7 @@ public class SmartBotController : MonoBehaviour
         }
 
         // Активно преследуем цель
-        Vector3 targetPos = _targetEnemy.transform.position;
+        Vector3 targetPos = _targetEnemy.Transform.position;
         var targetHex = GetNearestHex(targetPos);
         
         if (targetHex != null)
@@ -498,7 +498,7 @@ public class SmartBotController : MonoBehaviour
             if (enemy == null || enemy.State != CharacterState.Alive)
                 continue;
 
-            float distance = Vector3.Distance(transform.position, enemy.transform.position);
+            float distance = Vector3.Distance(transform.position, enemy.Transform.position);
             
             // Опасность выше, если мы не на своей территории
             float effectiveDangerRange = IsOnOwnTerritory() ? dangerRange * 0.7f : dangerRange;
@@ -543,10 +543,10 @@ public class SmartBotController : MonoBehaviour
             if (enemy == null || enemy.State != CharacterState.Alive)
                 continue;
 
-            float distance = Vector3.Distance(transform.position, enemy.transform.position);
+            float distance = Vector3.Distance(transform.position, enemy.Transform.position);
             if (distance <= dangerRange)
             {
-                center += enemy.transform.position;
+                center += enemy.Transform.position;
                 count++;
             }
         }
@@ -560,7 +560,7 @@ public class SmartBotController : MonoBehaviour
         Vector3 dangerCenter = CalculateDangerCenter();
         
         return _conquester.FixedHexes
-            .OrderByDescending(h => Vector3.Distance(h.transform.position, dangerCenter))
+            .OrderByDescending(h => Vector3.Distance(h.Transform.position, dangerCenter))
             .FirstOrDefault();
     }
 
@@ -569,14 +569,14 @@ public class SmartBotController : MonoBehaviour
         if (enemy == null) return Vector3.zero;
         
         // Простое предсказание на основе текущей скорости
-        var mover = enemy.transform.GetComponent<Mover>();
+        var mover = enemy.Transform.GetComponent<Mover>();
         if (mover != null)
         {
             float predictionTime = 1f; // Предсказываем на 1 секунду вперед
-            return enemy.transform.position + mover.PlayerSpeed * predictionTime;
+            return enemy.Transform.position + mover.PlayerSpeed * predictionTime;
         }
         
-        return enemy.transform.position;
+        return enemy.Transform.position;
     }
 
     private IHex GetNearestHex(Vector3 position)
@@ -684,13 +684,13 @@ public class SmartBotController : MonoBehaviour
         if (_targetEnemy != null)
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawLine(transform.position, _targetEnemy.transform.position);
+            Gizmos.DrawLine(transform.position, _targetEnemy.Transform.position);
         }
 
         if (_targetItem != null)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(transform.position, _targetItem.transform.position);
+            Gizmos.DrawLine(transform.position, _targetItem.Transform.position);
         }
     }
 

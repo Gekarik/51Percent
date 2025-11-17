@@ -38,7 +38,6 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -150306,7 +150305,7 @@ MonoBehaviour:
   _prefab: {fileID: 5476233700063100578, guid: 15ada923c59cd4843a3cb0d60872ed65, type: 3}
   _grid: {fileID: 1321929594}
   _territoryManager: {fileID: 2035294443}
-  enemyCount: 5
+  enemyCount: 4
 --- !u!4 &1317363231
 Transform:
   m_ObjectHideFlags: 0
