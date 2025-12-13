@@ -55,7 +55,7 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
     
     public int Distance(IHex a, Hex b)
     {
-        float d = Vector3.Distance(a.transform.position, b.transform.position);
+        float d = Vector3.Distance(a.Transform.position, b.transform.position);
 
         return Mathf.RoundToInt(d / (_cellDiameter * 1.01f));
     }

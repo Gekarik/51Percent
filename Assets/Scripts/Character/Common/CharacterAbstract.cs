@@ -18,6 +18,7 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
     public float Speed => _mover.PlayerSpeed.magnitude;
     public PlayerStatsComponent StatsComponent { get; private set; }
     public Color Color => _color;
+    public Transform Transform => transform;
     public CharacterState State => _state;
 
     public void InitConquester(IHexGridProvider hexGrid)

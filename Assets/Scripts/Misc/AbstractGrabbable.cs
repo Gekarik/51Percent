@@ -10,6 +10,7 @@ public abstract class AbstractGrabbable : MonoBehaviour, IGrabbable
     public event Action<IGrabbable> Collected;
 
     public GrabbableState State { get; private set; }
+    public Transform Transform => transform;
 
     protected virtual void Awake()
     {

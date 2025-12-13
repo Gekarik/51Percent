@@ -1,18 +1,22 @@
+using System;
 using UnityEngine;
 
-[RequireComponent(typeof(EnemyAIController))]
 public class Enemy : CharacterAbstract
 {
-    private EnemyAIController _ai;
+    [SerializeField] private Sensor _sensor;
+
+    private void OnEnable()
+    {
+        
+    }
+
+    private void OnDisable()
+    {
+        
+    }
 
     private void Awake()
     {
-        _ai = GetComponent<EnemyAIController>();
         BaseInit();
-    }
-
-    public void InitAI(IHexGridProvider grid)
-    {
-        _ai.Init(grid);
     }
 }

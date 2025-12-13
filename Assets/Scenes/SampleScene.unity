@@ -150305,7 +150305,7 @@ MonoBehaviour:
   _prefab: {fileID: 5476233700063100578, guid: 15ada923c59cd4843a3cb0d60872ed65, type: 3}
   _grid: {fileID: 1321929594}
   _territoryManager: {fileID: 2035294443}
-  enemyCount: 4
+  enemyCount: 1
 --- !u!4 &1317363231
 Transform:
   m_ObjectHideFlags: 0

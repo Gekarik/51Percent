@@ -10,7 +10,7 @@ public class EnemySpawner : CharacterSpawner<Enemy>
         for (int i = 0; i < enemyCount; i++)
         {
             var enemy = SpawnSingleCharacter();
-            enemy.InitAI(_grid);
+            // enemy.InitAI(_grid);
         }   
     }
 }
