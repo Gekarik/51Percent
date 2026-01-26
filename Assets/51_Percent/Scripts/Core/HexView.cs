@@ -5,7 +5,7 @@ using UnityEngine;
 public class HexView : MonoBehaviour, ICoroutineRunner
 {
     [SerializeField] private Outline _outlineView;
-    [SerializeField] private float _durationOfColorizing = 0.1f;
+    [SerializeField] private HexViewSettings _viewSettings;
 
     private HexViewAnimator _hexViewAnimator;
     private Colorizer _colorizer;
@@ -15,8 +15,8 @@ public class HexView : MonoBehaviour, ICoroutineRunner
     {
         _meshRenderer = GetComponent<MeshRenderer>();
 
-        _hexViewAnimator = new HexViewAnimator(transform);
-        _colorizer = new Colorizer(_meshRenderer, this, _durationOfColorizing);
+        _hexViewAnimator = new HexViewAnimator(transform, _viewSettings);
+        _colorizer = new Colorizer(_meshRenderer, this, _viewSettings);
         _outlineView.gameObject.SetActive(false);
     }
 

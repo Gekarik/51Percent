@@ -151,7 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _outlineView: {fileID: 3089725837400916398}
-  _durationOfColorizing: 0.15
+  _viewSettings: {fileID: 11400000, guid: 1e3e01fe035b7d8439e80e91a5497b3e, type: 2}
 --- !u!23 &7054555012571273712
 MeshRenderer:
   m_ObjectHideFlags: 0

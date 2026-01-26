@@ -5,203 +5,130 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f80750cb-f3ad-4f96-ab05-688f8245f700" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.51_Percent/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.51_Percent/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animations.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animations.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animations/Character_Idle.anim" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animations/Character_Idle.anim" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animations/Character_Idle.anim.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animations/Character_Idle.anim.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animations/Character_SlowRun.anim" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animations/Character_SlowRun.anim" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animations/Character_SlowRun.anim.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animations/Character_SlowRun.anim.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animations/Coin_Idle.anim" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animations/Coin_Idle.anim" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animations/Coin_Idle.anim.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animations/Coin_Idle.anim.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animators.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animators.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animators/Character.controller" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animators/Character.controller" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animators/Character.controller.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animators/Character.controller.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animators/Coin.controller" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animators/Coin.controller" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animators/Coin.controller.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animators/Coin.controller.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animators/Hex.controller" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animators/Hex.controller" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Animators/Hex.controller.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Animators/Hex.controller.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/CoinMaterial.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/CoinMaterial.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/CoinMaterial.mat.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/CoinMaterial.mat.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials/DemoMat2.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials/DemoMat2.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials/DemoMat2.mat.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials/DemoMat2.mat.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials/DemoMat3.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials/DemoMat3.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials/DemoMat3.mat.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/DemoMaterials/DemoMat3.mat.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/HexMaterial.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/HexMaterial.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Materials/HexMaterial.mat.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Materials/HexMaterial.mat.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/PhysicsMaterials.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/PhysicsMaterials.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/PhysicsMaterials/ZeroFriction.physicMaterial" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/PhysicsMaterials/ZeroFriction.physicMaterial" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/PhysicsMaterials/ZeroFriction.physicMaterial.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/PhysicsMaterials/ZeroFriction.physicMaterial.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Enemy.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Enemy.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Enemy.prefab.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Enemy.prefab.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Player.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Player.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Player.prefab.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Player.prefab.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/Coin.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/Coin.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/Coin.prefab.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/Coin.prefab.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/Hex.fbx.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/Hex.fbx.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/HexPrefab.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/HexPrefab.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/HexPrefab.prefab.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Misc/HexPrefab.prefab.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI/Main Camera.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI/Main Camera.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI/Main Camera.prefab.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI/Main Camera.prefab.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI/PlayerUI.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI/PlayerUI.prefab" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI/PlayerUI.prefab.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/UI/PlayerUI.prefab.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scenes.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scenes.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scenes/SampleScene.unity.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scenes/SampleScene.unity.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/HexAnimationParams.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/HexAnimationParams.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/HexAnimationParams.asset.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/HexAnimationParams.asset.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AnimationViewComponents.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AnimationViewComponents/AnimatorParams.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AnimationViewComponents/AnimatorParams.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Camera.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Camera/CameraFollower.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Camera/CameraFollower.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/BotConrols.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/BotConrols/Sensor.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/BotConrols/Sensor.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Bots.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Bots/Enemy.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Bots/Enemy.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/CharacterAbstract.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/CharacterAbstract.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/CharacterState.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/CharacterState.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/CharacterView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/CharacterView.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/Conquester.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/Conquester.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/Grabber.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/Grabber.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/Mover.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Common/Mover.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/PlayableCharacter.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/PlayableCharacter/Player.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/PlayableCharacter/Player.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats/PlayerStats.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats/PlayerStats.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats/PlayerStatsComponent.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats/PlayerStatsComponent.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats/PlayerStatsPresenter.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats/PlayerStatsPresenter.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats/PlayerStatsView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Character/Stats/PlayerStatsView.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Control.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Control/PlayerInputProvider.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Control/PlayerInputProvider.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Control/VectorProviderComponent.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Control/VectorProviderComponent.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Core.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Core/ColorManager.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Core/ColorManager.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Core/DoTweenInitializer.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Core/DoTweenInitializer.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Core/GameManager.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Core/GameManager.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/ConquestAlgorithm.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/ConquestAlgorithm.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/GridSpawner.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/GridSpawner.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/HexGrid.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/HexGrid.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/OwnershipTracker.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/OwnershipTracker.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/TerritoryManager.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Grid/TerritoryManager.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/Hex.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/Hex.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/HexState.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/HexState.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/HexView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/HexView.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/ICoroutineRunner.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/ICoroutineRunner.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/Outline.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/Hex/Outline.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents/Colorizer.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents/Colorizer.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents/HexViewAnimator.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents/HexViewAnimator.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents/IWaveAnimator.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents/IWaveAnimator.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents/TransformWaver.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridComponents/HexViewComponents/TransformWaver.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/ICharacter.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/ICharacter.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IConquestAlgorithm.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IConquestAlgorithm.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IGrabbable.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IGrabbable.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IHex.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IHex.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IHexGridProvider.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IHexGridProvider.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/ISpawnable.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/ISpawnable.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IVectorProvider.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IVectorProvider.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/AbstractGrabbable.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/AbstractGrabbable.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/AbstractGrabbableView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/AbstractGrabbableView.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/Booster.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/Booster.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/Coin.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/Coin.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/CoinView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/CoinView.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/GrabbableState.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/GrabbableState.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/IGrabbableView.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Misc/IGrabbableView.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Pool.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Pool/ObjectPool.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Pool/ObjectPool.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Pool/ObjectSpawner.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Pool/ObjectSpawner.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ScriptableObject.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ScriptableObject/AIDirectionProvider.asset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ScriptableObject/AIDirectionProvider.asset.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ScriptableObject/KeyboardDirectionProvder.asset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ScriptableObject/KeyboardDirectionProvder.asset.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ScriptableObject/PathProvider.asset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ScriptableObject/PathProvider.asset.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/BoosterSpawner.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/BoosterSpawner.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/CharacterSpawner.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/CharacterSpawner.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/CoinSpawner.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/CoinSpawner.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/EnemySpawner.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/EnemySpawner.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/IPlayableCharacter.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/IPlayableCharacter.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/PlayerSpawner.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/PlayerSpawner.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/UI.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/UI/KillManager.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/UI/KillManager.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Utility.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Utility/TransformSnapshot.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Utility/TransformSnapshot.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Shaders/ColorInstancing.shader.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Shaders/ColorInstancing.shader.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scenes/SampleScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AIDirectionProvider.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AIDirectionProvider.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AbstractGrabbable.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AbstractGrabbable.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AbstractGrabbableView.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AbstractGrabbableView.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AnimatorParams.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/AnimatorParams.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Booster.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Booster.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/BoosterSpawner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/BoosterSpawner.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CameraFollower.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CameraFollower.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CharacterAbstract.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CharacterAbstract.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CharacterSpawner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CharacterSpawner.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CharacterState.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CharacterState.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CharacterView.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CharacterView.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Coin.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Coin.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CoinSpawner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CoinSpawner.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CoinView.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/CoinView.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ColorManager.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ColorManager.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Colorizer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Colorizer.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ConquestAlgorithm.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ConquestAlgorithm.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Conquester.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Conquester.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/DoTweenInitializer.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/DoTweenInitializer.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Enemy.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Enemy.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/EnemySpawner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/EnemySpawner.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GameManager.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GameManager.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GrabbableState.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GrabbableState.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Grabber.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Grabber.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridSpawner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/GridSpawner.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Hex.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Hex.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/HexGrid.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/HexGrid.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/HexState.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/HexState.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/HexView.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/HexView.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/HexViewAnimator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/HexViewAnimator.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ICharacter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ICharacter.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IConquestAlgorithm.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IConquestAlgorithm.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ICoroutineRunner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ICoroutineRunner.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IGrabbable.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IGrabbable.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IGrabbableView.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IGrabbableView.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IHex.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IHex.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IHexGridProvider.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IHexGridProvider.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IPlayableCharacter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IPlayableCharacter.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ISpawnable.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ISpawnable.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IVectorProvider.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IVectorProvider.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IWaveAnimator.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/IWaveAnimator.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/KeyboardDirectionProvder.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/KeyboardDirectionProvder.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/KillManager.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/KillManager.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Mover.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Mover.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ObjectPool.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ObjectPool.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ObjectSpawner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/ObjectSpawner.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Outline.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Outline.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/OwnershipTracker.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/OwnershipTracker.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PathProvider.asset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PathProvider.asset.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Player.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Player.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerInputProvider.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerInputProvider.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerSpawner.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerSpawner.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerStats.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerStats.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerStatsComponent.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerStatsComponent.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerStatsPresenter.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerStatsPresenter.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerStatsView.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/PlayerStatsView.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/TerritoryManager.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/TerritoryManager.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/TransformSnapshot.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/TransformSnapshot.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/TransformWaver.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/TransformWaver.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/VectorProviderComponent.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/VectorProviderComponent.cs.meta" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -347,6 +274,7 @@
       <workItem from="1769293773763" duration="11000" />
       <workItem from="1769293805601" duration="1735000" />
       <workItem from="1769365098214" duration="1745000" />
+      <workItem from="1769390767704" duration="5938000" />
     </task>
     <servers />
   </component>

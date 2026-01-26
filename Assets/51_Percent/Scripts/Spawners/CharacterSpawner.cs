@@ -22,9 +22,9 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
 
     protected T SpawnSingleCharacter()
     {
-        var startHex = _grid.GetRandomHex();
+        IHex startHex = _grid.GetRandomHex();
 
-        var character = Instantiate(_prefab, startHex.transform.position, Quaternion.identity);
+        var character = Instantiate(_prefab, startHex.Transform.position, Quaternion.identity);
         _territoryManager.GetStartTerritory(character, startHex);
         character.InitConquester(_grid);
         character.Conquester.TrailInterrupted += _killManager.OnTrailInterrupted;

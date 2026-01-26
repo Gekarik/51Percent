@@ -4,20 +4,20 @@ using UnityEngine;
 public class Colorizer
 {
     private const string ColorProperty = "_Color";
-    
+
     private readonly Renderer _renderer;
     private readonly MaterialPropertyBlock _materialPropertyBlock;
-    private readonly float _durationOfColorizing;
+    private readonly HexViewSettings _settings;
     private readonly Color _defaultColor;
 
     private Coroutine _runningCoroutine;
     private readonly ICoroutineRunner _runner;
 
-    public Colorizer(Renderer renderer, ICoroutineRunner runner, float durationOfColorizing)
+    public Colorizer(Renderer renderer, ICoroutineRunner runner, HexViewSettings settings)
     {
         _renderer = renderer;
         _runner = runner;
-        _durationOfColorizing = durationOfColorizing;
+        _settings = settings;
 
         _materialPropertyBlock = new MaterialPropertyBlock();
         _renderer.GetPropertyBlock(_materialPropertyBlock);
@@ -56,13 +56,14 @@ public class Colorizer
     {
         _renderer.GetPropertyBlock(_materialPropertyBlock);
         Color startColor = Color.black; //_materialPropertyBlock.GetColor(ColorProperty);
+        float duration = _settings.ColorizeDuration;
 
         float elapsed = 0f;
-        
-        while (elapsed < _durationOfColorizing)
+
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float time = Mathf.Clamp01(elapsed / _durationOfColorizing);
+            float time = Mathf.Clamp01(elapsed / duration);
             Color current = Color.Lerp(startColor, targetColor, time);
             _materialPropertyBlock.SetColor(ColorProperty, current);
             _renderer.SetPropertyBlock(_materialPropertyBlock);
@@ -78,13 +79,14 @@ public class Colorizer
     {
         _renderer.GetPropertyBlock(_materialPropertyBlock);
         Color startColor = _materialPropertyBlock.GetColor(ColorProperty);
+        float duration = _settings.ResetColorDuration;
 
         float elapsed = 0f;
-        
-        while (elapsed < _durationOfColorizing)
+
+        while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float time = Mathf.Clamp01(elapsed / _durationOfColorizing);
+            float time = Mathf.Clamp01(elapsed / duration);
             Color current = Color.Lerp(startColor, _defaultColor, time);
             _materialPropertyBlock.SetColor(ColorProperty, current);
             _renderer.SetPropertyBlock(_materialPropertyBlock);

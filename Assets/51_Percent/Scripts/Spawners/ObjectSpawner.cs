@@ -10,14 +10,20 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
     [SerializeField] private BoxCollider _spawnArea;
     [SerializeField] private float _verticalOffset = 1f;
     [SerializeField] private float _spawnInterval = 1f;
+    [SerializeField] private int _maxObjects = 25;
 
+    private int _counter = 0;
+    private WaitForSeconds _wait;
+    
     private ObjectPool<T> _pool;
     private Coroutine _spawnRoutine;
-
+    
     private void Awake()
     {
         if (_spawnPrefab == null)
             throw new InvalidOperationException("Spawn prefab is not assigned");
+        
+        _wait = new WaitForSeconds(_spawnInterval);
 
         _pool = new ObjectPool<T>(_spawnPrefab, _container ?? transform);
     }
@@ -37,7 +43,7 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
     {
         var wait = new WaitForSeconds(_spawnInterval);
 
-        while (true)
+        while (_counter < _maxObjects)
         {
             yield return wait;
             SpawnOnce();
@@ -50,6 +56,7 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
         item.transform.position = GetRandomPosition();
 
         item.Collected += OnItemCollected;
+        _counter++;
     }
 
     private void OnItemCollected(IGrabbable grabbable)
@@ -57,6 +64,7 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
         T item = grabbable as T;
         grabbable.Collected -= OnItemCollected;
         _pool.Release(item);
+        _counter--;
     }
 
     private Vector3 GetRandomPosition()

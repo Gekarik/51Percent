@@ -34,9 +34,9 @@ public class TerritoryManager : MonoBehaviour
         if (character == null) throw new ArgumentNullException(nameof(character));
     }
 
-    public void GetStartTerritory(ICharacter character, IHex starthex)
+    public void GetStartTerritory(ICharacter character, IHex startHex)
     {
-        var hexes = _hexGrid.GetNeighbors(starthex).Append(starthex);
+        IEnumerable<IHex> hexes = _hexGrid.GetNeighbors(startHex).Append(startHex);
         FixHexes(character, hexes);
     }
 

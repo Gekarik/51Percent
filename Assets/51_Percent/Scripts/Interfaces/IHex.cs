@@ -1,13 +1,15 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 public interface IHex
 {
-    HexView HexView { get; }
     Transform Transform { get; }
-    ICharacter Owner { get; }
-    event Action<IHex> StateChanged;
     HexState State { get; }
+    ICharacter Owner { get; }
+    HexView HexView { get; }
+
+    event Action<IHex> StateChanged;
+
+    void SetOwner(ICharacter owner, HexState state);
     void Reset();
-    void SetOwner(ICharacter owner, HexState busy);
 }

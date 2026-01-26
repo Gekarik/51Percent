@@ -6,13 +6,19 @@ public class Hex : MonoBehaviour, IHex
     [SerializeField] private HexView _hexView;
 
     private HexState _state;
-    
+
     public event Action<IHex> StateChanged;
-    
+
     public Transform Transform => transform;
     public HexView HexView => _hexView;
     public HexState State => _state;
     public ICharacter Owner { get; private set; }
+
+    private void Awake()
+    {
+        _state = HexState.Empty;
+        Owner = null;
+    }
 
     private void OnEnable()
     {
@@ -22,11 +28,6 @@ public class Hex : MonoBehaviour, IHex
     private void OnDisable()
     {
         StateChanged -= _hexView.UpdateView;
-    }
-
-    private void Awake()
-    {
-        SetOwner(null, HexState.Empty);
     }
 
     public void SetOwner(ICharacter player, HexState hexState)
