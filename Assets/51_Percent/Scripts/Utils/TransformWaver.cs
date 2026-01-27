@@ -9,7 +9,7 @@ public class TransformWaver : IWaveAnimator
     private readonly float _elementDuration;
     
     private float _animationHeight = 0.6f;
-    private float _totalWaveDuration = 0.4f;
+    private float _totalWaveDuration = 0.8f;
     private float _overlapFactor = 0.5f; // 0 = полное наложение, 1 ~ последовательный
     
     private readonly Dictionary<Transform, Vector3> _originalPositions = new();
@@ -71,7 +71,7 @@ public class TransformWaver : IWaveAnimator
                 UpdateWave(elements, driver, elementDuration, startDelay);
             }, 1f, _totalWaveDuration).SetEase(Ease.Linear);
 
-        tween.OnComplete(() => RestorePositions(elements, tween));
+        tween.OnComplete(() => RestorePositions(elements, tween)).OnKill(() => RestorePositions(elements, tween));
         _activeTweens.Add(tween);
     }
 
