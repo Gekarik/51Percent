@@ -9,9 +9,9 @@ public class Colorizer
     private readonly MaterialPropertyBlock _materialPropertyBlock;
     private readonly HexViewSettings _settings;
     private readonly Color _defaultColor;
+    private readonly ICoroutineRunner _runner;
 
     private Coroutine _runningCoroutine;
-    private readonly ICoroutineRunner _runner;
 
     public Colorizer(Renderer renderer, ICoroutineRunner runner, HexViewSettings settings)
     {
@@ -24,7 +24,7 @@ public class Colorizer
         _defaultColor = _renderer.sharedMaterial.GetColor(ColorProperty);
     }
 
-    public void CancelReset()
+    public void CancelTransition()
     {
         if (_runningCoroutine != null)
         {
@@ -35,66 +35,48 @@ public class Colorizer
 
     public void ResetColor()
     {
-        CancelReset();
-        _runningCoroutine = _runner.StartRoutine(ResetColorRoutine());
+        TransitionTo(_defaultColor, _settings.ResetColorDuration);
     }
 
     public void SetColorSlowly(Color color)
     {
-        CancelReset();
-        _runningCoroutine = _runner.StartRoutine(SetColorRoutine(color));
+        TransitionTo(color, _settings.ColorizeDuration, Color.black);
     }
 
-    public void SetColorInstantly(Color targetColor)
+    public void SetColorInstantly(Color color)
     {
-        CancelReset();
-        _materialPropertyBlock.SetColor(ColorProperty, targetColor);
-        _renderer.SetPropertyBlock(_materialPropertyBlock);
+        CancelTransition();
+        ApplyColor(color);
     }
 
-    private IEnumerator SetColorRoutine(Color targetColor)
+    private void TransitionTo(Color targetColor, float duration, Color? overrideStartColor = null)
+    {
+        CancelTransition();
+        _runningCoroutine = _runner.StartRoutine(ColorTransitionRoutine(targetColor, duration, overrideStartColor));
+    }
+
+    private IEnumerator ColorTransitionRoutine(Color targetColor, float duration, Color? overrideStartColor)
     {
         _renderer.GetPropertyBlock(_materialPropertyBlock);
-        Color startColor = Color.black; //_materialPropertyBlock.GetColor(ColorProperty);
-        float duration = _settings.ColorizeDuration;
+        Color startColor = overrideStartColor ?? _materialPropertyBlock.GetColor(ColorProperty);
 
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float time = Mathf.Clamp01(elapsed / duration);
-            Color current = Color.Lerp(startColor, targetColor, time);
-            _materialPropertyBlock.SetColor(ColorProperty, current);
-            _renderer.SetPropertyBlock(_materialPropertyBlock);
+            float t = Mathf.Clamp01(elapsed / duration);
+            ApplyColor(Color.Lerp(startColor, targetColor, t));
             yield return null;
         }
 
-        _materialPropertyBlock.SetColor(ColorProperty, targetColor);
-        _renderer.SetPropertyBlock(_materialPropertyBlock);
+        ApplyColor(targetColor);
         _runningCoroutine = null;
     }
 
-    private IEnumerator ResetColorRoutine()
+    private void ApplyColor(Color color)
     {
-        _renderer.GetPropertyBlock(_materialPropertyBlock);
-        Color startColor = _materialPropertyBlock.GetColor(ColorProperty);
-        float duration = _settings.ResetColorDuration;
-
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float time = Mathf.Clamp01(elapsed / duration);
-            Color current = Color.Lerp(startColor, _defaultColor, time);
-            _materialPropertyBlock.SetColor(ColorProperty, current);
-            _renderer.SetPropertyBlock(_materialPropertyBlock);
-            yield return null;
-        }
-
-        _materialPropertyBlock.SetColor(ColorProperty, _defaultColor);
+        _materialPropertyBlock.SetColor(ColorProperty, color);
         _renderer.SetPropertyBlock(_materialPropertyBlock);
-        _runningCoroutine = null;
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 public class CharacterView : MonoBehaviour
 {
-    private CharacterAbstract _character;
+    private CharacterBase _character;
     private Animator _animator;
 
     private void Awake()
@@ -16,7 +16,7 @@ public class CharacterView : MonoBehaviour
         SetSpeed(_character.Speed);
     }
 
-    public void Init(CharacterAbstract character)
+    public void Init(CharacterBase character)
     {
         _character = character;
     }

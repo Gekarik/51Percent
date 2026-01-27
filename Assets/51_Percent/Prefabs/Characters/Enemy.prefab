@@ -128,7 +128,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _view: {fileID: 1166960488854815536}
-  _sensor: {fileID: 0}
 --- !u!114 &7765832517451120072
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,8 +12,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6032774b800b45e4da26c85664b8ebfb, type: 3}
   m_Name: HexAnimationParams
   m_EditorClassIdentifier: 
-  ScaleFactor: 1.2
-  PulseDuration: 0.15
-  AnimationHeight: 0.3
-  TotalWaveDuration: 0.4
-  OverlapFactor: 0.5

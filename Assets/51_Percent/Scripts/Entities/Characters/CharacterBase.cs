@@ -1,19 +1,20 @@
 using System;
 using UnityEngine;
 
-[RequireComponent(typeof(Mover), typeof(Conquester), typeof(PlayerStatsComponent))]
+[RequireComponent(typeof(Mover), typeof(Conqueror), typeof(PlayerStatsComponent))]
 [RequireComponent(typeof(Grabber), typeof(VectorProviderComponent))]
-public abstract class CharacterAbstract : MonoBehaviour, ICharacter
+public abstract class CharacterBase : MonoBehaviour, ICharacter
 {
     [SerializeField] private CharacterView _view;
 
     private CharacterState _state = CharacterState.Alive;
     private Color _color;
-    private Conquester _conquester;
+    private Conqueror _conqueror;
     private Mover _mover;
     private Grabber _grabber;
+    private ColorService _colorService;
 
-    public Conquester Conquester => _conquester;
+    public Conqueror Conqueror => _conqueror;
 
     public float Speed => _mover.PlayerSpeed.magnitude;
     public PlayerStatsComponent StatsComponent { get; private set; }
@@ -21,29 +22,31 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
     public Transform Transform => transform;
     public CharacterState State => _state;
 
-    public void InitConquester(IHexGridProvider hexGrid)
+    public void Init(ColorService colorService, TerritoryManager territoryManager, IHexGridProvider grid)
     {
-        _conquester.Init(hexGrid);
-    }
+        _colorService = colorService ?? throw new ArgumentNullException(nameof(colorService));
 
-    protected void BaseInit()
-    {
-        _color = ColorManager.GetRandomColor();
+        _conqueror = GetComponent<Conqueror>();
+        _mover = GetComponent<Mover>();
+        _grabber = GetComponent<Grabber>();
+        StatsComponent = GetComponent<PlayerStatsComponent>();
+
+        _color = _colorService.GetRandomColor();
         SetCharacterState(CharacterState.Alive);
 
-        _conquester = GetComponent<Conquester>();
-        _mover = GetComponent<Mover>();
-        
-        _grabber = GetComponent<Grabber>();
+        _conqueror.Init(territoryManager, grid);
         _grabber.ItemCollected += OnItemCollected;
-        
-        StatsComponent = GetComponent<PlayerStatsComponent>();
         _view.Init(this);
+
+        OnInit();
     }
-    
+
+    protected virtual void OnInit() { }
+
     private void OnDisable()
     {
-        _grabber.ItemCollected -= OnItemCollected;
+        if (_grabber != null)
+            _grabber.ItemCollected -= OnItemCollected;
     }
 
     private void OnItemCollected(IGrabbable item)
@@ -58,7 +61,7 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
                 break;
         }
     }
-    
+
     protected void SetCharacterState(CharacterState state)
     {
         if (_state == state)
@@ -72,8 +75,11 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
         SetCharacterState(CharacterState.Died);
         _mover.enabled = false;
         _grabber.enabled = false;
-        _conquester.enabled = false;
-        _conquester.Reset();
+        _conqueror.enabled = false;
+        _conqueror.Reset();
+
+        _colorService?.ReturnColor(_color);
+
         gameObject.SetActive(false);
     }
 
@@ -86,7 +92,7 @@ public abstract class CharacterAbstract : MonoBehaviour, ICharacter
     {
         _mover.enabled = false;
         _grabber.enabled = false;
-        _conquester.Reset();
-        _conquester.enabled = false;
+        _conqueror.Reset();
+        _conqueror.enabled = false;
     }
 }

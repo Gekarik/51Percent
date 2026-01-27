@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GridSpawner : MonoBehaviour
+public class HexGridGenerator : MonoBehaviour
 {
     [SerializeField] private Hex _hexPrefab;
     [SerializeField] private float _hexRadius;

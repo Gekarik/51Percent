@@ -4,30 +4,39 @@ using UnityEngine;
 public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviour, ICharacter
 {
     [SerializeField] private T _prefab;
-    [SerializeField] protected HexGrid _grid; //лучше под интерфейсом
-    [SerializeField] private TerritoryManager _territoryManager;
 
-    KillManager _killManager;
+    protected HexGrid _grid;
+    protected TerritoryManager _territoryManager;
+    protected KillManager _killManager;
+    protected ColorService _colorService;
 
-    private void Awake()
+    private bool _initialized;
+
+    public void Init(HexGrid grid, TerritoryManager territoryManager, KillManager killManager, ColorService colorService)
     {
-        _killManager = new KillManager();
+        _grid = grid ?? throw new ArgumentNullException(nameof(grid));
+        _territoryManager = territoryManager ?? throw new ArgumentNullException(nameof(territoryManager));
+        _killManager = killManager ?? throw new ArgumentNullException(nameof(killManager));
+        _colorService = colorService ?? throw new ArgumentNullException(nameof(colorService));
+        _initialized = true;
     }
 
-    private void Start()
+    protected void EnsureInitialized()
     {
-        if (_grid == null)
-            throw new InvalidOperationException($"HexGrid is empty");
+        if (!_initialized)
+            throw new InvalidOperationException($"{GetType().Name} was not initialized. Call Init() first.");
     }
 
     protected T SpawnSingleCharacter()
     {
+        EnsureInitialized();
+
         IHex startHex = _grid.GetRandomHex();
 
         var character = Instantiate(_prefab, startHex.Transform.position, Quaternion.identity);
+        character.Init(_colorService, _territoryManager, _grid);
         _territoryManager.GetStartTerritory(character, startHex);
-        character.InitConquester(_grid);
-        character.Conquester.TrailInterrupted += _killManager.OnTrailInterrupted;
+        character.Conqueror.TrailInterrupted += _killManager.OnTrailInterrupted;
 
         return character;
     }

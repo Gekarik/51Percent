@@ -11,6 +11,16 @@ public class HexView : MonoBehaviour, ICoroutineRunner
     private Colorizer _colorizer;
     private MeshRenderer _meshRenderer;
 
+    private MeshRenderer MeshRenderer
+    {
+        get
+        {
+            if (_meshRenderer == null)
+                _meshRenderer = GetComponent<MeshRenderer>();
+            return _meshRenderer;
+        }
+    }
+
     private void Awake()
     {
         _meshRenderer = GetComponent<MeshRenderer>();
@@ -20,16 +30,16 @@ public class HexView : MonoBehaviour, ICoroutineRunner
         _outlineView.gameObject.SetActive(false);
     }
 
-    public Bounds GetBounds() => GetComponent<MeshRenderer>().bounds;
+    public Bounds GetBounds() => MeshRenderer.bounds;
 
     public void UpdateView(IHex hex)
     {
         _outlineView.gameObject.SetActive(hex.State == HexState.PartOfTrail);
-        
+
         if (hex.State == HexState.Empty)
             _colorizer.ResetColor();
-        
-        if(hex.State==HexState.Busy)
+
+        if (hex.State == HexState.Busy)
         {
             _colorizer.SetColorSlowly(hex.Owner.Color);
         }

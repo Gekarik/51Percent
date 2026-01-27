@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawner : CharacterSpawner<Enemy>
@@ -7,10 +6,10 @@ public class EnemySpawner : CharacterSpawner<Enemy>
 
     private void Start()
     {
+        EnsureInitialized();
         for (int i = 0; i < enemyCount; i++)
         {
             var enemy = SpawnSingleCharacter();
-            // enemy.InitAI(_grid);
-        }   
+        }
     }
 }

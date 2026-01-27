@@ -42277,8 +42277,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefab: {fileID: 1636724846439854639, guid: ec4fa1c971502c54a96f26e998ae1108, type: 3}
-  _grid: {fileID: 1321929594}
-  _territoryManager: {fileID: 2035294443}
   _uiPrefab: {fileID: 5315387417272389926, guid: af8e75336395bbe4f989ccdcfbca5a5e, type: 3}
 --- !u!1 &382180925
 GameObject:
@@ -118990,6 +118988,55 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1026858141}
   m_Mesh: {fileID: -2124705421725058983, guid: 5b09a35004d8f99478115a2ab87041e5, type: 3}
+--- !u!1 &1028651096
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1028651098}
+  - component: {fileID: 1028651097}
+  m_Layer: 0
+  m_Name: Bootstrap
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1028651097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1028651096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc75497b12312ee43b51092d66b93a74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _hexGrid: {fileID: 1321929594}
+  _territoryManager: {fileID: 2035294443}
+  _playerSpawner: {fileID: 381749300}
+  _enemySpawner: {fileID: 1317363230}
+  _colorSettings: {fileID: 0}
+--- !u!4 &1028651098
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1028651096}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.09307623, y: 1.377573, z: -0.10188106}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1029727770
 GameObject:
   m_ObjectHideFlags: 0
@@ -150576,8 +150623,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefab: {fileID: 5476233700063100578, guid: 15ada923c59cd4843a3cb0d60872ed65, type: 3}
-  _grid: {fileID: 1321929594}
-  _territoryManager: {fileID: 2035294443}
   enemyCount: 1
 --- !u!4 &1317363231
 Transform:
@@ -195697,13 +195742,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _colors:
-  - {r: 1, g: 0, b: 0, a: 1}
-  - {r: 1, g: 0.59751904, b: 0, a: 1}
-  - {r: 1, g: 0.92892253, b: 0, a: 1}
-  - {r: 0.2066791, g: 1, b: 0, a: 1}
-  - {r: 0, g: 0.83348227, b: 1, a: 1}
-  - {r: 0, g: 0.42745098, b: 1, a: 1}
-  - {r: 0.2949543, g: 0, b: 1, a: 1}
+  - r: 1
+    g: 0
+    b: 0
+    a: 1
+  - r: 1
+    g: 0.59751904
+    b: 0
+    a: 1
+  - r: 1
+    g: 0.92892253
+    b: 0
+    a: 1
+  - r: 0.2066791
+    g: 1
+    b: 0
+    a: 1
+  - r: 0
+    g: 0.83348227
+    b: 1
+    a: 1
+  - r: 0
+    g: 0.42745098
+    b: 1
+    a: 1
+  - r: 0.2949543
+    g: 0
+    b: 1
+    a: 1
 --- !u!4 &1712367684
 Transform:
   m_ObjectHideFlags: 0
@@ -246084,3 +246150,4 @@ SceneRoots:
   - {fileID: 729135371}
   - {fileID: 426978125}
   - {fileID: 750279054}
+  - {fileID: 1028651098}

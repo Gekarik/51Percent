@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 [RequireComponent(typeof(ICharacter))]
-public class Conquester : MonoBehaviour
+public class Conqueror : MonoBehaviour
 {
-    private readonly List<Hex> _trailList = new List<Hex>();
+    private readonly List<IHex> _trailList = new List<IHex>();
     private TerritoryManager _territoryManager;
 
     private ConquestAlgorithm _algorithm;
@@ -23,33 +23,29 @@ public class Conquester : MonoBehaviour
     {
         _algorithm = new ConquestAlgorithm();
         _owner = GetComponent<ICharacter>();
-
-        _territoryManager = FindObjectOfType<TerritoryManager>();
-        _territoryManager.InitCharacter(_owner);
     }
 
-    private void OnEnable()
+    public void Init(TerritoryManager territoryManager, IHexGridProvider grid)
     {
+        _territoryManager = territoryManager ?? throw new ArgumentNullException(nameof(territoryManager));
+        _grid = grid ?? throw new ArgumentNullException(nameof(grid));
+        _territoryManager.InitCharacter(_owner);
+
         AreaCaptured += _territoryManager.OnAreaCaptured;
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
-        AreaCaptured -= _territoryManager.OnAreaCaptured;
-    }
-
-    public void Init(IHexGridProvider grid)
-    {
-        _grid = grid ?? throw new ArgumentException();
-        
+        if (_territoryManager != null)
+            AreaCaptured -= _territoryManager.OnAreaCaptured;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (_owner == null || _owner.State != CharacterState.Alive)
             return;
-        
-        if (collision.gameObject.TryGetComponent(out Hex hex) == false)
+
+        if (collision.gameObject.TryGetComponent(out IHex hex) == false)
             return;
 
         if (hex.State == HexState.PartOfTrail && hex.Owner != _owner)
@@ -66,7 +62,7 @@ public class Conquester : MonoBehaviour
             CloseTrail(hex);
     }
 
-    private void AddToTrail(Hex hex)
+    private void AddToTrail(IHex hex)
     {
         if (!_trailList.Contains(hex))
         {
@@ -75,7 +71,7 @@ public class Conquester : MonoBehaviour
         }
     }
 
-    private void CloseTrail(Hex returnHex)
+    private void CloseTrail(IHex returnHex)
     {
         if (!_trailList.Contains(returnHex))
             _trailList.Add(returnHex);
@@ -109,8 +105,8 @@ public class Conquester : MonoBehaviour
 
         foreach (var hex in hexesToReset)
             hex.Reset();
-        
-        _territoryManager.OnCharacterDied(_owner);
+
+        _territoryManager?.OnCharacterDied(_owner);
         _trailList.Clear();
     }
 }

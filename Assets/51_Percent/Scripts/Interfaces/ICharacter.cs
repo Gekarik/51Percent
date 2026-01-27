@@ -2,8 +2,8 @@ using UnityEngine;
 
 public interface ICharacter
 {
-    void InitConquester(IHexGridProvider hexGrid);
-    Conquester Conquester { get; }
+    void Init(ColorService colorService, TerritoryManager territoryManager, IHexGridProvider grid);
+    Conqueror Conqueror { get; }
     CharacterState State { get; }
     Color Color { get; }
     Transform Transform { get; }
