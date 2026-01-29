@@ -6,15 +6,28 @@
   <component name="ChangeListManager">
     <list default="true" id="f80750cb-f3ad-4f96-ab05-688f8245f700" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.51_Percent/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.51_Percent/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/AIDirectionProvider.asset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/AIDirectionProvider.asset.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/HexAnimationParams.asset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/HexAnimationParams.asset.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/KeyboardDirectionProvder.asset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/KeyboardDirectionProvder.asset.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/PathProvider.asset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/ScriptableObjects/PathProvider.asset.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Utils/TransformWaver.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Utils/TransformWaver.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Enemy.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Prefabs/Characters/Enemy.prefab" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scenes/SampleScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scenes/SampleScene.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Characters/CharacterBase.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Characters/CharacterBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Characters/Enemy.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Characters/Enemy.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/AbstractGrabbable.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/CollectibleBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/AbstractGrabbable.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/CollectibleBase.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/AbstractGrabbableView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/CollectibleViewBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/AbstractGrabbableView.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/CollectibleViewBase.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/Booster.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/Booster.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/Coin.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/Coin.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/CoinView.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/CoinViewBase.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/CoinView.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Entities/Collectibles/CoinViewBase.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Gameplay/Conqueror.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Gameplay/Conqueror.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Gameplay/ConquestAlgorithm.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Gameplay/ConquestAlgorithm.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Gameplay/Grabber.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Gameplay/Grabber.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Gameplay/OwnershipTracker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Gameplay/OwnershipTracker.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IGrabbable.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/ICollectible.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/IGrabbable.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Interfaces/ICollectible.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/EnemySpawner.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/EnemySpawner.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/ObjectSpawner.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Spawners/ObjectSpawner.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Utils/ObjectPool.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/51_Percent/Scripts/Utils/ObjectPool.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/TagManager.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/TagManager.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,19 +38,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/Assets/51_Percent/Scripts/Boosters/BoosterBase.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/3ea01e77be99618395f448b16bd7cc2bd4248bd9e5d8474964b2d97f39c5d74/System.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/d44b17e136d09081da1e8fd0e8c83fde60e11818b9f2442d7ed8cb733fae895e/System.Collections.Generic.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Prefabs/BoxedMixamoPrefab.meta" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Character/BotConrols/Sensor.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/GridComponents/Grid/Bot.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Misc/AbstractGrabbable.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Misc/AbstractGrabbableView.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Misc/CoinView.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/OMEGATEST/ArcMovementStrategy.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/OMEGATEST/BotController.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/OMEGATEST/DirectChaseStrategy.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/OMEGATEST/IBotMovementStrategy.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Spawners/CharacterSpawner.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProblemsViewState">
@@ -163,6 +166,8 @@
       <workItem from="1769390767704" duration="5938000" />
       <workItem from="1769450387176" duration="225000" />
       <workItem from="1769487698491" duration="7023000" />
+      <workItem from="1769510267788" duration="6256000" />
+      <workItem from="1769662747128" duration="5451000" />
     </task>
     <servers />
   </component>

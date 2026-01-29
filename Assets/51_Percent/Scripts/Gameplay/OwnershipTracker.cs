@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 public class OwnershipTracker
 {
@@ -91,6 +90,8 @@ public class OwnershipTracker
         hex.SetOwner(character, HexState.Busy);
     }
 
+    private readonly List<IHex> _releaseBuffer = new List<IHex>();
+
     public void ReleaseAll(ICharacter character)
     {
         if (character == null)
@@ -99,9 +100,11 @@ public class OwnershipTracker
         if (_byOwner.TryGetValue(character, out var hexes) == false)
             return;
 
-        var owned = hexes.ToList();
+        _releaseBuffer.Clear();
+        foreach (var h in hexes)
+            _releaseBuffer.Add(h);
 
-        foreach (var h in owned)
+        foreach (var h in _releaseBuffer)
             h.SetOwner(null, HexState.Empty);
     }
 

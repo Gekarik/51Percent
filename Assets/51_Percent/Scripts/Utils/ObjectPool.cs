@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectPool<T> where T : MonoBehaviour, IGrabbable
+public class ObjectPool<T> where T : MonoBehaviour, ICollectible
 {
     private readonly T _prefab;
     private readonly Transform _container;

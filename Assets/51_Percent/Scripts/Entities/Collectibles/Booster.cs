@@ -1,4 +1,4 @@
-public class Booster : AbstractGrabbable
+public class Booster : CollectibleBase
 {
     
 }

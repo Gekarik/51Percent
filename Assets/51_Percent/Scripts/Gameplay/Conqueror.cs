@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 [RequireComponent(typeof(ICharacter))]
 public class Conqueror : MonoBehaviour
 {
     private readonly List<IHex> _trailList = new List<IHex>();
+    private readonly List<Transform> _viewsBuffer = new List<Transform>();
+    private readonly List<IHex> _resetBuffer = new List<IHex>();
     private TerritoryManager _territoryManager;
 
     private ConquestAlgorithm _algorithm;
@@ -15,6 +16,7 @@ public class Conqueror : MonoBehaviour
     public event Action<IReadOnlyList<Transform>> AreaCaptured;
 
     public IReadOnlyCollection<IHex> FixedHexes => _territoryManager.GetFixedByOwner(_owner);
+    public IReadOnlyList<IHex> TrailHexes => _trailList;
 
     private IHexGridProvider _grid;
     private ICharacter _owner;
@@ -56,7 +58,9 @@ public class Conqueror : MonoBehaviour
             return;
         }
 
-        if (FixedHexes.Contains(hex) == false || hex.Owner != _owner)
+        var fixedHexes = FixedHexes;
+
+        if (!CollectionContains(fixedHexes, hex) || hex.Owner != _owner)
             AddToTrail(hex);
         else if (_trailList.Count > 0 && hex.State == HexState.Busy && hex.Owner == _owner)
             CloseTrail(hex);
@@ -81,9 +85,18 @@ public class Conqueror : MonoBehaviour
         foreach (var h in captured)
             CaptureHex(h);
 
-        var views = captured.Where(h => h.HexView != null).Select(h => h.HexView.transform).Distinct().ToList();
+        _viewsBuffer.Clear();
+        foreach (var h in captured)
+        {
+            if (h.HexView != null)
+            {
+                var viewTransform = h.HexView.transform;
+                if (!_viewsBuffer.Contains(viewTransform))
+                    _viewsBuffer.Add(viewTransform);
+            }
+        }
 
-        AreaCaptured?.Invoke(views);
+        AreaCaptured?.Invoke(_viewsBuffer);
         _trailList.Clear();
     }
 
@@ -99,11 +112,28 @@ public class Conqueror : MonoBehaviour
             CaptureHex(h);
     }
 
+    private static bool CollectionContains(IReadOnlyCollection<IHex> collection, IHex hex)
+    {
+        if (collection is HashSet<IHex> set)
+            return set.Contains(hex);
+
+        foreach (var h in collection)
+            if (h == hex) return true;
+
+        return false;
+    }
+
     public void Reset()
     {
-        var hexesToReset = _trailList.Concat(FixedHexes).ToList();
+        _resetBuffer.Clear();
 
-        foreach (var hex in hexesToReset)
+        foreach (var hex in _trailList)
+            _resetBuffer.Add(hex);
+
+        foreach (var hex in FixedHexes)
+            _resetBuffer.Add(hex);
+
+        foreach (var hex in _resetBuffer)
             hex.Reset();
 
         _territoryManager?.OnCharacterDied(_owner);

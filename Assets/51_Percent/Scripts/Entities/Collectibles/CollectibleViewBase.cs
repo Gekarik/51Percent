@@ -2,7 +2,7 @@ using DG.Tweening;
 using System;
 using UnityEngine;
 
-public abstract class AbstractGrabbableView : MonoBehaviour, IGrabbableView
+public abstract class CollectibleViewBase : MonoBehaviour, IGrabbableView
 {
     [SerializeField] private float _animationDuration = 0.1f;
 

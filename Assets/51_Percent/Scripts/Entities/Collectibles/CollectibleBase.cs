@@ -1,13 +1,13 @@
 using System;
 using UnityEngine;
 
-public abstract class AbstractGrabbable : MonoBehaviour, IGrabbable
+public abstract class CollectibleBase : MonoBehaviour, ICollectible
 {
-    [SerializeField] private AbstractGrabbableView _view;
+    [SerializeField] private CollectibleViewBase _viewBase;
     
     private IGrabbableView _viewInterface;
 
-    public event Action<IGrabbable> Collected;
+    public event Action<ICollectible> Collected;
 
     public GrabbableState State { get; private set; }
     public Transform Transform => transform;
@@ -15,7 +15,7 @@ public abstract class AbstractGrabbable : MonoBehaviour, IGrabbable
     protected virtual void Awake()
     {
         State = GrabbableState.Idle;
-        _viewInterface = _view as IGrabbableView;
+        _viewInterface = _viewBase as IGrabbableView;
     }
 
     private void OnEnable()

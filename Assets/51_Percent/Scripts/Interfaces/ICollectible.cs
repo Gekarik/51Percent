@@ -1,9 +1,9 @@
 ﻿using System;
 using UnityEngine;
 
-public interface IGrabbable
+public interface ICollectible
 {
-    event Action<IGrabbable> Collected;
+    event Action<ICollectible> Collected;
     void Collect();
     GrabbableState State { get; }
     Transform Transform { get; }

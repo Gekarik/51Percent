@@ -1,4 +1,4 @@
-public class Coin : AbstractGrabbable
+public class Coin : CollectibleBase
 {
     
 }

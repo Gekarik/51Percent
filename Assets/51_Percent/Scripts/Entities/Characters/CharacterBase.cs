@@ -49,7 +49,7 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter
             _grabber.ItemCollected -= OnItemCollected;
     }
 
-    private void OnItemCollected(IGrabbable item)
+    private void OnItemCollected(ICollectible item)
     {
         switch (item)
         {

@@ -5,11 +5,11 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class Grabber : MonoBehaviour
 {
-    public event Action<IGrabbable> ItemCollected;
+    public event Action<ICollectible> ItemCollected;
 
     private void OnTriggerEnter(Collider collider)
     {
-        if (collider.gameObject.TryGetComponent(out IGrabbable item) && item.State == GrabbableState.Idle)
+        if (collider.gameObject.TryGetComponent(out ICollectible item) && item.State == GrabbableState.Idle)
         {
             ItemCollected?.Invoke(item);
             item.Collect();

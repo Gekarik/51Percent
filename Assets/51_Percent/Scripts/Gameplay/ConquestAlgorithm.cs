@@ -1,63 +1,105 @@
 using System.Collections.Generic;
-using System.Linq;
 
 public class ConquestAlgorithm : IConquestAlgorithm
 {
     private const int MaxNeighborCount = 6;
+
+    // Рабочие коллекции — переиспользуются между вызовами, без аллокаций
+    private readonly HashSet<IHex> _barrier = new HashSet<IHex>();
+    private readonly Queue<IHex> _floodQueue = new Queue<IHex>();
+    private readonly HashSet<IHex> _visited = new HashSet<IHex>();
+    private readonly List<IHex> _capturedHexes = new List<IHex>();
+
+    // Кеш соседей и граничных гексов — строится один раз
+    private Dictionary<IHex, IHex[]> _neighborCache;
+    private List<IHex> _borderHexes;
 
     public List<IHex> ComputeCapturedArea(
         IReadOnlyCollection<IHex> fixedHexes,
         IReadOnlyCollection<IHex> trailHexes,
         IHexGridProvider hexGridProvider)
     {
-        HashSet<IHex> barrier = new HashSet<IHex>(fixedHexes);
-        barrier.UnionWith(trailHexes);
+        EnsureNeighborCache(hexGridProvider);
 
-        IReadOnlyList<IHex> allHexes = hexGridProvider.AllHexes;
-        int hexCount = allHexes.Count;
+        _barrier.Clear();
+        foreach (var hex in fixedHexes)
+            _barrier.Add(hex);
+        foreach (var hex in trailHexes)
+            _barrier.Add(hex);
 
-        Dictionary<IHex, List<IHex>> neighborMap = new Dictionary<IHex, List<IHex>>(hexCount);
-        Queue<IHex> borderSeeds = new Queue<IHex>();
-        HashSet<IHex> visited = new HashSet<IHex>();
+        _visited.Clear();
+        _floodQueue.Clear();
 
-        foreach (IHex hex in allHexes)
+        // Засеваем с граничных гексов, которые не в барьере
+        foreach (var hex in _borderHexes)
         {
-            List<IHex> neighbors = hexGridProvider.GetNeighbors(hex).ToList();
-            neighborMap[hex] = neighbors;
-
-            bool isBorderHex = neighbors.Count < MaxNeighborCount;
-
-            if (isBorderHex && !barrier.Contains(hex))
+            if (!_barrier.Contains(hex))
             {
-                borderSeeds.Enqueue(hex);
-                visited.Add(hex);
+                _floodQueue.Enqueue(hex);
+                _visited.Add(hex);
             }
         }
 
-        while (borderSeeds.Count > 0)
+        // BFS flood-fill от границ
+        while (_floodQueue.Count > 0)
         {
-            IHex currentHex = borderSeeds.Dequeue();
+            IHex current = _floodQueue.Dequeue();
+            IHex[] neighbors = _neighborCache[current];
 
-            foreach (IHex neighbor in neighborMap[currentHex])
+            for (int i = 0; i < neighbors.Length; i++)
             {
-                if (barrier.Contains(neighbor) || visited.Contains(neighbor))
+                IHex neighbor = neighbors[i];
+
+                if (_barrier.Contains(neighbor) || _visited.Contains(neighbor))
                     continue;
 
-                visited.Add(neighbor);
-                borderSeeds.Enqueue(neighbor);
+                _visited.Add(neighbor);
+                _floodQueue.Enqueue(neighbor);
             }
         }
 
-        List<IHex> capturedHexes = new List<IHex>(hexCount);
+        // Всё, что не достигнуто flood-fill и не в барьере — захвачено
+        _capturedHexes.Clear();
 
-        foreach (IHex hex in allHexes)
+        IReadOnlyList<IHex> allHexes = hexGridProvider.AllHexes;
+        for (int i = 0; i < allHexes.Count; i++)
         {
-            if (!barrier.Contains(hex) && !visited.Contains(hex))
-                capturedHexes.Add(hex);
+            IHex hex = allHexes[i];
+            if (!_barrier.Contains(hex) && !_visited.Contains(hex))
+                _capturedHexes.Add(hex);
         }
 
-        capturedHexes.AddRange(trailHexes);
+        foreach (var hex in trailHexes)
+            _capturedHexes.Add(hex);
 
-        return capturedHexes;
+        return _capturedHexes;
+    }
+
+    private void EnsureNeighborCache(IHexGridProvider grid)
+    {
+        if (_neighborCache != null)
+            return;
+
+        IReadOnlyList<IHex> allHexes = grid.AllHexes;
+        _neighborCache = new Dictionary<IHex, IHex[]>(allHexes.Count);
+        _borderHexes = new List<IHex>();
+
+        // Временный список для сборки соседей каждого гекса
+        var tempNeighbors = new List<IHex>(MaxNeighborCount);
+
+        for (int i = 0; i < allHexes.Count; i++)
+        {
+            IHex hex = allHexes[i];
+            tempNeighbors.Clear();
+
+            foreach (var neighbor in grid.GetNeighbors(hex))
+                tempNeighbors.Add(neighbor);
+
+            IHex[] neighbors = tempNeighbors.ToArray();
+            _neighborCache[hex] = neighbors;
+
+            if (neighbors.Length < MaxNeighborCount)
+                _borderHexes.Add(hex);
+        }
     }
 }

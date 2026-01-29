@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, IGrabbable
+public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, ICollectible
 {
     [Header("Spawn Settings")]
     [SerializeField] private T _spawnPrefab;
@@ -59,10 +59,10 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
         _counter++;
     }
 
-    private void OnItemCollected(IGrabbable grabbable)
+    private void OnItemCollected(ICollectible collectible)
     {
-        T item = grabbable as T;
-        grabbable.Collected -= OnItemCollected;
+        T item = collectible as T;
+        collectible.Collected -= OnItemCollected;
         _pool.Release(item);
         _counter--;
     }

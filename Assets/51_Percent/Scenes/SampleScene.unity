@@ -148559,7 +148559,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1317363231}
   - component: {fileID: 1317363230}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: EnemySpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -148579,7 +148579,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefab: {fileID: 5476233700063100578, guid: 15ada923c59cd4843a3cb0d60872ed65, type: 3}
-  enemyCount: 1
+  _enemyCount: 5
+  _personalities:
+  - {fileID: 11400000, guid: 48d7c2cbe4e84bf4393cb7001038807f, type: 2}
+  - {fileID: 11400000, guid: 84a1a0064bca1da408efb38c3c95394a, type: 2}
+  - {fileID: 11400000, guid: d51a7041de9c6bf46954514807fd098f, type: 2}
+  - {fileID: 11400000, guid: ef56910448d99504080975471491fb31, type: 2}
 --- !u!4 &1317363231
 Transform:
   m_ObjectHideFlags: 0
@@ -195651,35 +195656,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f52a01c7689949b49a7d69c1885b0551, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _colors:
-  - r: 1
-    g: 0
-    b: 0
-    a: 1
-  - r: 1
-    g: 0.59751904
-    b: 0
-    a: 1
-  - r: 1
-    g: 0.92892253
-    b: 0
-    a: 1
-  - r: 0.2066791
-    g: 1
-    b: 0
-    a: 1
-  - r: 0
-    g: 0.83348227
-    b: 1
-    a: 1
-  - r: 0
-    g: 0.42745098
-    b: 1
-    a: 1
-  - r: 0.2949543
-    g: 0
-    b: 1
-    a: 1
 --- !u!4 &1712367684
 Transform:
   m_ObjectHideFlags: 0
