@@ -6,6 +6,8 @@ public class OwnershipTracker
     private readonly Dictionary<ICharacter, HashSet<IHex>> _byOwner = new Dictionary<ICharacter, HashSet<IHex>>();
     private readonly Dictionary<IHex, ICharacter> _ownersCache = new Dictionary<IHex, ICharacter>();
 
+    public event Action OwnershipChanged;
+
     public void Initialize(IEnumerable<IHex> allHexes)
     {
         _byOwner.Clear();
@@ -69,6 +71,9 @@ public class OwnershipTracker
         }
 
         _ownersCache[hex] = newOwner;
+
+        if (hex.State == HexState.Busy)
+            OwnershipChanged?.Invoke();
     }
 
     public IReadOnlyCollection<IHex> GetOwned(ICharacter character)

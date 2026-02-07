@@ -96,11 +96,11 @@ public class ReturnHomeStrategy : IBotStrategy
 
     public void OnActivate(BotContext context)
     {
-        Debug.Log($"[{context.BotTransform.name}] ReturnHome ACTIVATED. Trail={context.TrailLength}");
+        // Debug.Log($"[{context.BotTransform.name}] ReturnHome ACTIVATED. Trail={context.TrailLength}");
     }
 
     public void OnDeactivate(BotContext context)
     {
-        Debug.Log($"[{context.BotTransform.name}] ReturnHome DEACTIVATED. Trail={context.TrailLength}");
+        // Debug.Log($"[{context.BotTransform.name}] ReturnHome DEACTIVATED. Trail={context.TrailLength}");
     }
 }

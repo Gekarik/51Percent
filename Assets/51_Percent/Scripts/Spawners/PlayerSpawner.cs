@@ -4,12 +4,20 @@ public class PlayerSpawner : CharacterSpawner<Player>
 {
     [SerializeField] private PlayerStatsView _uiPrefab;
 
+    private Transform _uiRoot;
     private PlayerStatsPresenter _presenter;
+
+    public void SetUIRoot(Transform uiRoot)
+    {
+        _uiRoot = uiRoot;
+    }
 
     private void Start()
     {
         EnsureInitialized();
         var player = SpawnSingleCharacter();
+        player.SetName("Player");
+        RegisterInLeaderBoard(player);
         InitUI(player);
     }
 
@@ -17,8 +25,7 @@ public class PlayerSpawner : CharacterSpawner<Player>
     {
         var statsModel = player.StatsComponent.Stats;
 
-        var view = Instantiate(_uiPrefab);
-        view.SetCamera(player.Camera);
+        var view = Instantiate(_uiPrefab, _uiRoot);
 
         _presenter = new PlayerStatsPresenter(statsModel, view);
     }

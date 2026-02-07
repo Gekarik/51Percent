@@ -7,6 +7,7 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter
 {
     [SerializeField] private CharacterView _view;
 
+    private string _name;
     private CharacterState _state = CharacterState.Alive;
     private Color _color;
     private Conqueror _conqueror;
@@ -17,10 +18,18 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter
     public Conqueror Conqueror => _conqueror;
 
     public float Speed => _mover.PlayerSpeed.magnitude;
+    
     public PlayerStatsComponent StatsComponent { get; private set; }
     public Color Color => _color;
     public Transform Transform => transform;
     public CharacterState State => _state;
+
+    public string Name => _name;
+
+    public void SetName(string name)
+    {
+        _name = name;
+    }
 
     public void Init(ColorService colorService, TerritoryManager territoryManager, IHexGridProvider grid)
     {
@@ -87,7 +96,7 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter
     {
         StatsComponent.RegisterKill();
     }
-
+    
     protected void Reset()
     {
         _mover.enabled = false;

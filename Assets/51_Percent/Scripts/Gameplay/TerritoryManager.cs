@@ -9,6 +9,14 @@ public class TerritoryManager : MonoBehaviour
 
     private readonly OwnershipTracker _tracker = new OwnershipTracker();
     private TransformWaver _transformWaver;
+    
+    public int AllHexes => _hexGrid.AllHexes.Count;
+
+    public event Action OwnershipChanged
+    {
+        add => _tracker.OwnershipChanged += value;
+        remove => _tracker.OwnershipChanged -= value;
+    }
 
     private void Awake()
     {
@@ -31,7 +39,8 @@ public class TerritoryManager : MonoBehaviour
 
     public void InitCharacter(ICharacter character)
     {
-        if (character == null) throw new ArgumentNullException(nameof(character));
+        if (character == null) 
+            throw new ArgumentNullException(nameof(character));
     }
 
     public void GetStartTerritory(ICharacter character, IHex startHex)

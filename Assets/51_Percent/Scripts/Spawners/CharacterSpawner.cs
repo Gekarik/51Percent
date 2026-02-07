@@ -9,15 +9,18 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
     protected TerritoryManager _territoryManager;
     protected KillManager _killManager;
     protected ColorService _colorService;
+    protected LeaderBoardModel _leaderBoardModel;
 
     private bool _initialized;
 
-    public void Init(HexGrid grid, TerritoryManager territoryManager, KillManager killManager, ColorService colorService)
+    public void Init(HexGrid grid, TerritoryManager territoryManager, KillManager killManager,
+        ColorService colorService, LeaderBoardModel leaderBoardModel)
     {
         _grid = grid ?? throw new ArgumentNullException(nameof(grid));
         _territoryManager = territoryManager ?? throw new ArgumentNullException(nameof(territoryManager));
         _killManager = killManager ?? throw new ArgumentNullException(nameof(killManager));
         _colorService = colorService ?? throw new ArgumentNullException(nameof(colorService));
+        _leaderBoardModel = leaderBoardModel ?? throw new ArgumentNullException(nameof(leaderBoardModel));
         _initialized = true;
     }
 
@@ -39,5 +42,10 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
         character.Conqueror.TrailInterrupted += _killManager.OnTrailInterrupted;
 
         return character;
+    }
+
+    protected void RegisterInLeaderBoard(ICharacter character)
+    {
+        _leaderBoardModel.RegisterCharacter(character);
     }
 }

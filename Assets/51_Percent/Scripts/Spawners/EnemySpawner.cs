@@ -5,6 +5,8 @@ public class EnemySpawner : CharacterSpawner<Enemy>
     [SerializeField] private int _enemyCount = 5;
     [SerializeField] private BotPersonalitySettings[] _personalities;
 
+    private int _spawnedCount;
+
     private void Start()
     {
         EnsureInitialized();
@@ -17,7 +19,10 @@ public class EnemySpawner : CharacterSpawner<Enemy>
 
     private void SpawnEnemy()
     {
+        _spawnedCount++;
         var enemy = SpawnSingleCharacter();
+        enemy.SetName($"Bot {_spawnedCount}");
+        RegisterInLeaderBoard(enemy);
 
         BotPersonalitySettings personality = GetRandomPersonality();
         enemy.InitBrain(_grid, personality);
