@@ -14,3 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _scaleFactor: 1.2
   _pulseDuration: 0.15
+  _colorizeDuration: 0.1
+  _resetColorDuration: 0.3

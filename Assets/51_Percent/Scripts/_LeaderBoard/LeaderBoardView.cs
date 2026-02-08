@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class LeaderBoardView : MonoBehaviour
 {
-    [Header("Prefab")]
     [SerializeField] private LeaderBoardEntryView _entryPrefab;
     [SerializeField] private Transform _container;
-
+    [SerializeField] private RectTransform _crown;
 
     private LeaderBoardModel _model;
     private readonly List<LeaderBoardEntryView> _entryViews = new List<LeaderBoardEntryView>();
@@ -16,7 +15,9 @@ public class LeaderBoardView : MonoBehaviour
     private void Awake()
     {
         if(_container == null)
-            _container = transform;    
+            _container = transform;
+        
+        _crown = Instantiate(_crown);
     }
 
     public void Init(LeaderBoardModel model)
@@ -85,6 +86,17 @@ public class LeaderBoardView : MonoBehaviour
                 view.transform.SetSiblingIndex(i);
             }
         }
+
+        UpdateCrownParent(entries);
+    }
+
+    private void UpdateCrownParent(IReadOnlyList<LeaderBoardEntry> entries)
+    {
+        if (_crown == null || entries.Count == 0)
+            return;
+
+        if (_characterToView.TryGetValue(entries[0].Character, out var leaderView))
+            _crown.SetParent(leaderView.transform, false);
     }
 
     private void CreateEntryView(LeaderBoardEntry entry)
