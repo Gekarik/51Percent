@@ -53,14 +53,9 @@ public class LeaderBoardModel
 
     private void RecalculateAndSort()
     {
-        int totalHexes = _territoryManager.AllHexes;
-        if (totalHexes == 0)
-            return;
-
         foreach (var entry in _entries)
         {
-            int ownedCount = _territoryManager.GetFixedByOwner(entry.Character).Count;
-            float percent = (float)ownedCount / totalHexes;
+            float percent = _territoryManager.GetOwnershipPercent(entry.Character);
             entry.UpdatePercent(percent);
         }
 

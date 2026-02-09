@@ -4,35 +4,78 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private PauseWindow _pauseWindowPrefab;
+    [SerializeField] private EndgameWindow _endgameWindowPrefab;
     [SerializeField] private RectTransform _windowsContainer;
 
     private PauseWindow _pauseWindow;
+    private EndgameWindow _endgameWindow;
+    private WinConditionTracker _winConditionTracker;
+    private TerritoryManager _territoryManager;
     private bool _isPaused;
+    private bool _isGameOver;
+
+    public void Init(WinConditionTracker winConditionTracker, TerritoryManager territoryManager)
+    {
+        _winConditionTracker = winConditionTracker;
+        _territoryManager = territoryManager;
+        _winConditionTracker.GameFinished += OnGameFinished;
+    }
 
     private void Awake()
     {
         _pauseWindow = Instantiate(_pauseWindowPrefab, _windowsContainer);
         _pauseWindow.Hide();
 
+        _endgameWindow = Instantiate(_endgameWindowPrefab, _windowsContainer);
+        _endgameWindow.Hide();
+
         _pauseWindow.ContinueClicked += Unpause;
         _pauseWindow.RestartClicked += Restart;
         _pauseWindow.ExitClicked += ExitGame;
+
+        _endgameWindow.RestartClicked += Restart;
+        _endgameWindow.ExitClicked += ExitGame;
     }
 
     private void OnDestroy()
     {
-        if (_pauseWindow == null)
-            return;
+        if (_pauseWindow != null)
+        {
+            _pauseWindow.ContinueClicked -= Unpause;
+            _pauseWindow.RestartClicked -= Restart;
+            _pauseWindow.ExitClicked -= ExitGame;
+        }
 
-        _pauseWindow.ContinueClicked -= Unpause;
-        _pauseWindow.RestartClicked -= Restart;
-        _pauseWindow.ExitClicked -= ExitGame;
+        if (_endgameWindow != null)
+        {
+            _endgameWindow.RestartClicked -= Restart;
+            _endgameWindow.ExitClicked -= ExitGame;
+        }
+
+        if (_winConditionTracker != null)
+            _winConditionTracker.GameFinished -= OnGameFinished;
     }
 
     private void Update()
     {
+        if (_isGameOver)
+            return;
+
         if (Input.GetKeyDown(KeyCode.Escape))
             TogglePause();
+    }
+
+    private void OnGameFinished(ICharacter winner)
+    {
+        _isGameOver = true;
+        Time.timeScale = 0f;
+
+        bool isVictory = winner is Player;
+        float territory = _territoryManager.GetOwnershipPercent(winner);
+
+        var stats = ((CharacterBase)winner).StatsComponent.Stats;
+
+        _endgameWindow.Show(winner.Name, winner.Color, isVictory, territory, stats.Kills, stats.Coins);
     }
 
     private void TogglePause()
@@ -65,12 +108,6 @@ public class GameManager : MonoBehaviour
 
     private void ExitGame()
     {
-#if UNITY_WEBGL && !UNITY_EDITOR
-        // В WebGL нельзя закрыть вкладку через Application.Quit.
-        // Можно вызвать JS или просто вернуть в главное меню, когда оно появится.
-        Debug.Log("Exit is not supported in WebGL builds");
-#else
         Application.Quit();
-#endif
     }
 }

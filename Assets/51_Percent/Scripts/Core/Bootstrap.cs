@@ -8,6 +8,7 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private TerritoryManager _territoryManager;
     [SerializeField] private PlayerSpawner _playerSpawner;
     [SerializeField] private EnemySpawner _enemySpawner;
+    [SerializeField] private GameManager _gameManager;
 
     [Header("Settings")]
     [SerializeField] private ColorSettings _colorSettings;
@@ -19,22 +20,35 @@ public class Bootstrap : MonoBehaviour
     private ColorService _colorService;
     private KillManager _killManager;
     private LeaderBoardModel _leaderBoardModel;
+    private WinConditionTracker _winConditionTracker;
 
     private void Awake()
     {
         _colorService = new ColorService(_colorSettings);
         _leaderBoardModel = new LeaderBoardModel(_territoryManager);
-        _killManager = new KillManager(_leaderBoardModel);
+        _winConditionTracker = new WinConditionTracker(_territoryManager);
+        _killManager = new KillManager();
 
-        _playerSpawner.Init(_hexGrid, _territoryManager, _killManager, _colorService, _leaderBoardModel);
+        _killManager.CharacterEliminated += _leaderBoardModel.UnregisterCharacter;
+        _killManager.CharacterEliminated += _winConditionTracker.OnCharacterEliminated;
+
+        _playerSpawner.Init(_hexGrid, _territoryManager, _killManager, _colorService, _leaderBoardModel, _winConditionTracker);
         _playerSpawner.SetUIRoot(_uiRoot);
-        _enemySpawner.Init(_hexGrid, _territoryManager, _killManager, _colorService, _leaderBoardModel);
+        _enemySpawner.Init(_hexGrid, _territoryManager, _killManager, _colorService, _leaderBoardModel, _winConditionTracker);
 
+        _gameManager.Init(_winConditionTracker, _territoryManager);
         _leaderBoardView.Init(_leaderBoardModel);
     }
 
     private void OnDestroy()
     {
+        if (_killManager != null)
+        {
+            _killManager.CharacterEliminated -= _leaderBoardModel.UnregisterCharacter;
+            _killManager.CharacterEliminated -= _winConditionTracker.OnCharacterEliminated;
+        }
+
         _leaderBoardModel?.Dispose();
+        _winConditionTracker?.Dispose();
     }
 }

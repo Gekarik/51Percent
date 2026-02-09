@@ -54,6 +54,15 @@ public class TerritoryManager : MonoBehaviour
         return _tracker.GetOwned(character);
     }
 
+    public float GetOwnershipPercent(ICharacter character)
+    {
+        int totalHexes = _hexGrid.AllHexes.Count;
+        if (totalHexes == 0)
+            return 0f;
+
+        return (float)_tracker.GetOwned(character).Count / totalHexes;
+    }
+
     public void OnCharacterDied(ICharacter character)
     {
         _tracker.ReleaseAll(character);
