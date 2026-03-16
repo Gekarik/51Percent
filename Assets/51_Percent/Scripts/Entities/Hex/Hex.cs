@@ -11,6 +11,7 @@ public class Hex : MonoBehaviour, IHex
 
     public Transform Transform => transform;
     public HexView HexView => _hexView;
+    public Transform ViewTransform => _hexView.transform;
     public HexState State => _state;
     public ICharacter Owner { get; private set; }
 
@@ -37,7 +38,12 @@ public class Hex : MonoBehaviour, IHex
         StateChanged?.Invoke(this);
     }
 
-    public Bounds GetRendererBounds() => _hexView.GetBounds();
+    public Bounds GetRendererBounds()
+    {
+        Vector3 meshSize = _hexView.GetLocalMeshBounds().size;
+        Vector3 scaledSize = Vector3.Scale(meshSize, transform.lossyScale);
+        return new Bounds(transform.position, scaledSize);
+    }
 
     public void Reset()
     {

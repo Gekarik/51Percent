@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerSpawner : CharacterSpawner<Player>
 {
     [SerializeField] private PlayerStatsView _uiPrefab;
+    [SerializeField] private Transform _spawnPoint;
 
     private Transform _uiRoot;
     private PlayerStatsPresenter _presenter;
@@ -15,6 +16,8 @@ public class PlayerSpawner : CharacterSpawner<Player>
     private void Start()
     {
         EnsureInitialized();
+        var hex = (_spawnPoint != null ? _grid.GetHexAt(_spawnPoint.position) : null) ?? _grid.GetRandomHex();
+        SetSpawnHexes(new[] { hex });
         var player = SpawnSingleCharacter();
         player.SetName("Player");
         RegisterInLeaderBoard(player);

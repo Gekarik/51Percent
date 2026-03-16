@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -73,7 +74,7 @@ public class GameManager : MonoBehaviour
         bool isVictory = winner is Player;
         float territory = _territoryManager.GetOwnershipPercent(winner);
 
-        var stats = ((CharacterBase)winner).StatsComponent.Stats;
+        var stats = winner.StatsComponent.Stats;
 
         _endgameWindow.Show(winner.Name, winner.Color, isVictory, territory, stats.Kills, stats.Coins);
     }
@@ -103,6 +104,7 @@ public class GameManager : MonoBehaviour
     private void Restart()
     {
         Time.timeScale = 1f;
+        DOTween.KillAll();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

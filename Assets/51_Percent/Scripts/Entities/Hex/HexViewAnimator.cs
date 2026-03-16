@@ -18,6 +18,7 @@ public class HexViewAnimator
 
     public void Pulse()
     {
+        _currentPulseTween?.Kill();
         _currentPulseTween = _hexViewTransform
             .DOScale(_originalScale * _settings.ScaleFactor, _settings.PulseDuration)
             .SetLoops(2, LoopType.Yoyo)

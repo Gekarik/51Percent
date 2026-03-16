@@ -11,6 +11,8 @@ public class HexView : MonoBehaviour, ICoroutineRunner
     private Colorizer _colorizer;
     private MeshRenderer _meshRenderer;
 
+    private MeshFilter _meshFilter;
+
     private MeshRenderer MeshRenderer
     {
         get
@@ -21,9 +23,20 @@ public class HexView : MonoBehaviour, ICoroutineRunner
         }
     }
 
+    private MeshFilter MeshFilter
+    {
+        get
+        {
+            if (_meshFilter == null)
+                _meshFilter = GetComponent<MeshFilter>();
+            return _meshFilter;
+        }
+    }
+
     private void Awake()
     {
         _meshRenderer = GetComponent<MeshRenderer>();
+        _meshFilter = GetComponent<MeshFilter>();
 
         _hexViewAnimator = new HexViewAnimator(transform, _viewSettings);
         _colorizer = new Colorizer(_meshRenderer, this, _viewSettings);
@@ -31,6 +44,7 @@ public class HexView : MonoBehaviour, ICoroutineRunner
     }
 
     public Bounds GetBounds() => MeshRenderer.bounds;
+    public Bounds GetLocalMeshBounds() => MeshFilter.sharedMesh.bounds;
 
     public void UpdateView(IHex hex)
     {

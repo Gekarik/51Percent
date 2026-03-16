@@ -14,10 +14,16 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
 
     private int _counter = 0;
     private WaitForSeconds _wait;
-    
+
+    private ICollectibleRegistry _registry;
     private ObjectPool<T> _pool;
     private Coroutine _spawnRoutine;
     
+    public void SetRegistry(ICollectibleRegistry registry)
+    {
+        _registry = registry;
+    }
+
     private void Awake()
     {
         if (_spawnPrefab == null)
@@ -52,11 +58,17 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
 
     private void SpawnOnce()
     {
-        T item = _pool.Get();
-        item.transform.position = GetRandomPosition();
+        SpawnAtPosition(GetRandomPosition());
+    }
 
+    protected T SpawnAtPosition(Vector3 position)
+    {
+        T item = _pool.Get();
+        item.transform.position = position;
         item.Collected += OnItemCollected;
+        _registry?.Register(item);
         _counter++;
+        return item;
     }
 
     private void OnItemCollected(ICollectible collectible)

@@ -1,6 +1,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(RagdollController))]
 public class CharacterView : MonoBehaviour
 {
     private CharacterBase _character;
@@ -13,6 +14,7 @@ public class CharacterView : MonoBehaviour
 
     private void Update()
     {
+        if (_character == null) return;
         SetSpeed(_character.Speed);
     }
 

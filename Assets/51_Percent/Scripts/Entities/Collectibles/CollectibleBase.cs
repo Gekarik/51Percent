@@ -9,7 +9,7 @@ public abstract class CollectibleBase : MonoBehaviour, ICollectible
 
     public event Action<ICollectible> Collected;
 
-    public GrabbableState State { get; private set; }
+    public GrabbableState State { get; protected set; }
     public Transform Transform => transform;
 
     protected virtual void Awake()

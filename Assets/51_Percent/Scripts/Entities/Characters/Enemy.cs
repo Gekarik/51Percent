@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Enemy : CharacterBase
@@ -9,11 +10,10 @@ public class Enemy : CharacterBase
         _brain = GetComponent<EnemyBrain>();
     }
 
-    public void InitBrain(IHexGridProvider grid, BotPersonalitySettings personality = null)
+    public void InitBrain(IHexGridProvider grid, IReadOnlyList<ICharacter> allCharacters,
+        ICollectibleRegistry collectibleRegistry, BotPersonalitySettings personality = null, int botIndex = 0)
     {
         if (_brain != null)
-        {
-            _brain.Init(grid, personality);
-        }
+            _brain.Init(grid, allCharacters, collectibleRegistry, personality, botIndex);
     }
 }

@@ -4,6 +4,7 @@ public class HexGridGenerator : MonoBehaviour
 {
     [SerializeField] private Hex _hexPrefab;
     [SerializeField] private float _hexRadius;
+    [SerializeField] [Range(0.5f, 1f)] private float _visualScale = 0.9f;
     [SerializeField] private BoxCollider _playableArea;
     [SerializeField] private Transform _container;
 
@@ -39,6 +40,7 @@ public class HexGridGenerator : MonoBehaviour
                 Vector3 pos = new Vector3(x, 0f, z);
                 var hexInstance = Instantiate(_hexPrefab, pos, Quaternion.identity, _container);
                 hexInstance.transform.localScale = Vector3.one * _hexRadius;
+                hexInstance.HexView.transform.localScale = Vector3.one * _visualScale;
             }
         }
     }

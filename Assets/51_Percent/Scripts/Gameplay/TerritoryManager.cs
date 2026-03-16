@@ -9,6 +9,11 @@ public class TerritoryManager : MonoBehaviour
 
     private readonly OwnershipTracker _tracker = new OwnershipTracker();
     private TransformWaver _transformWaver;
+
+    private readonly HashSet<IHex> _fragmentVisited = new HashSet<IHex>();
+    private readonly Queue<IHex> _fragmentQueue = new Queue<IHex>();
+    private readonly List<List<IHex>> _components = new List<List<IHex>>();
+    private readonly List<IHex> _componentBuffer = new List<IHex>();
     
     public int AllHexes => _hexGrid.AllHexes.Count;
 
@@ -25,16 +30,6 @@ public class TerritoryManager : MonoBehaviour
 
         _transformWaver = new TransformWaver();
         _tracker.Initialize(_hexGrid.AllHexes);
-    }
-
-    private void OnEnable()
-    {
-        _tracker.Subscribe(_hexGrid.AllHexes);
-    }
-
-    private void OnDisable()
-    {
-        _tracker.Unsubscribe(_hexGrid.AllHexes);
     }
 
     public void InitCharacter(ICharacter character)
@@ -79,6 +74,80 @@ public class TerritoryManager : MonoBehaviour
         _tracker.TakeOwnership(character, hex);
     }
 
+    public void ReleaseHex(IHex hex)
+    {
+        _tracker.ReleaseHex(hex);
+    }
+
+    public void TrailHex(ICharacter character, IHex hex)
+    {
+        _tracker.TransferToTrail(character, hex);
+    }
+
+    public void ReleaseDisconnectedFragments(ICharacter character)
+    {
+        var owned = _tracker.GetOwned(character);
+        if (owned.Count <= 1)
+            return;
+
+        _fragmentVisited.Clear();
+        _components.Clear();
+
+        foreach (var startHex in owned)
+        {
+            if (_fragmentVisited.Contains(startHex))
+                continue;
+
+            _componentBuffer.Clear();
+            _fragmentQueue.Clear();
+            _fragmentQueue.Enqueue(startHex);
+            _fragmentVisited.Add(startHex);
+            _componentBuffer.Add(startHex);
+
+            while (_fragmentQueue.Count > 0)
+            {
+                var current = _fragmentQueue.Dequeue();
+
+                foreach (var neighbor in _hexGrid.GetNeighbors(current))
+                {
+                    if (_fragmentVisited.Contains(neighbor))
+                        continue;
+
+                    bool isOwned = owned.Contains(neighbor);
+                    bool isTrailBridge = neighbor.State == HexState.PartOfTrail;
+
+                    if (!isOwned && !isTrailBridge)
+                        continue;
+
+                    _fragmentVisited.Add(neighbor);
+                    _fragmentQueue.Enqueue(neighbor);
+
+                    if (isOwned)
+                        _componentBuffer.Add(neighbor);
+                }
+            }
+
+            _components.Add(new List<IHex>(_componentBuffer));
+        }
+
+        if (_components.Count <= 1)
+            return;
+
+        int largestIndex = 0;
+        for (int i = 1; i < _components.Count; i++)
+            if (_components[i].Count > _components[largestIndex].Count)
+                largestIndex = i;
+
+        for (int i = 0; i < _components.Count; i++)
+        {
+            if (i == largestIndex)
+                continue;
+
+            foreach (var hex in _components[i])
+                _tracker.ReleaseHex(hex);
+        }
+    }
+
     public void OnAreaCaptured(IReadOnlyCollection<Transform> hexesView)
     {
         _transformWaver?.Wave(hexesView);
@@ -86,7 +155,6 @@ public class TerritoryManager : MonoBehaviour
 
     private void Reset()
     {
-        _tracker.Unsubscribe(_hexGrid.AllHexes);
         _tracker.Reset();
     }
 }

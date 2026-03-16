@@ -3,70 +3,62 @@ using UnityEngine;
 
 public class EnemyBrain : VectorProviderComponent
 {
-    private const float StrategyHysteresis = 1f;
-    private const float DirectionSmoothSpeed = 5f; // рад/с — скорость поворота направления
+    private enum BotState { Expanding, Returning, Attacking, Collecting }
+
+    private const float DirectionSmoothSpeed = 5f;
+    private const float TrailThreatRadius = 3.5f;
+    private const int ScanDirections = 8;
+    private const int ScanSteps = 5;
+    private const float ScanStepDistance = 2f;
+    private const float EnemyDirectionPenalty = 10f;
+    private const float ArrivalThreshold = 2f;
 
     [SerializeField] private BotPersonalitySettings _personality;
-    [SerializeField] private LayerMask _collectibleLayer;
-    [SerializeField] private LayerMask _characterLayer;
+    [SerializeField] private float _expansionDangerRadius = 7f;
 
     private IHexGridProvider _grid;
+    private IReadOnlyList<ICharacter> _allCharacters;
+    private ICollectibleRegistry _collectibleRegistry;
     private Conqueror _conqueror;
     private ICharacter _character;
-    private BotContext _context;
 
-    private List<IBotStrategy> _strategies;
-    private IBotStrategy _currentStrategy;
-    private ExpandTerritoryStrategy _expandStrategy;
-
+    private BotState _state;
     private Vector3 _targetPosition;
     private Vector3 _moveDirection;
-    private float _nextDecisionTime;
+    private float _nextThinkTime;
     private bool _initialized;
 
-    private readonly Collider[] _overlapBuffer = new Collider[16];
+    // Expansion
+    private Vector3 _expansionMidpoint;
+    private Vector3 _expansionEndpoint;
+    private bool _expansionPlanned;
+    private bool _reachedMidpoint;
 
-    public void Init(IHexGridProvider grid, BotPersonalitySettings personality = null)
+    // Attack
+    private ICharacter _attackTarget;
+    private Vector3 _failedAttackPosition;
+    private bool _hasFailedAttackRepulsor;
+
+    // Collect
+    private ICollectible _collectibleTarget;
+
+    public void Init(IHexGridProvider grid, IReadOnlyList<ICharacter> allCharacters,
+        ICollectibleRegistry collectibleRegistry, BotPersonalitySettings personality = null, int botIndex = 0)
     {
         _grid = grid;
+        _allCharacters = allCharacters;
+        _collectibleRegistry = collectibleRegistry;
         _conqueror = GetComponent<Conqueror>();
         _character = GetComponent<ICharacter>();
 
         if (personality != null)
             _personality = personality;
 
-        InitContext();
-        InitStrategies();
-
+        _state = BotState.Expanding;
         _targetPosition = transform.position;
         _moveDirection = Vector3.forward;
+        _nextThinkTime = Time.time + botIndex * 0.15f;
         _initialized = true;
-    }
-
-    private void InitContext()
-    {
-        _context = new BotContext
-        {
-            BotTransform = transform,
-            Grid = _grid,
-            Conqueror = _conqueror,
-            Character = _character,
-            Personality = _personality
-        };
-    }
-
-    private void InitStrategies()
-    {
-        _expandStrategy = new ExpandTerritoryStrategy();
-
-        _strategies = new List<IBotStrategy>
-        {
-            new AvoidDangerStrategy(),    // Высокий приоритет при опасности
-            new ReturnHomeStrategy(),      // Важно вернуться если trail длинный
-            new AttackEnemyStrategy(),     // Атака уязвимых врагов
-            new CollectCoinStrategy(),     // Сбор монет
-            _expandStrategy               // Расширение территории (default)
-        };
     }
 
     public override Vector3 GetMoveDirection()
@@ -74,16 +66,12 @@ public class EnemyBrain : VectorProviderComponent
         if (!_initialized || _personality == null)
             return Vector3.zero;
 
-        if (Time.time >= _nextDecisionTime)
+        if (Time.time >= _nextThinkTime)
         {
-            UpdateContext();
-            SelectStrategy();
-            UpdateTarget();
-
-            _nextDecisionTime = Time.time + _personality.ReactionTime;
+            Think();
+            _nextThinkTime = Time.time + _personality.ReactionTime;
         }
 
-        // Плавный поворот к цели
         Vector3 toTarget = _targetPosition - transform.position;
         toTarget.y = 0f;
 
@@ -95,194 +83,448 @@ public class EnemyBrain : VectorProviderComponent
         }
 
         _moveDirection.y = 0f;
-        _context.CurrentDirection = _moveDirection;
-
         return _moveDirection.sqrMagnitude > 0.01f ? _moveDirection.normalized : Vector3.forward;
     }
 
-    private void UpdateContext()
+    // ── FSM ──────────────────────────────────────────────────────────────
+
+    private void Think()
     {
-        _context.Clear();
-        _context.CurrentHex = _grid.GetHexAt(transform.position);
-
-        DetectNearbyCoins();
-        DetectNearbyEnemies();
-        DetectDangerousTrails();
-    }
-
-    private void DetectNearbyCoins()
-    {
-        int count = Physics.OverlapSphereNonAlloc(
-            transform.position,
-            _personality.DetectionRadius,
-            _overlapBuffer,
-            _collectibleLayer
-        );
-
-        for (int i = 0; i < count; i++)
+        switch (_state)
         {
-            if (_overlapBuffer[i] != null && _overlapBuffer[i].TryGetComponent<ICollectible>(out _))
-            {
-                _context.NearbyCoins.Add(_overlapBuffer[i].transform);
-            }
+            case BotState.Expanding:   ThinkExpanding();   break;
+            case BotState.Returning:   ThinkReturning();   break;
+            case BotState.Attacking:   ThinkAttacking();   break;
+            case BotState.Collecting:  ThinkCollecting();  break;
         }
     }
 
-    private void DetectNearbyEnemies()
+    private void ThinkExpanding()
     {
-        int count = Physics.OverlapSphereNonAlloc(
-            transform.position,
-            _personality.DetectionRadius,
-            _overlapBuffer,
-            _characterLayer
-        );
+        bool hasTrail = _conqueror.TrailHexes.Count > 0;
 
-        for (int i = 0; i < count; i++)
+        if (hasTrail && (IsTrailThreatened() || _conqueror.TrailHexes.Count >= _personality.MaxTrailLength))
         {
-            if (_overlapBuffer[i] != null &&
-                _overlapBuffer[i].TryGetComponent<ICharacter>(out var character))
+            EnterReturning();
+            return;
+        }
+
+        if (!hasTrail)
+        {
+            var attackTarget = FindAttackTarget();
+            if (attackTarget != null)
             {
-                if (character != _character && character.State == CharacterState.Alive)
+                EnterAttacking(attackTarget);
+                return;
+            }
+
+            var collectible = FindNearestCollectible();
+            if (collectible != null)
+            {
+                EnterCollecting(collectible);
+                return;
+            }
+        }
+
+        if (!_expansionPlanned)
+            PlanExpansion();
+
+        _targetPosition = GetExpansionTarget();
+    }
+
+    private void ThinkReturning()
+    {
+        if (_conqueror.TrailHexes.Count == 0)
+        {
+            EnterExpanding();
+            return;
+        }
+
+        _targetPosition = GetNearestHomePosition();
+    }
+
+    private void ThinkAttacking()
+    {
+        if (_attackTarget == null ||
+            _attackTarget.State != CharacterState.Alive ||
+            !_attackTarget.HasActiveTrail)
+        {
+            _failedAttackPosition = _attackTarget?.Transform.position ?? transform.position;
+            _hasFailedAttackRepulsor = true;
+            EnterReturning();
+            return;
+        }
+
+        if (_character.HasActiveTrail && IsTrailThreatened())
+        {
+            EnterReturning();
+            return;
+        }
+
+        _targetPosition = GetAttackPosition();
+    }
+
+    private void ThinkCollecting()
+    {
+        if (_collectibleTarget == null || _collectibleTarget.State != GrabbableState.Idle)
+        {
+            EnterExpanding();
+            return;
+        }
+
+        if (_conqueror.TrailHexes.Count > 0 && IsTrailThreatened())
+        {
+            EnterReturning();
+            return;
+        }
+
+        _targetPosition = _collectibleTarget.Transform.position;
+    }
+
+    // ── Переходы ─────────────────────────────────────────────────────────
+
+    private void EnterExpanding()
+    {
+        _state = BotState.Expanding;
+        _expansionPlanned = false;
+        _reachedMidpoint = false;
+        _attackTarget = null;
+        _collectibleTarget = null;
+    }
+
+    private void EnterReturning()
+    {
+        _state = BotState.Returning;
+        _attackTarget = null;
+        _collectibleTarget = null;
+    }
+
+    private void EnterAttacking(ICharacter target)
+    {
+        _state = BotState.Attacking;
+        _attackTarget = target;
+    }
+
+    private void EnterCollecting(ICollectible collectible)
+    {
+        _state = BotState.Collecting;
+        _collectibleTarget = collectible;
+    }
+
+    // ── Сенсоры ──────────────────────────────────────────────────────────
+
+    private bool IsTrailThreatened()
+    {
+        var trail = _conqueror.TrailHexes;
+        if (trail.Count == 0) return false;
+
+        float threatSq = TrailThreatRadius * TrailThreatRadius;
+        float detSq = _personality.DetectionRadius * _personality.DetectionRadius;
+
+        foreach (var character in _allCharacters)
+        {
+            if (character == null || character == _character) continue;
+            if (character.State != CharacterState.Alive) continue;
+
+            float enemyDistSq = (character.Transform.position - transform.position).sqrMagnitude;
+            if (enemyDistSq > detSq) continue;
+
+            // Проверяем только последние хексы трейла (рядом с ботом)
+            int from = Mathf.Max(0, trail.Count - 5);
+            for (int i = from; i < trail.Count; i++)
+            {
+                var hex = trail[i];
+                if (hex?.Transform == null) continue;
+
+                float distSq = (character.Transform.position - hex.Transform.position).sqrMagnitude;
+                if (distSq < threatSq) return true;
+            }
+        }
+
+        return false;
+    }
+
+    private ICharacter FindAttackTarget()
+    {
+        float detSq = _personality.DetectionRadius * _personality.DetectionRadius;
+        ICharacter best = null;
+        float bestDist = float.MaxValue;
+
+        foreach (var character in _allCharacters)
+        {
+            if (character == null || character == _character) continue;
+            if (character.State != CharacterState.Alive) continue;
+            if (!character.HasActiveTrail) continue;
+
+            float distSq = (character.Transform.position - transform.position).sqrMagnitude;
+            if (distSq > detSq) continue;
+
+            float dist = Mathf.Sqrt(distSq);
+
+            // Агрессия определяет, насколько далёкую цель бот готов атаковать
+            float maxAttackDist = _personality.DetectionRadius * _personality.Aggression;
+            if (dist > maxAttackDist) continue;
+
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                best = character;
+            }
+        }
+
+        return best;
+    }
+
+    private ICollectible FindNearestCollectible()
+    {
+        if (_collectibleRegistry == null) return null;
+
+        float maxDist = _personality.DetectionRadius * _personality.Greed;
+        float maxDistSq = maxDist * maxDist;
+
+        ICollectible best = null;
+        float bestDistSq = float.MaxValue;
+
+        foreach (var collectible in _collectibleRegistry.ActiveCollectibles)
+        {
+            if (collectible == null || collectible.State != GrabbableState.Idle) continue;
+
+            float distSq = (collectible.Transform.position - transform.position).sqrMagnitude;
+            if (distSq > maxDistSq) continue;
+
+            if (distSq < bestDistSq)
+            {
+                bestDistSq = distSq;
+                best = collectible;
+            }
+        }
+
+        return best;
+    }
+
+    // ── Расширение ───────────────────────────────────────────────────────
+
+    private void PlanExpansion()
+    {
+        Vector3 outDir = FindBestExpansionDirection();
+        float sign = Random.value > 0.5f ? 1f : -1f;
+        Vector3 latDir = Quaternion.Euler(0f, sign * 90f, 0f) * outDir;
+
+        float halfLength = _personality.MaxTrailLength * 0.4f * ScanStepDistance;
+
+        _expansionMidpoint = FindFarthestValidPoint(transform.position, outDir, halfLength);
+        _expansionEndpoint = FindFarthestValidPoint(_expansionMidpoint, latDir, halfLength);
+
+        _reachedMidpoint = false;
+        _expansionPlanned = true;
+        _hasFailedAttackRepulsor = false;
+    }
+
+    private Vector3 GetExpansionTarget()
+    {
+        if (!_reachedMidpoint)
+        {
+            if ((transform.position - _expansionMidpoint).sqrMagnitude < ArrivalThreshold * ArrivalThreshold)
+                _reachedMidpoint = true;
+            else
+                return _expansionMidpoint;
+        }
+
+        return _expansionEndpoint;
+    }
+
+    // Находит самую дальнюю допустимую точку вдоль направления до границы карты
+    private Vector3 FindFarthestValidPoint(Vector3 from, Vector3 direction, float maxDistance)
+    {
+        Vector3 best = from;
+        for (float d = ScanStepDistance; d <= maxDistance; d += ScanStepDistance)
+        {
+            Vector3 candidate = from + direction * d;
+            if (_grid.GetHexAt(candidate) != null)
+                best = candidate;
+            else
+                break;
+        }
+        return best;
+    }
+
+    private Vector3 FindBestExpansionDirection()
+    {
+        Vector3 territoryCenter = GetTerritoryCenter();
+        Vector3 fromCenter = transform.position - territoryCenter;
+        fromCenter.y = 0f;
+        Vector3 centerDir = fromCenter.magnitude > 0.5f ? fromCenter.normalized : Vector3.zero;
+
+        Vector3 bestDir = Vector3.forward;
+        float bestScore = float.MinValue;
+        float caution = 1f - _personality.Aggression;
+
+        for (int i = 0; i < ScanDirections; i++)
+        {
+            float angle = i * (360f / ScanDirections) * Mathf.Deg2Rad;
+            Vector3 candidate = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle));
+
+            float score = 0f;
+            float dangerRadiusSq = _expansionDangerRadius * _expansionDangerRadius;
+
+            for (int step = 1; step <= ScanSteps; step++)
+            {
+                Vector3 scanPos = transform.position + candidate * step * ScanStepDistance;
+
+                IHex hex = _grid.GetHexAt(scanPos);
+                if (hex == null) { score -= 10f; break; }
+                if (hex.State == HexState.Empty) score += 3f;
+                else if (hex.State == HexState.Busy && hex.Owner != _character) score += 2f;
+
+                // Потенциальное поле отталкивания: штраф пропорционален близости врага к каждой точке пути
+                if (_allCharacters != null)
                 {
-                    _context.NearbyEnemies.Add(character);
+                    foreach (var character in _allCharacters)
+                    {
+                        if (character == null || character == _character) continue;
+                        if (character.State != CharacterState.Alive) continue;
+
+                        float distSq = (character.Transform.position - scanPos).sqrMagnitude;
+                        if (distSq >= dangerRadiusSq) continue;
+
+                        score -= (1f - distSq / dangerRadiusSq) * EnemyDirectionPenalty * caution;
+                    }
+                }
+
+                // Усиленный репульсор на месте провалившейся атаки
+                if (_hasFailedAttackRepulsor)
+                {
+                    float distSq = (_failedAttackPosition - scanPos).sqrMagnitude;
+                    if (distSq < dangerRadiusSq)
+                        score -= (1f - distSq / dangerRadiusSq) * EnemyDirectionPenalty * 2f;
                 }
             }
-        }
-    }
 
-    private void DetectDangerousTrails()
-    {
-        if (_context.CurrentHex == null)
-            return;
+            if (centerDir.sqrMagnitude > 0.01f)
+                score += Vector3.Dot(candidate, centerDir) * 0.5f;
 
-        var coord = _grid.GetCoord(_context.CurrentHex);
-        int searchRadius = Mathf.CeilToInt(_personality.DetectionRadius / 2f);
-
-        foreach (var hex in _grid.GetHexesInRadius(coord, searchRadius))
-        {
-            if (hex.State == HexState.PartOfTrail && hex.Owner != _character)
+            if (score > bestScore)
             {
-                _context.DangerousTrails.Add(hex);
-            }
-        }
-    }
-
-    private void SelectStrategy()
-    {
-        // Если текущая стратегия блокирует переключение - оставляем её
-        if (_currentStrategy != null && _currentStrategy.IsBlocking(_context))
-        {
-            return;
-        }
-
-        // Utility и приоритет текущей стратегии
-        float? currentUtility = _currentStrategy?.Evaluate(_context);
-        int currentPriority = _currentStrategy != null ? GetStrategyPriority(_currentStrategy.Type) : -1;
-
-        // Выбираем стратегию с максимальным utility (с учётом приоритетов)
-        IBotStrategy bestStrategy = null;
-        float bestUtility = float.MinValue;
-
-        foreach (var strategy in _strategies)
-        {
-            // Не переключаемся на стратегию с более низким приоритетом,
-            // пока текущая ещё применима
-            if (currentUtility.HasValue && GetStrategyPriority(strategy.Type) < currentPriority)
-                continue;
-
-            float? utility = strategy.Evaluate(_context);
-
-            if (!utility.HasValue)
-                continue;
-
-            // Гистерезис: текущая стратегия получает бонус, чтобы избежать дёрганья
-            float adjustedUtility = utility.Value;
-            if (strategy == _currentStrategy && currentUtility.HasValue)
-                adjustedUtility += StrategyHysteresis;
-
-            if (adjustedUtility > bestUtility)
-            {
-                bestUtility = adjustedUtility;
-                bestStrategy = strategy;
+                bestScore = score;
+                bestDir = candidate;
             }
         }
 
-        // Переключаем стратегию если нашли лучшую
-        if (bestStrategy != null && bestStrategy != _currentStrategy)
+        return Quaternion.Euler(0f, Random.Range(-20f, 20f), 0f) * bestDir;
+    }
+
+    // ── Возврат домой ────────────────────────────────────────────────────
+
+    private Vector3 GetNearestHomePosition()
+    {
+        var territory = _conqueror.FixedHexes;
+        if (territory == null || territory.Count == 0)
+            return transform.position;
+
+        IHex nearest = null;
+        float nearestSq = float.MaxValue;
+
+        foreach (var hex in territory)
         {
-            Debug.Log($"[{transform.name}] Strategy: {_currentStrategy?.Type} → {bestStrategy.Type} " +
-                      $"(utility={bestUtility:F1})");
-
-            _currentStrategy?.OnDeactivate(_context);
-            _currentStrategy = bestStrategy;
-            _currentStrategy.OnActivate(_context);
-
-            // Сбрасываем направление расширения при смене стратегии
-            if (_currentStrategy != _expandStrategy)
+            if (hex?.Transform == null) continue;
+            float sq = (transform.position - hex.Transform.position).sqrMagnitude;
+            if (sq < nearestSq)
             {
-                _expandStrategy.ResetDirection();
+                nearestSq = sq;
+                nearest = hex;
             }
         }
 
-        // Fallback на расширение
-        if (_currentStrategy == null)
-        {
-            _currentStrategy = _expandStrategy;
-            _currentStrategy.OnActivate(_context);
-        }
+        return nearest?.Transform.position ?? transform.position;
     }
 
-    private void UpdateTarget()
+    // ── Атака ────────────────────────────────────────────────────────────
+
+    private Vector3 GetAttackPosition()
     {
-        if (_currentStrategy != null)
+        IHex enemyHex = _grid.GetHexAt(_attackTarget.Transform.position);
+        if (enemyHex != null)
         {
-            _targetPosition = _currentStrategy.GetTargetPosition(_context);
+            var coord = _grid.GetCoord(enemyHex);
+            int radius = Mathf.CeilToInt(_personality.DetectionRadius * 0.5f);
+
+            IHex nearestTrail = null;
+            float nearestSq = float.MaxValue;
+
+            foreach (var hex in _grid.GetHexesInRadius(coord, radius))
+            {
+                if (hex.State != HexState.PartOfTrail || hex.Owner != _attackTarget) continue;
+                float sq = (transform.position - hex.Transform.position).sqrMagnitude;
+                if (sq < nearestSq)
+                {
+                    nearestSq = sq;
+                    nearestTrail = hex;
+                }
+            }
+
+            if (nearestTrail?.Transform != null)
+                return nearestTrail.Transform.position;
         }
+
+        return _attackTarget.Transform.position;
     }
 
-    private static int GetStrategyPriority(StrategyType type)
+    // ── Вспомогательное ──────────────────────────────────────────────────
+
+    private Vector3 GetTerritoryCenter()
     {
-        return type switch
+        var territory = _conqueror.FixedHexes;
+        if (territory == null || territory.Count == 0)
+            return transform.position;
+
+        Vector3 sum = Vector3.zero;
+        int count = 0;
+        foreach (var hex in territory)
         {
-            StrategyType.AvoidDanger => 3,
-            StrategyType.ReturnHome => 2,
-            StrategyType.AttackEnemy => 1,
-            StrategyType.CollectCoin => 1,
-            StrategyType.ExpandTerritory => 0,
-            _ => 0
-        };
+            if (hex?.Transform == null) continue;
+            sum += hex.Transform.position;
+            count++;
+        }
+
+        return count > 0 ? sum / count : transform.position;
     }
 
 #if UNITY_EDITOR
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
-        if (!_initialized || _personality == null)
-            return;
+        if (!_initialized || _personality == null) return;
 
-        // Радиус обнаружения
         Gizmos.color = new Color(1f, 1f, 0f, 0.2f);
         Gizmos.DrawWireSphere(transform.position, _personality.DetectionRadius);
 
-        // Цвет зависит от текущей стратегии
-        Gizmos.color = GetStrategyColor();
-        Gizmos.DrawLine(transform.position, _targetPosition);
-        Gizmos.DrawWireSphere(_targetPosition, 0.3f);
-    }
-
-    private Color GetStrategyColor()
-    {
-        if (_currentStrategy == null)
-            return Color.gray;
-
-        return _currentStrategy.Type switch
+        Gizmos.color = _state switch
         {
-            StrategyType.ExpandTerritory => Color.cyan,
-            StrategyType.ReturnHome => Color.green,
-            StrategyType.CollectCoin => Color.yellow,
-            StrategyType.AttackEnemy => Color.red,
-            StrategyType.AvoidDanger => Color.magenta,
+            BotState.Expanding  => Color.cyan,
+            BotState.Returning  => Color.green,
+            BotState.Attacking  => Color.red,
+            BotState.Collecting => Color.yellow,
             _ => Color.gray
         };
+
+        Gizmos.DrawLine(transform.position, _targetPosition);
+        Gizmos.DrawWireSphere(_targetPosition, 0.3f);
+
+        if (_state == BotState.Expanding && _expansionPlanned)
+        {
+            Gizmos.color = new Color(0f, 1f, 1f, 0.5f);
+            Gizmos.DrawWireSphere(_expansionMidpoint, 0.4f);
+            Gizmos.DrawWireSphere(_expansionEndpoint, 0.4f);
+            Gizmos.DrawLine(_expansionMidpoint, _expansionEndpoint);
+        }
+
+        Gizmos.color = new Color(1f, 0.4f, 0f, 0.15f);
+        Gizmos.DrawWireSphere(transform.position, _expansionDangerRadius);
+
+        if (_hasFailedAttackRepulsor)
+        {
+            Gizmos.color = new Color(1f, 0f, 0f, 0.25f);
+            Gizmos.DrawWireSphere(_failedAttackPosition, _expansionDangerRadius);
+        }
     }
 #endif
 }

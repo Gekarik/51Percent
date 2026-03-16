@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviour, ICharacter
 {
+    private const float SpawnYOffset = 0.1f;
+
     [SerializeField] private T _prefab;
 
     protected HexGrid _grid;
@@ -12,7 +15,10 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
     protected LeaderBoardModel _leaderBoardModel;
     protected WinConditionTracker _winConditionTracker;
 
+    private IHex[] _spawnHexes;
+    private int _spawnIndex;
     private bool _initialized;
+    private List<ICharacter> _allCharacters;
 
     public void Init(HexGrid grid, TerritoryManager territoryManager, KillManager killManager,
         ColorService colorService, LeaderBoardModel leaderBoardModel, WinConditionTracker winConditionTracker)
@@ -26,6 +32,17 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
         _initialized = true;
     }
 
+    public void SetCharacterList(List<ICharacter> allCharacters)
+    {
+        _allCharacters = allCharacters;
+    }
+
+    public void SetSpawnHexes(IHex[] hexes)
+    {
+        _spawnHexes = hexes;
+        _spawnIndex = 0;
+    }
+
     protected void EnsureInitialized()
     {
         if (!_initialized)
@@ -36,15 +53,26 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
     {
         EnsureInitialized();
 
-        IHex startHex = _grid.GetRandomHex();
+        IHex startHex = GetStartHex();
+        Vector3 spawnPosition = startHex.Transform.position + Vector3.up * SpawnYOffset;
 
-        var character = Instantiate(_prefab, startHex.Transform.position, Quaternion.identity);
+        var character = Instantiate(_prefab, spawnPosition, Quaternion.identity);
         character.Init(_colorService, _territoryManager, _grid);
         _territoryManager.GetStartTerritory(character, startHex);
-        character.Conqueror.TrailInterrupted += _killManager.OnTrailInterrupted;
+        character.TrailInterrupted += _killManager.OnTrailInterrupted;
+        character.TrailOrphaned += _killManager.OnTrailOrphaned;
         _winConditionTracker.RegisterCharacter(character);
+        _allCharacters?.Add(character);
 
         return character;
+    }
+
+    private IHex GetStartHex()
+    {
+        if (_spawnHexes != null && _spawnIndex < _spawnHexes.Length)
+            return _spawnHexes[_spawnIndex++];
+
+        return _grid.GetRandomHex();
     }
 
     protected void RegisterInLeaderBoard(ICharacter character)

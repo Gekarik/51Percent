@@ -6,7 +6,7 @@ public interface IHex
     Transform Transform { get; }
     HexState State { get; }
     ICharacter Owner { get; }
-    HexView HexView { get; }
+    Transform ViewTransform { get; }
 
     event Action<IHex> StateChanged;
 

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-public class ConquestAlgorithm : IConquestAlgorithm
+public class ConquestAlgorithm
 {
     private const int MaxNeighborCount = 6;
 
@@ -8,16 +8,16 @@ public class ConquestAlgorithm : IConquestAlgorithm
     private readonly HashSet<IHex> _barrier = new HashSet<IHex>();
     private readonly Queue<IHex> _floodQueue = new Queue<IHex>();
     private readonly HashSet<IHex> _visited = new HashSet<IHex>();
-    private readonly List<IHex> _capturedHexes = new List<IHex>();
 
     // Кеш соседей и граничных гексов — строится один раз
     private Dictionary<IHex, IHex[]> _neighborCache;
     private List<IHex> _borderHexes;
 
-    public List<IHex> ComputeCapturedArea(
+    public void ComputeCapturedArea(
         IReadOnlyCollection<IHex> fixedHexes,
         IReadOnlyCollection<IHex> trailHexes,
-        IHexGridProvider hexGridProvider)
+        IHexGridProvider hexGridProvider,
+        List<IHex> output)
     {
         EnsureNeighborCache(hexGridProvider);
 
@@ -59,20 +59,18 @@ public class ConquestAlgorithm : IConquestAlgorithm
         }
 
         // Всё, что не достигнуто flood-fill и не в барьере — захвачено
-        _capturedHexes.Clear();
+        output.Clear();
 
         IReadOnlyList<IHex> allHexes = hexGridProvider.AllHexes;
         for (int i = 0; i < allHexes.Count; i++)
         {
             IHex hex = allHexes[i];
             if (!_barrier.Contains(hex) && !_visited.Contains(hex))
-                _capturedHexes.Add(hex);
+                output.Add(hex);
         }
 
         foreach (var hex in trailHexes)
-            _capturedHexes.Add(hex);
-
-        return _capturedHexes;
+            output.Add(hex);
     }
 
     private void EnsureNeighborCache(IHexGridProvider grid)

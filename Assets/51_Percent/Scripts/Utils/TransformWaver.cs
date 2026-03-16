@@ -6,8 +6,6 @@ using UnityEngine;
 
 public class TransformWaver : IWaveAnimator
 {
-    private readonly float _elementDuration;
-    
     private float _animationHeight = 0.6f;
     private float _totalWaveDuration = 0.8f;
     private float _overlapFactor = 0.5f; // 0 = полное наложение, 1 ~ последовательный
@@ -15,11 +13,6 @@ public class TransformWaver : IWaveAnimator
     private readonly Dictionary<Transform, Vector3> _originalPositions = new();
     private readonly List<Tween> _activeTweens = new();
     
-    public TransformWaver()
-    {
-        _elementDuration = GetElementDuration();
-    }
-
     private float GetElementDuration()
     {
         float clamped = Mathf.Clamp01(_overlapFactor);
@@ -38,7 +31,7 @@ public class TransformWaver : IWaveAnimator
         SaveOriginalPositions(elements);
 
         float elementDuration = GetElementDuration();
-        float startDelay = GetDelayBetweenStarts(elements.Length, _elementDuration);
+        float startDelay = GetDelayBetweenStarts(elements.Length, elementDuration);
 
         StartWaveAnimation(elements, elementDuration, startDelay);
     }
@@ -85,7 +78,8 @@ public class TransformWaver : IWaveAnimator
             float delay = i * startDelay;
             float localTime = (elapsedTime - delay) / elementDuration;
 
-            tf.localPosition = _originalPositions[tf] + Vector3.up * CalculateOffset(localTime);
+            if (_originalPositions.TryGetValue(tf, out var origPos))
+                tf.localPosition = origPos + Vector3.up * CalculateOffset(localTime);
         }
     }
 
@@ -98,31 +92,13 @@ public class TransformWaver : IWaveAnimator
     {
         foreach (var tf in elements)
         {
-            tf.localPosition = _originalPositions[tf];
-            _originalPositions.Remove(tf);
+            if (_originalPositions.TryGetValue(tf, out var origPos))
+            {
+                tf.localPosition = origPos;
+                _originalPositions.Remove(tf);
+            }
         }
 
         _activeTweens.Remove(tween);
-    }
-
-    public void Reset()
-    {
-        for (var i = 0; i < _activeTweens.Count; i++)
-        {
-            var tw = _activeTweens[i];
-            tw.Kill();
-        }
-
-        _activeTweens.Clear();
-
-        foreach (var pair in _originalPositions)
-        {
-            var targetTransform = pair.Key;
-            var originalPosition = pair.Value;
-
-            targetTransform.localPosition = originalPosition;
-        }
-
-        _originalPositions.Clear();
     }
 }

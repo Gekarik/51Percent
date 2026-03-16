@@ -26,8 +26,29 @@ public class WinConditionTracker
     {
         _aliveCharacters.Remove(character);
 
-        if (_aliveCharacters.Count == 1)
-            FinishGame(_aliveCharacters[0]);
+        if (character is Player)
+            FinishGame(GetLeader());
+    }
+
+    private ICharacter GetLeader()
+    {
+        if (_aliveCharacters.Count == 0)
+            return null;
+
+        ICharacter leader = _aliveCharacters[0];
+        float maxPercent = _territoryManager.GetOwnershipPercent(leader);
+
+        for (int i = 1; i < _aliveCharacters.Count; i++)
+        {
+            float percent = _territoryManager.GetOwnershipPercent(_aliveCharacters[i]);
+            if (percent > maxPercent)
+            {
+                maxPercent = percent;
+                leader = _aliveCharacters[i];
+            }
+        }
+
+        return leader;
     }
 
     private void CheckTerritoryCondition()

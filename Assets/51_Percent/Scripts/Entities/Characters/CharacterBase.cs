@@ -6,6 +6,7 @@ using UnityEngine;
 public abstract class CharacterBase : MonoBehaviour, ICharacter
 {
     [SerializeField] private CharacterView _view;
+    [SerializeField] private Transform _headSocket;
 
     private string _name;
     private CharacterState _state = CharacterState.Alive;
@@ -14,14 +15,33 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter
     private Mover _mover;
     private Grabber _grabber;
     private ColorService _colorService;
+    private RagdollController _ragdollController;
 
-    public Conqueror Conqueror => _conqueror;
+    public bool HasActiveTrail => _conqueror.TrailHexes.Count > 0;
+
+    public event Action<ICharacter, ICharacter> TrailInterrupted
+    {
+        add => _conqueror.TrailInterrupted += value;
+        remove => _conqueror.TrailInterrupted -= value;
+    }
+
+    public event Action<ICharacter> TrailOrphaned
+    {
+        add => _conqueror.TrailOrphaned += value;
+        remove => _conqueror.TrailOrphaned -= value;
+    }
 
     public float Speed => _mover.PlayerSpeed.magnitude;
     
     public PlayerStatsComponent StatsComponent { get; private set; }
     public Color Color => _color;
     public Transform Transform => transform;
+
+    public Transform GetSocket(SocketType socket) => socket switch
+    {
+        SocketType.Head => _headSocket,
+        _ => throw new ArgumentOutOfRangeException(nameof(socket))
+    };
     public CharacterState State => _state;
 
     public string Name => _name;
@@ -38,6 +58,7 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter
         _conqueror = GetComponent<Conqueror>();
         _mover = GetComponent<Mover>();
         _grabber = GetComponent<Grabber>();
+        _ragdollController = GetComponentInChildren<RagdollController>();
         StatsComponent = GetComponent<PlayerStatsComponent>();
 
         _color = _colorService.GetRandomColor();
@@ -89,7 +110,7 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter
 
         _colorService?.ReturnColor(_color);
 
-        gameObject.SetActive(false);
+        _ragdollController.Activate(_color);
     }
 
     public void Kill()

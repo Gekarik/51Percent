@@ -1,5 +1,6 @@
 public enum GrabbableState
 {
     Idle,
-    Collected
+    Collected,
+    Scattering
 }

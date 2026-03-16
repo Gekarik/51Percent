@@ -10,4 +10,10 @@ public class KillManager
         killer.Kill();
         CharacterEliminated?.Invoke(victim);
     }
+
+    public void OnTrailOrphaned(ICharacter victim)
+    {
+        victim.Die();
+        CharacterEliminated?.Invoke(victim);
+    }
 }
