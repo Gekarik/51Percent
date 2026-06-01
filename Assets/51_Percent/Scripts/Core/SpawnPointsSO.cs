@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "51_Percent/Spawn Points", fileName = "SpawnPoints")]
+[CreateAssetMenu(menuName = "51_Percent/Core/Spawn Points", fileName = "SpawnPoints")]
 public class SpawnPointsSO : ScriptableObject
 {
     [Tooltip("Точка спавна игрока (Q, R в координатах гекс-сетки)")]

@@ -71,7 +71,7 @@ public class GameManager : MonoBehaviour
         _isGameOver = true;
         Time.timeScale = 0f;
 
-        bool isVictory = winner is Player;
+        bool isVictory = winner.IsHuman;
         float territory = _territoryManager.GetOwnershipPercent(winner);
 
         var stats = winner.StatsComponent.Stats;

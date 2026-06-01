@@ -15,20 +15,23 @@ public class Hex : MonoBehaviour, IHex
     public HexState State => _state;
     public ICharacter Owner { get; private set; }
 
+    private HexPresenter _presenter;
+
     private void Awake()
     {
         _state = HexState.Empty;
         Owner = null;
+        _presenter = new HexPresenter(_hexView);
     }
 
     private void OnEnable()
     {
-        StateChanged += _hexView.UpdateView;
+        StateChanged += _presenter.OnStateChanged;
     }
 
     private void OnDisable()
     {
-        StateChanged -= _hexView.UpdateView;
+        StateChanged -= _presenter.OnStateChanged;
     }
 
     public void SetOwner(ICharacter player, HexState hexState)
@@ -48,6 +51,6 @@ public class Hex : MonoBehaviour, IHex
     public void Reset()
     {
         SetOwner(null, HexState.Empty);
-        _hexView.Reset();
+        _presenter.Reset();
     }
 }

@@ -8,7 +8,8 @@ public class LeaderBoardEntryView : MonoBehaviour
     [SerializeField] private TMP_Text _rankText;
     [SerializeField] private TMP_Text _nameText;
     [SerializeField] private TMP_Text _percentText;
-    
+    [SerializeField] private Image _boosterIcon;
+
     private Image _background;
 
     private void Awake()
@@ -26,5 +27,14 @@ public class LeaderBoardEntryView : MonoBehaviour
 
         if (_background != null)
             _background.color = color;
+    }
+
+    public void SetBoosterIcon(Sprite icon)
+    {
+        if (_boosterIcon == null)
+            return;
+
+        _boosterIcon.sprite = icon;
+        _boosterIcon.gameObject.SetActive(icon != null);
     }
 }

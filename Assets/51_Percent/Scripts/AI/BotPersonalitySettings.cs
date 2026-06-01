@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "BotPersonality", menuName = "51_Percent/Bot Personality")]
+[CreateAssetMenu(fileName = "BotPersonality", menuName = "51_Percent/AI/Bot Personality")]
 public class BotPersonalitySettings : ScriptableObject
 {
     [Header("Поведение")]

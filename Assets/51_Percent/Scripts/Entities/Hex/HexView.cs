@@ -2,73 +2,47 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshRenderer))]
-public class HexView : MonoBehaviour, ICoroutineRunner
+public class HexView : MonoBehaviour, IHexView, ICoroutineRunner
 {
-    [SerializeField] private Outline _outlineView;
     [SerializeField] private HexViewSettings _viewSettings;
+    [SerializeField] private MeshRenderer _outlineRenderer;
 
+    private Mesh _normalMesh;
     private HexViewAnimator _hexViewAnimator;
     private Colorizer _colorizer;
     private MeshRenderer _meshRenderer;
-
     private MeshFilter _meshFilter;
-
-    private MeshRenderer MeshRenderer
-    {
-        get
-        {
-            if (_meshRenderer == null)
-                _meshRenderer = GetComponent<MeshRenderer>();
-            return _meshRenderer;
-        }
-    }
-
-    private MeshFilter MeshFilter
-    {
-        get
-        {
-            if (_meshFilter == null)
-                _meshFilter = GetComponent<MeshFilter>();
-            return _meshFilter;
-        }
-    }
 
     private void Awake()
     {
         _meshRenderer = GetComponent<MeshRenderer>();
         _meshFilter = GetComponent<MeshFilter>();
-
+        _normalMesh = _meshFilter.sharedMesh;
         _hexViewAnimator = new HexViewAnimator(transform, _viewSettings);
         _colorizer = new Colorizer(_meshRenderer, this, _viewSettings);
-        _outlineView.gameObject.SetActive(false);
+        _outlineRenderer.enabled = false;
     }
 
-    public Bounds GetBounds() => MeshRenderer.bounds;
-    public Bounds GetLocalMeshBounds() => MeshFilter.sharedMesh.bounds;
+    public Bounds GetBounds() => _meshRenderer.bounds;
+    public Bounds GetLocalMeshBounds() => _meshFilter.sharedMesh.bounds;
 
-    public void UpdateView(IHex hex)
-    {
-        _outlineView.gameObject.SetActive(hex.State == HexState.PartOfTrail);
+    public void SetMesh(Mesh mesh) => _meshFilter.sharedMesh = mesh != null ? mesh : _normalMesh;
 
-        if (hex.State == HexState.Empty)
-            _colorizer.ResetColor();
+    public void SetOutline(bool visible) => _outlineRenderer.enabled = visible;
 
-        if (hex.State == HexState.Busy)
-        {
-            _colorizer.SetColorSlowly(hex.Owner.Color);
-        }
+    public void SetColorInstantly(Color color) => _colorizer.SetColorInstantly(color);
 
-        if (hex.State == HexState.PartOfTrail)
-        {
-            _hexViewAnimator.Pulse();
-            _colorizer.SetColorInstantly(hex.Owner.Color);
-        }
-    }
+    public void SetColorSlowly(Color color) => _colorizer.SetColorSlowly(color);
+
+    public void ResetColor() => _colorizer.ResetColor();
+
+    public void Pulse() => _hexViewAnimator.Pulse();
 
     public void Reset()
     {
+        SetMesh(null);
+        SetOutline(false);
         _colorizer.ResetColor();
-        _outlineView.gameObject.SetActive(false);
     }
 
     public Coroutine StartRoutine(IEnumerator routine) => StartCoroutine(routine);

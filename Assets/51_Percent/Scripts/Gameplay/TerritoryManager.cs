@@ -44,10 +44,9 @@ public class TerritoryManager : MonoBehaviour
         FixHexes(character, hexes);
     }
 
-    public IReadOnlyCollection<IHex> GetFixedByOwner(ICharacter character)
-    {
-        return _tracker.GetOwned(character);
-    }
+    public IReadOnlyCollection<IHex> GetFixedByOwner(ICharacter character) => _tracker.GetOwned(character);
+
+    public bool IsFixedBy(ICharacter character, IHex hex) => _tracker.GetOwned(character).Contains(hex);
 
     public float GetOwnershipPercent(ICharacter character)
     {

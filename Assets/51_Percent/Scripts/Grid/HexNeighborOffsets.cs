@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "HexNeighborOffsets", menuName = "Hex/NeighborOffsets")]
+[CreateAssetMenu(fileName = "HexNeighborOffsets", menuName = "51_Percent/Hex/Neighbor Offsets")]
 public class HexNeighborOffsets : ScriptableObject
 {
     private const int DirectionsCount = 6;

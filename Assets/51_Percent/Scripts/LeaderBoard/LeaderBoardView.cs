@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,16 +7,18 @@ public class LeaderBoardView : MonoBehaviour
     [SerializeField] private LeaderBoardEntryView _entryPrefab;
     [SerializeField] private Transform _container;
     [SerializeField] private RectTransform _crown;
+    [SerializeField] private BoosterIconRegistry _boosterIconRegistry;
 
     private LeaderBoardModel _model;
     private readonly List<LeaderBoardEntryView> _entryViews = new List<LeaderBoardEntryView>();
     private readonly Dictionary<ICharacter, LeaderBoardEntryView> _characterToView = new Dictionary<ICharacter, LeaderBoardEntryView>();
+    private readonly Dictionary<ICharacter, Action> _boosterHandlers = new Dictionary<ICharacter, Action>();
 
     private void Awake()
     {
-        if(_container == null)
+        if (_container == null)
             _container = transform;
-        
+
         _crown = Instantiate(_crown);
     }
 
@@ -52,7 +55,7 @@ public class LeaderBoardView : MonoBehaviour
 
         foreach (var entry in entries)
         {
-            if (_characterToView.ContainsKey(entry.Character) == false)
+            if (!_characterToView.ContainsKey(entry.Character))
                 CreateEntryView(entry);
         }
 
@@ -66,12 +69,11 @@ public class LeaderBoardView : MonoBehaviour
                 if (_characterToView.TryGetValue(entry.Character, out var mappedView) && mappedView == view)
                 {
                     found = true;
-
                     break;
                 }
             }
 
-            if (found == false)
+            if (!found)
                 RemoveEntryView(view);
         }
 
@@ -103,6 +105,20 @@ public class LeaderBoardView : MonoBehaviour
         var view = Instantiate(_entryPrefab, _container);
         _entryViews.Add(view);
         _characterToView[entry.Character] = view;
+
+        var character = entry.Character;
+        Action handler = () =>
+        {
+            if (!_characterToView.TryGetValue(character, out var entryView))
+                return;
+
+            var observable = character.BoosterObservable;
+            var icon = observable.HasActiveBooster ? _boosterIconRegistry?.Get(observable.ActiveEffect.BoosterId) : null;
+            entryView.SetBoosterIcon(icon);
+        };
+
+        _boosterHandlers[character] = handler;
+        character.BoosterObservable.BoosterChanged += handler;
     }
 
     private void RemoveEntryView(LeaderBoardEntryView view)
@@ -114,13 +130,20 @@ public class LeaderBoardView : MonoBehaviour
             if (kvp.Value == view)
             {
                 characterToRemove = kvp.Key;
-
                 break;
             }
         }
 
         if (characterToRemove != null)
+        {
             _characterToView.Remove(characterToRemove);
+
+            if (_boosterHandlers.TryGetValue(characterToRemove, out var handler))
+            {
+                characterToRemove.BoosterObservable.BoosterChanged -= handler;
+                _boosterHandlers.Remove(characterToRemove);
+            }
+        }
 
         _entryViews.Remove(view);
         Destroy(view.gameObject);

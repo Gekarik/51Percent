@@ -4,6 +4,7 @@ using UnityEngine;
 public class Enemy : CharacterBase
 {
     private EnemyBrain _brain;
+    public override bool IsHuman => false;
 
     protected override void OnInit()
     {

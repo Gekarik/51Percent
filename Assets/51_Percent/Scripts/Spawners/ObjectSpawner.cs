@@ -7,8 +7,7 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
     [Header("Spawn Settings")]
     [SerializeField] private T _spawnPrefab;
     [SerializeField] private Transform _container;
-    [SerializeField] private BoxCollider _spawnArea;
-    [SerializeField] private float _verticalOffset = 1f;
+    [SerializeField] private SpawnPointProvider _spawnPoint;
     [SerializeField] private float _spawnInterval = 1f;
     [SerializeField] private int _maxObjects = 25;
 
@@ -49,16 +48,18 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
     {
         var wait = new WaitForSeconds(_spawnInterval);
 
-        while (_counter < _maxObjects)
+        while (true)
         {
             yield return wait;
-            SpawnOnce();
+            
+            if(_counter < _maxObjects)
+                SpawnOnce();
         }
     }
 
     private void SpawnOnce()
     {
-        SpawnAtPosition(GetRandomPosition());
+        SpawnAtPosition(_spawnPoint.GetRandomPosition());
     }
 
     protected T SpawnAtPosition(Vector3 position)
@@ -79,12 +80,4 @@ public abstract class ObjectSpawner<T> : MonoBehaviour where T : MonoBehaviour, 
         _counter--;
     }
 
-    private Vector3 GetRandomPosition()
-    {
-        Bounds bounds = _spawnArea.bounds;
-        float x = UnityEngine.Random.Range(bounds.min.x, bounds.max.x);
-        float z = UnityEngine.Random.Range(bounds.min.z, bounds.max.z);
-
-        return new Vector3(x, bounds.center.y + _verticalOffset, z);
-    }
 }

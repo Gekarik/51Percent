@@ -114,7 +114,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1241c8f9e02a65b41b69ae54c89ab264, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _speed: 1.25
   _rotationSpeed: 720
 --- !u!114 &5476233700063100578
 MonoBehaviour:
@@ -130,6 +129,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _view: {fileID: 1166960488854815536}
   _headSocket: {fileID: 3177406863744124887}
+  _config: {fileID: 11400000, guid: e5574ab873b212a42a7b8dbc9823ec2b, type: 2}
 --- !u!114 &7765832517451120072
 MonoBehaviour:
   m_ObjectHideFlags: 0

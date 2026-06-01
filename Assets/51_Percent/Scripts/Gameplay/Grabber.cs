@@ -8,7 +8,7 @@ public class Grabber : MonoBehaviour
 
     private void OnTriggerEnter(Collider collider)
     {
-        if (collider.gameObject.TryGetComponent(out ICollectible item) && item.State == GrabbableState.Idle)
+        if (collider.gameObject.TryGetComponent(out ICollectible item) && item.State == CollectibleState.Idle)
         {
             ItemCollected?.Invoke(item);
             item.Collect();

@@ -9,10 +9,14 @@ public class OwnershipTracker
 
     public void Initialize(IEnumerable<IHex> allHexes)
     {
+        if (allHexes == null)
+            return;
+
         _byOwner.Clear();
 
         foreach (var h in allHexes)
         {
+            if (h == null) continue;
             var owner = h.Owner;
 
             if (owner != null)
@@ -28,15 +32,14 @@ public class OwnershipTracker
         }
     }
 
-    public IReadOnlyCollection<IHex> GetOwned(ICharacter character)
+    private readonly HashSet<IHex> _emptySet = new HashSet<IHex>();
+
+    public HashSet<IHex> GetOwned(ICharacter character)
     {
         if (character == null)
             throw new ArgumentNullException(nameof(character));
 
-        if (_byOwner.TryGetValue(character, out var hexes))
-            return hexes;
-
-        return Array.Empty<IHex>();
+        return _byOwner.TryGetValue(character, out var hexes) ? hexes : _emptySet;
     }
 
     public void TakeOwnership(ICharacter character, IHex hex)

@@ -5,6 +5,6 @@ public interface ICollectible
 {
     event Action<ICollectible> Collected;
     void Collect();
-    GrabbableState State { get; }
+    CollectibleState State { get; }
     Transform Transform { get; }
 }

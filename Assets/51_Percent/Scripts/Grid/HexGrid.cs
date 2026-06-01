@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[DefaultExecutionOrder(-50)]
 public class HexGrid : MonoBehaviour, IHexGridProvider
 {
     private const float RowHeightMultiplier = 0.75f;

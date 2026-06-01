@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "51_Percent/Bot Names", fileName = "BotNames")]
+[CreateAssetMenu(menuName = "51_Percent/AI/Bot Names", fileName = "BotNames")]
 public class BotNamesSO : ScriptableObject
 {
     [SerializeField] private string[] _names;

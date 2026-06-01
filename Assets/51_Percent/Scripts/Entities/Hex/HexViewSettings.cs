@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "HexAnimationSettings", menuName = "Hex/AnimationSettings")]
+[CreateAssetMenu(fileName = "HexAnimationSettings", menuName = "51_Percent/Hex/View Settings")]
 public class HexViewSettings : ScriptableObject
 {
     [Header("Pulse")]

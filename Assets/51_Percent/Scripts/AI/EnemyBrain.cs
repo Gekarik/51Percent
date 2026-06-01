@@ -166,7 +166,7 @@ public class EnemyBrain : VectorProviderComponent
 
     private void ThinkCollecting()
     {
-        if (_collectibleTarget == null || _collectibleTarget.State != GrabbableState.Idle)
+        if (_collectibleTarget == null || _collectibleTarget.State != CollectibleState.Idle)
         {
             EnterExpanding();
             return;
@@ -287,7 +287,7 @@ public class EnemyBrain : VectorProviderComponent
 
         foreach (var collectible in _collectibleRegistry.ActiveCollectibles)
         {
-            if (collectible == null || collectible.State != GrabbableState.Idle) continue;
+            if (collectible == null || collectible.State != CollectibleState.Idle) continue;
 
             float distSq = (collectible.Transform.position - transform.position).sqrMagnitude;
             if (distSq > maxDistSq) continue;

@@ -6,11 +6,10 @@ using UnityEngine;
 
 public class Mover : MonoBehaviour
 {
-    [SerializeField] private float _speed = 5f;
-    [SerializeField] private float _rotationSpeed = 720f;
-    
     private VectorProviderComponent _vectorProvider;
     private Rigidbody _rigidbody;
+    private CharacterStats _stats;
+    private float _rotationSpeed;
     private Vector3 _direction;
     public Vector3 PlayerSpeed { get; private set; }
 
@@ -21,6 +20,12 @@ public class Mover : MonoBehaviour
 
         if (_vectorProvider == null)
             throw new InvalidOperationException("No VectorProviderComponent");
+    }
+
+    public void Init(CharacterStats stats, CharacterConfigSO config)
+    {
+        _stats = stats;
+        _rotationSpeed = config.RotationSpeed;
     }
 
     private void Update()
@@ -36,7 +41,8 @@ public class Mover : MonoBehaviour
 
     private void Move()
     {
-        Vector3 desired = _direction * _speed;
+        float speed = _stats.GetValue(StatType.Speed);
+        Vector3 desired = _direction * speed;
         _rigidbody.velocity = new Vector3(desired.x, _rigidbody.velocity.y, desired.z);
         PlayerSpeed = new Vector3(desired.x, 0f, desired.z);
     }

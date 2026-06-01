@@ -26,8 +26,16 @@ public class WinConditionTracker
     {
         _aliveCharacters.Remove(character);
 
-        if (character is Player)
+        if (character.IsHuman && !HasAliveHuman())
             FinishGame(GetLeader());
+    }
+
+    private bool HasAliveHuman()
+    {
+        foreach (var c in _aliveCharacters)
+            if (c.IsHuman) return true;
+
+        return false;
     }
 
     private ICharacter GetLeader()

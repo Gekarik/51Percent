@@ -11,6 +11,7 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private EnemySpawner _enemySpawner;
     [SerializeField] private GameManager _gameManager;
     [SerializeField] private CoinSpawner _coinSpawner;
+    [SerializeField] private BoosterSpawner _boosterSpawner;
 
     [Header("Settings")]
     [SerializeField] private ColorSettings _colorSettings;
@@ -48,6 +49,7 @@ public class Bootstrap : MonoBehaviour
         _enemySpawner.Init(_hexGrid, _territoryManager, _killManager, _colorService, _leaderBoardModel, _winConditionTracker);
 
         _coinSpawner?.SetRegistry(collectibleRegistry);
+        _boosterSpawner?.SetRegistry(collectibleRegistry);
 
         _gameManager.Init(_winConditionTracker, _territoryManager);
         _leaderBoardView.Init(_leaderBoardModel);

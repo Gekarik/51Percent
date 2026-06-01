@@ -28,6 +28,7 @@ public class Conqueror : MonoBehaviour
     private IHexGridProvider _grid;
     private ICharacter _owner;
     private IHex _currentHex;
+    private CharacterStats _stats;
 
     private void Awake()
     {
@@ -35,10 +36,11 @@ public class Conqueror : MonoBehaviour
         _owner = GetComponent<ICharacter>();
     }
 
-    public void Init(TerritoryManager territoryManager, IHexGridProvider grid)
+    public void Init(TerritoryManager territoryManager, IHexGridProvider grid, CharacterStats stats)
     {
         _territoryManager = territoryManager ?? throw new ArgumentNullException(nameof(territoryManager));
         _grid = grid ?? throw new ArgumentNullException(nameof(grid));
+        _stats = stats ?? throw new ArgumentNullException(nameof(stats));
         _territoryManager.InitCharacter(_owner);
         _currentHex = _grid.GetHexAt(transform.position);
 
@@ -73,19 +75,13 @@ public class Conqueror : MonoBehaviour
 
     private bool IsTrailOrphaned()
     {
-        var fixedHexes = FixedHexes;
-
-        if (fixedHexes.Count == 0)
+        if (FixedHexes.Count == 0)
             return true;
 
         foreach (var trailHex in _trailList)
-        {
             foreach (var neighbor in _grid.GetNeighbors(trailHex))
-            {
-                if (CollectionContains(fixedHexes, neighbor))
+                if (_territoryManager.IsFixedBy(_owner, neighbor))
                     return false;
-            }
-        }
 
         return true;
     }
@@ -95,13 +91,14 @@ public class Conqueror : MonoBehaviour
         if (hex.State == HexState.PartOfTrail && hex.Owner != _owner)
         {
             TrailInterrupted?.Invoke(hex.Owner, _owner);
-            AddToTrail(hex);
+
+            if (_owner.State != CharacterState.Died)
+                AddToTrail(hex);
+
             return;
         }
 
-        var fixedHexes = FixedHexes;
-
-        if (!CollectionContains(fixedHexes, hex) || hex.Owner != _owner)
+        if (!_territoryManager.IsFixedBy(_owner, hex) || hex.Owner != _owner)
             AddToTrail(hex);
         else if (_trailList.Count > 0 && hex.State == HexState.Busy && hex.Owner == _owner)
             CloseTrail(hex);
@@ -109,20 +106,43 @@ public class Conqueror : MonoBehaviour
 
     private void AddToTrail(IHex hex)
     {
-        if (!_trailList.Contains(hex))
+        AddSingleHexToTrail(hex);
+
+        int radius = Mathf.Max(0, Mathf.RoundToInt(_stats.GetValue(StatType.CaptureWidth)) - 1);
+        if (radius == 0) return;
+
+        var coord = _grid.GetCoord(hex);
+        foreach (var h in _grid.GetHexesInRadius(coord, radius))
         {
-            _trailPrevOwners[hex] = hex.Owner;
-            _trailList.Add(hex);
-            _territoryManager.TrailHex(_owner, hex);
+            if (h.State == HexState.Busy && h.Owner == _owner) continue;
+            AddSingleHexToTrail(h);
         }
+    }
+
+    private void AddSingleHexToTrail(IHex hex)
+    {
+        if (_trailList.Contains(hex)) return;
+        _trailPrevOwners[hex] = hex.Owner;
+        _trailList.Add(hex);
+        _territoryManager.TrailHex(_owner, hex);
     }
 
     private void CloseTrail(IHex returnHex)
     {
         _algorithm.ComputeCapturedArea(FixedHexes, _trailList, _grid, _capturedBuffer);
+        CollectAffectedCharacters(_capturedBuffer);
+        CaptureAll(_capturedBuffer);
+        ReleaseDisconnectedFragments();
+        FillHoles();
+        CollectViewTransforms();
+        AreaCaptured?.Invoke(_viewsBuffer);
+        ClearTrail();
+    }
 
+    private void CollectAffectedCharacters(List<IHex> hexes)
+    {
         _affectedBuffer.Clear();
-        foreach (var h in _capturedBuffer)
+        foreach (var h in hexes)
         {
             if (h.Owner != null && h.Owner != _owner)
                 _affectedBuffer.Add(h.Owner);
@@ -132,27 +152,32 @@ public class Conqueror : MonoBehaviour
                 if (neighbor.Owner != null && neighbor.Owner != _owner)
                     _affectedBuffer.Add(neighbor.Owner);
         }
+    }
 
-        foreach (var h in _capturedBuffer)
+    private void CaptureAll(List<IHex> hexes)
+    {
+        foreach (var h in hexes)
             CaptureHex(h);
+    }
 
+    private void ReleaseDisconnectedFragments()
+    {
         foreach (var character in _affectedBuffer)
             _territoryManager.ReleaseDisconnectedFragments(character);
+    }
 
-        FillHoles();
-
+    private void CollectViewTransforms()
+    {
         _viewsBuffer.Clear();
         foreach (var h in _capturedBuffer)
         {
-            if (h.ViewTransform != null)
-            {
-                var viewTransform = h.ViewTransform;
-                if (!_viewsBuffer.Contains(viewTransform))
-                    _viewsBuffer.Add(viewTransform);
-            }
+            if (h.ViewTransform != null && !_viewsBuffer.Contains(h.ViewTransform))
+                _viewsBuffer.Add(h.ViewTransform);
         }
+    }
 
-        AreaCaptured?.Invoke(_viewsBuffer);
+    private void ClearTrail()
+    {
         _trailList.Clear();
         _trailPrevOwners.Clear();
     }
@@ -160,31 +185,14 @@ public class Conqueror : MonoBehaviour
     private void FillHoles()
     {
         // Запускаем до сходимости: каждый новый захват может создать новые замкнутые области
-        do
+        while (true)
         {
             _algorithm.ComputeCapturedArea(FixedHexes, _emptyTrail, _grid, _holesBuffer);
-
-            if (_holesBuffer.Count == 0)
-                break;
-
-            _affectedBuffer.Clear();
-            foreach (var h in _holesBuffer)
-            {
-                if (h.Owner != null && h.Owner != _owner)
-                    _affectedBuffer.Add(h.Owner);
-
-                foreach (var neighbor in _grid.GetNeighbors(h))
-                    if (neighbor.Owner != null && neighbor.Owner != _owner)
-                        _affectedBuffer.Add(neighbor.Owner);
-            }
-
-            foreach (var h in _holesBuffer)
-                CaptureHex(h);
-
-            foreach (var character in _affectedBuffer)
-                _territoryManager.ReleaseDisconnectedFragments(character);
+            if (_holesBuffer.Count == 0) break;
+            CollectAffectedCharacters(_holesBuffer);
+            CaptureAll(_holesBuffer);
+            ReleaseDisconnectedFragments();
         }
-        while (true);
     }
 
     private void CaptureHex(IHex hex)
@@ -198,25 +206,20 @@ public class Conqueror : MonoBehaviour
             CaptureHex(h);
     }
 
-    private static bool CollectionContains(IReadOnlyCollection<IHex> collection, IHex hex)
-    {
-        if (collection is HashSet<IHex> set)
-            return set.Contains(hex);
-
-        foreach (var h in collection)
-            if (h == hex) return true;
-
-        return false;
-    }
-
     public void Reset()
     {
-        // Возвращаем trail-хексы их прежним владельцам, если те живы.
-        // Собираем персонажей, у которых забираем хексы — им нужно пересчитать фрагменты.
+        RestoreTrailHexes();
+        ReleaseOwnFixedHexes();
+        _territoryManager?.OnCharacterDied(_owner);
+        ClearTrail();
+        _currentHex = null;
+    }
+
+    private void RestoreTrailHexes()
+    {
         _resetAffectedBuffer.Clear();
         foreach (var hex in _trailList)
         {
-            // Хекс уже захвачен другим игроком пока мы умирали — не трогаем
             if (hex.Owner != null && hex.Owner != _owner)
                 continue;
 
@@ -232,24 +235,20 @@ public class Conqueror : MonoBehaviour
             }
             else
             {
-                // Идём через трекер, чтобы корректно убрать из _byOwner третьего владельца
                 _territoryManager.ReleaseHex(hex);
             }
         }
 
         foreach (var character in _resetAffectedBuffer)
             _territoryManager.ReleaseDisconnectedFragments(character);
+    }
 
-        // Сбрасываем собственные закреплённые хексы
+    private void ReleaseOwnFixedHexes()
+    {
         _resetBuffer.Clear();
         foreach (var hex in FixedHexes)
             _resetBuffer.Add(hex);
         foreach (var hex in _resetBuffer)
             hex.Reset();
-
-        _territoryManager?.OnCharacterDied(_owner);
-        _trailList.Clear();
-        _trailPrevOwners.Clear();
-        _currentHex = null;
     }
 }

@@ -136,6 +136,7 @@ Material:
     - _UnityShadowMode: 0
     - _UnityShadowPower: 0.2
     - _UnityShadowSharpness: 1
+    - _UseSpikeMask: 0
     - _VertexColorsEnabled: 0
     - _ZWrite: 1
     m_Colors:
@@ -157,5 +158,6 @@ Material:
     - _ShnColor: {r: 1, g: 1, b: 0, a: 1}
     - _SpcColor: {r: 1, g: 1, b: 1, a: 1}
     - _SpecularColor: {r: 0.8962264, g: 0.32551616, b: 0.32551616, a: 1}
+    - _SpikeColor: {r: 0.95, g: 0.25, b: 0.15, a: 1}
     - _UnityShadowColor: {r: 0.85023, g: 0.85034, b: 0.85045, a: 0.85056}
   m_BuildTextureStacks: []
