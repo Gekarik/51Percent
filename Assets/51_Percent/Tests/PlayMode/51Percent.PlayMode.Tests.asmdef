@@ -1,0 +1,7 @@
+{
+    "name": "51Percent.PlayMode.Tests",
+    "references": [],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public abstract class CollectibleBase : MonoBehaviour, ICollectible
 {
-    [SerializeField] private CollectibleViewBase _view;
+    [Required] [SerializeField] private CollectibleViewBase _view;
 
     private ICollectibleView _viewInterface;
 
@@ -44,6 +44,8 @@ public abstract class CollectibleBase : MonoBehaviour, ICollectible
         State = CollectibleState.Collected;
         _viewInterface.PlayCollectAnimation();
     }
+
+    public abstract bool TryApplyTo(ICollectibleConsumer consumer);
 
     private void OnViewAnimationCompleted()
     {

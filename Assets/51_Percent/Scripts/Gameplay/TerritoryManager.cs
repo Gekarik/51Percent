@@ -3,19 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class TerritoryManager : MonoBehaviour
+// После HexGrid (-50), но до гексов и презентеров (0): доменный индекс должен
+// подписаться на StateChanged раньше презентации, чтобы сбой вьюшки не ломал учёт владения
+[DefaultExecutionOrder(-40)]
+public class TerritoryManager : MonoBehaviour, ITerritoryOwnership, ITerritoryChanges
 {
-    [SerializeField] private HexGrid _hexGrid;
+    [Required] [SerializeField] private HexGrid _hexGrid;
 
     private readonly OwnershipTracker _tracker = new OwnershipTracker();
-    private TransformWaver _transformWaver;
+
+    // Один алгоритм на всех: его кэш соседей строится по гриду, а не по персонажу
+    private readonly ConquestAlgorithm _conquestAlgorithm = new ConquestAlgorithm();
+    private readonly List<IHex> _capturedBuffer = new List<IHex>();
+    private readonly List<IHex> _holesBuffer = new List<IHex>();
+    private readonly HashSet<ICharacter> _affectedBuffer = new HashSet<ICharacter>();
+    private readonly IHex[] _emptyTrail = Array.Empty<IHex>();
 
     private readonly HashSet<IHex> _fragmentVisited = new HashSet<IHex>();
     private readonly Queue<IHex> _fragmentQueue = new Queue<IHex>();
     private readonly List<List<IHex>> _components = new List<List<IHex>>();
     private readonly List<IHex> _componentBuffer = new List<IHex>();
-    
-    public int AllHexes => _hexGrid.AllHexes.Count;
 
     public event Action OwnershipChanged
     {
@@ -28,14 +35,14 @@ public class TerritoryManager : MonoBehaviour
         if (_hexGrid == null)
             throw new NullReferenceException(nameof(_hexGrid));
 
-        _transformWaver = new TransformWaver();
         _tracker.Initialize(_hexGrid.AllHexes);
     }
 
-    public void InitCharacter(ICharacter character)
+    public IDisposable BeginChanges() => _tracker.BeginChanges();
+
+    private void OnDestroy()
     {
-        if (character == null) 
-            throw new ArgumentNullException(nameof(character));
+        _tracker.Dispose();
     }
 
     public void GetStartTerritory(ICharacter character, IHex startHex)
@@ -46,7 +53,7 @@ public class TerritoryManager : MonoBehaviour
 
     public IReadOnlyCollection<IHex> GetFixedByOwner(ICharacter character) => _tracker.GetOwned(character);
 
-    public bool IsFixedBy(ICharacter character, IHex hex) => _tracker.GetOwned(character).Contains(hex);
+    public bool IsFixedBy(ICharacter character, IHex hex) => _tracker.IsOwnedBy(character, hex);
 
     public float GetOwnershipPercent(ICharacter character)
     {
@@ -64,6 +71,7 @@ public class TerritoryManager : MonoBehaviour
 
     public void FixHexes(ICharacter character, IEnumerable<IHex> hexes)
     {
+        using var changes = BeginChanges();
         foreach (var h in hexes)
             FixHex(character, h);
     }
@@ -83,8 +91,59 @@ public class TerritoryManager : MonoBehaviour
         _tracker.TransferToTrail(character, hex);
     }
 
+    // Захватывает область, ограниченную закреплённой территорией и трейлом.
+    // Возвращённый список валиден до следующего вызова
+    public IReadOnlyList<IHex> CaptureEnclosedArea(ICharacter owner, IReadOnlyCollection<IHex> trail)
+    {
+        using var changes = BeginChanges();
+        _conquestAlgorithm.ComputeCapturedArea(GetFixedByOwner(owner), trail, _hexGrid, _capturedBuffer);
+        ApplyCapture(owner, _capturedBuffer);
+        FillHoles(owner);
+        return _capturedBuffer;
+    }
+
+    private void ApplyCapture(ICharacter owner, List<IHex> hexes)
+    {
+        CollectAffectedCharacters(owner, hexes);
+        FixHexes(owner, hexes);
+
+        foreach (var character in _affectedBuffer)
+            ReleaseDisconnectedFragments(character);
+    }
+
+    private void CollectAffectedCharacters(ICharacter owner, List<IHex> hexes)
+    {
+        _affectedBuffer.Clear();
+
+        foreach (var hex in hexes)
+        {
+            if (hex.Owner != null && hex.Owner != owner)
+                _affectedBuffer.Add(hex.Owner);
+
+            // Захват пустого гекса может разрезать территорию соседних персонажей
+            foreach (var neighbor in _hexGrid.GetNeighbors(hex))
+                if (neighbor.Owner != null && neighbor.Owner != owner)
+                    _affectedBuffer.Add(neighbor.Owner);
+        }
+    }
+
+    private void FillHoles(ICharacter owner)
+    {
+        // До сходимости: каждый новый захват может создать новые замкнутые области
+        while (true)
+        {
+            _conquestAlgorithm.ComputeCapturedArea(GetFixedByOwner(owner), _emptyTrail, _hexGrid, _holesBuffer);
+
+            if (_holesBuffer.Count == 0)
+                break;
+
+            ApplyCapture(owner, _holesBuffer);
+        }
+    }
+
     public void ReleaseDisconnectedFragments(ICharacter character)
     {
+        using var changes = BeginChanges();
         var owned = _tracker.GetOwned(character);
         if (owned.Count <= 1)
             return;
@@ -112,7 +171,7 @@ public class TerritoryManager : MonoBehaviour
                     if (_fragmentVisited.Contains(neighbor))
                         continue;
 
-                    bool isOwned = owned.Contains(neighbor);
+                    bool isOwned = _tracker.IsOwnedBy(character, neighbor);
                     bool isTrailBridge = neighbor.State == HexState.PartOfTrail;
 
                     if (!isOwned && !isTrailBridge)
@@ -145,15 +204,5 @@ public class TerritoryManager : MonoBehaviour
             foreach (var hex in _components[i])
                 _tracker.ReleaseHex(hex);
         }
-    }
-
-    public void OnAreaCaptured(IReadOnlyCollection<Transform> hexesView)
-    {
-        _transformWaver?.Wave(hexesView);
-    }
-
-    private void Reset()
-    {
-        _tracker.Reset();
     }
 }

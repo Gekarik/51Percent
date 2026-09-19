@@ -21,6 +21,7 @@ public class EnemyBrain : VectorProviderComponent
     private ICollectibleRegistry _collectibleRegistry;
     private Conqueror _conqueror;
     private ICharacter _character;
+    private ICollectibleConsumer _consumer;
 
     private BotState _state;
     private Vector3 _targetPosition;
@@ -41,6 +42,7 @@ public class EnemyBrain : VectorProviderComponent
 
     // Collect
     private ICollectible _collectibleTarget;
+    private CollectibleKind _collectibleTargetKind;
 
     public void Init(IHexGridProvider grid, IReadOnlyList<ICharacter> allCharacters,
         ICollectibleRegistry collectibleRegistry, BotPersonalitySettings personality = null, int botIndex = 0)
@@ -50,6 +52,7 @@ public class EnemyBrain : VectorProviderComponent
         _collectibleRegistry = collectibleRegistry;
         _conqueror = GetComponent<Conqueror>();
         _character = GetComponent<ICharacter>();
+        _consumer = GetComponent<ICollectibleConsumer>();
 
         if (personality != null)
             _personality = personality;
@@ -118,10 +121,10 @@ public class EnemyBrain : VectorProviderComponent
                 return;
             }
 
-            var collectible = FindNearestCollectible();
+            var collectible = FindNearestCollectible(out var collectibleKind);
             if (collectible != null)
             {
-                EnterCollecting(collectible);
+                EnterCollecting(collectible, collectibleKind);
                 return;
             }
         }
@@ -166,7 +169,12 @@ public class EnemyBrain : VectorProviderComponent
 
     private void ThinkCollecting()
     {
-        if (_collectibleTarget == null || _collectibleTarget.State != CollectibleState.Idle)
+        // Бустер-цель обесценивается, если по дороге руки успели занять (подобрал другой бустер)
+        bool targetLostValue = _collectibleTargetKind == CollectibleKind.Booster && !_consumer.CanAcceptBooster;
+
+        if (_collectibleTarget == null
+            || _collectibleTarget.State != CollectibleState.Idle
+            || targetLostValue)
         {
             EnterExpanding();
             return;
@@ -205,10 +213,11 @@ public class EnemyBrain : VectorProviderComponent
         _attackTarget = target;
     }
 
-    private void EnterCollecting(ICollectible collectible)
+    private void EnterCollecting(ICollectible collectible, CollectibleKind kind)
     {
         _state = BotState.Collecting;
         _collectibleTarget = collectible;
+        _collectibleTargetKind = kind;
     }
 
     // ── Сенсоры ──────────────────────────────────────────────────────────
@@ -275,28 +284,46 @@ public class EnemyBrain : VectorProviderComponent
         return best;
     }
 
-    private ICollectible FindNearestCollectible()
+    private ICollectible FindNearestCollectible(out CollectibleKind kind)
     {
+        kind = CollectibleKind.Coin;
+
         if (_collectibleRegistry == null) return null;
 
         float maxDist = _personality.DetectionRadius * _personality.Greed;
         float maxDistSq = maxDist * maxDist;
 
-        ICollectible best = null;
-        float bestDistSq = float.MaxValue;
+        ICollectible best = FindNearestIn(_collectibleRegistry.Coins, maxDistSq, out float bestDistSq);
 
-        foreach (var collectible in _collectibleRegistry.ActiveCollectibles)
+        // Бустеры интересны только со свободными руками
+        if (_consumer.CanAcceptBooster)
         {
+            var booster = FindNearestIn(_collectibleRegistry.Boosters, maxDistSq, out float boosterDistSq);
+            if (booster != null && boosterDistSq < bestDistSq)
+            {
+                best = booster;
+                kind = CollectibleKind.Booster;
+            }
+        }
+
+        return best;
+    }
+
+    private ICollectible FindNearestIn(IReadOnlyList<ICollectible> candidates, float maxDistSq, out float bestDistSq)
+    {
+        ICollectible best = null;
+        bestDistSq = float.MaxValue;
+
+        for (int i = 0; i < candidates.Count; i++)
+        {
+            var collectible = candidates[i];
             if (collectible == null || collectible.State != CollectibleState.Idle) continue;
 
             float distSq = (collectible.Transform.position - transform.position).sqrMagnitude;
-            if (distSq > maxDistSq) continue;
+            if (distSq > maxDistSq || distSq >= bestDistSq) continue;
 
-            if (distSq < bestDistSq)
-            {
-                bestDistSq = distSq;
-                best = collectible;
-            }
+            bestDistSq = distSq;
+            best = collectible;
         }
 
         return best;

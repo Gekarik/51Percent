@@ -3,8 +3,9 @@ public class SpeedBoosterEffect : IBoosterEffect
     private readonly float _duration;
     private readonly StatModifier _modifier;
 
-    public string BoosterId => "speed";
+    public BoosterId BoosterId => BoosterId.Speed;
     public float Duration => _duration;
+
     public SpeedBoosterEffect(float duration, float speedBonus)
     {
         _duration = duration;

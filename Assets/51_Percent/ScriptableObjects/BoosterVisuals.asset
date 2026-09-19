@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e4a152aa5551b648bf5dc0b4624764e, type: 3}
+  m_Name: BoosterVisuals
+  m_EditorClassIdentifier: 
+  _entries:
+  - _id: 0
+    _mode: 1
+    _propPrefab: {fileID: 3336953236671343429, guid: 5311b76fd77a51f42b2767becd56c967, type: 3}
+    _socket: 2
+    _propOutroDuration: 0
+    _propOutroEase: 1
+    _modelScale: 0
+    _growDuration: 0
+    _shrinkDuration: 0
+    _scaleEase: 3
+  - _id: 1
+    _mode: 0
+    _propPrefab: {fileID: 0}
+    _socket: 1
+    _propOutroDuration: 0
+    _propOutroEase: 1
+    _modelScale: 1.5
+    _growDuration: 1
+    _shrinkDuration: 0.35
+    _scaleEase: 27
+  - _id: 2
+    _mode: 0
+    _propPrefab: {fileID: 7595101314036468387, guid: 8bf9dafac115a004f9461711260d87da, type: 3}
+    _socket: 1
+    _propOutroDuration: 0.35
+    _propOutroEase: 26
+    _modelScale: 0
+    _growDuration: 0
+    _shrinkDuration: 0
+    _scaleEase: 3
+  - _id: 3
+    _mode: 0
+    _propPrefab: {fileID: 0}
+    _socket: 1
+    _propOutroDuration: 0
+    _propOutroEase: 1
+    _modelScale: 0
+    _growDuration: 0
+    _shrinkDuration: 0
+    _scaleEase: 3

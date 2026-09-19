@@ -9,10 +9,16 @@ public class TransformWaver : IWaveAnimator
     private float _animationHeight = 0.6f;
     private float _totalWaveDuration = 0.8f;
     private float _overlapFactor = 0.5f; // 0 = полное наложение, 1 ~ последовательный
-    
+
+    private readonly WaveDelayResolver _delayResolver;
     private readonly Dictionary<Transform, Vector3> _originalPositions = new();
     private readonly List<Tween> _activeTweens = new();
-    
+
+    public TransformWaver(WaveDelayResolver delayResolver)
+    {
+        _delayResolver = delayResolver ?? throw new ArgumentNullException(nameof(delayResolver));
+    }
+
     private float GetElementDuration()
     {
         float clamped = Mathf.Clamp01(_overlapFactor);
@@ -21,7 +27,7 @@ public class TransformWaver : IWaveAnimator
         return duration > 0f ? duration : Mathf.Epsilon;
     }
 
-    public void Wave(IReadOnlyCollection<Transform> transforms)
+    public void Wave(IReadOnlyCollection<Transform> transforms, Vector3 origin)
     {
         var elements = transforms.ToArray();
 
@@ -31,9 +37,9 @@ public class TransformWaver : IWaveAnimator
         SaveOriginalPositions(elements);
 
         float elementDuration = GetElementDuration();
-        float startDelay = GetDelayBetweenStarts(elements.Length, elementDuration);
+        float[] delays = _delayResolver.Resolve(elements, origin, _totalWaveDuration - elementDuration);
 
-        StartWaveAnimation(elements, elementDuration, startDelay);
+        StartWaveAnimation(elements, elementDuration, delays);
     }
 
     private void SaveOriginalPositions(Transform[] transforms)
@@ -45,15 +51,7 @@ public class TransformWaver : IWaveAnimator
         }
     }
 
-    private float GetDelayBetweenStarts(int count, float elementDuration)
-    {
-        if (count > 1)
-            return (_totalWaveDuration - elementDuration) / (count - 1);
-
-        return 0f;
-    }
-
-    private void StartWaveAnimation(Transform[] elements, float elementDuration, float startDelay)
+    private void StartWaveAnimation(Transform[] elements, float elementDuration, float[] delays)
     {
         float driver = 0f;
 
@@ -61,22 +59,21 @@ public class TransformWaver : IWaveAnimator
             () => driver,
             value => {
                 driver = value;
-                UpdateWave(elements, driver, elementDuration, startDelay);
+                UpdateWave(elements, driver, elementDuration, delays);
             }, 1f, _totalWaveDuration).SetEase(Ease.Linear);
 
         tween.OnComplete(() => RestorePositions(elements, tween)).OnKill(() => RestorePositions(elements, tween));
         _activeTweens.Add(tween);
     }
 
-    private void UpdateWave(Transform[] elements, float driver, float elementDuration, float startDelay)
+    private void UpdateWave(Transform[] elements, float driver, float elementDuration, float[] delays)
     {
         float elapsedTime = driver * _totalWaveDuration;
 
         for (int i = 0; i < elements.Length; i++)
         {
             var tf = elements[i];
-            float delay = i * startDelay;
-            float localTime = (elapsedTime - delay) / elementDuration;
+            float localTime = (elapsedTime - delays[i]) / elementDuration;
 
             if (_originalPositions.TryGetValue(tf, out var origPos))
                 tf.localPosition = origPos + Vector3.up * CalculateOffset(localTime);

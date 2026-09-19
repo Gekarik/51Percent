@@ -4,8 +4,8 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 public class HexView : MonoBehaviour, IHexView, ICoroutineRunner
 {
-    [SerializeField] private HexViewSettings _viewSettings;
-    [SerializeField] private MeshRenderer _outlineRenderer;
+    [Required] [SerializeField] private HexViewSettings _viewSettings;
+    [Required] [SerializeField] private MeshRenderer _outlineRenderer;
 
     private Mesh _normalMesh;
     private HexViewAnimator _hexViewAnimator;
@@ -13,20 +13,22 @@ public class HexView : MonoBehaviour, IHexView, ICoroutineRunner
     private MeshRenderer _meshRenderer;
     private MeshFilter _meshFilter;
 
+    // Ленивый доступ: границы меша могут запрашиваться из HexGrid.Awake раньше, чем отработает наш Awake
+    private MeshRenderer MeshRenderer => _meshRenderer != null ? _meshRenderer : _meshRenderer = GetComponent<MeshRenderer>();
+    private MeshFilter MeshFilter => _meshFilter != null ? _meshFilter : _meshFilter = GetComponent<MeshFilter>();
+
     private void Awake()
     {
-        _meshRenderer = GetComponent<MeshRenderer>();
-        _meshFilter = GetComponent<MeshFilter>();
-        _normalMesh = _meshFilter.sharedMesh;
+        _normalMesh = MeshFilter.sharedMesh;
         _hexViewAnimator = new HexViewAnimator(transform, _viewSettings);
-        _colorizer = new Colorizer(_meshRenderer, this, _viewSettings);
+        _colorizer = new Colorizer(MeshRenderer, this, _viewSettings);
         _outlineRenderer.enabled = false;
     }
 
-    public Bounds GetBounds() => _meshRenderer.bounds;
-    public Bounds GetLocalMeshBounds() => _meshFilter.sharedMesh.bounds;
+    public Bounds GetBounds() => MeshRenderer.bounds;
+    public Bounds GetLocalMeshBounds() => MeshFilter.sharedMesh.bounds;
 
-    public void SetMesh(Mesh mesh) => _meshFilter.sharedMesh = mesh != null ? mesh : _normalMesh;
+    public void SetMesh(Mesh mesh) => MeshFilter.sharedMesh = mesh != null ? mesh : _normalMesh;
 
     public void SetOutline(bool visible) => _outlineRenderer.enabled = visible;
 

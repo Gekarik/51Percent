@@ -1,15 +1,22 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Mover), typeof(Conqueror), typeof(PlayerStatsComponent))]
+[RequireComponent(typeof(Mover), typeof(Conqueror))]
 [RequireComponent(typeof(Grabber), typeof(VectorProviderComponent), typeof(BoosterHandler))]
 [RequireComponent(typeof(TrailVisualModifier))]
+[RequireComponent(typeof(SpawnLandingTracker), typeof(SpawnDescentAnimator))]
+[RequireComponent(typeof(BoosterAnimationSwitcher), typeof(BoosterPropAttacher), typeof(BoosterScaleAnimator))]
 
-public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
+public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext, ICollectibleConsumer
 {
-    [SerializeField] private CharacterView _view;
-    [SerializeField] private Transform _headSocket;
-    [SerializeField] private CharacterConfigSO _config;
+    private const float EscapeYOffset = 0.1f;
+
+    [Required] [SerializeField] private CharacterView _view;
+    [Required] [SerializeField] private Transform _headSocket;
+    [Required] [SerializeField] private Transform _backSocket;
+    [Required] [SerializeField] private Transform _feetSocket;
+    [Required] [SerializeField] private CharacterConfigSO _config;
 
     private string _name;
     private CharacterState _state = CharacterState.Alive;
@@ -22,9 +29,29 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
     private BoosterHandler _boosterHandler;
     private TrailVisualModifier _trailVisualModifier;
     private KillManager _killManager;
+    private IMatchState _matchState;
+    private IHexGridProvider _grid;
+    private SpawnLandingTracker _landing;
+    private SpawnDescentAnimator _descentAnimator;
+    private BoosterAnimationSwitcher _animationSwitcher;
+    private BoosterPropAttacher _propAttacher;
+    private BoosterScaleAnimator _scaleAnimator;
+
+    public bool IsLanding => _landing.IsLanding;
+    public bool CanAct => _matchState != null && _matchState.IsRunning
+        && _state == CharacterState.Alive && !IsLanding;
+
+    public event Action LandingFinished
+    {
+        add => _landing.Finished += value;
+        remove => _landing.Finished -= value;
+    }
 
     public abstract bool IsHuman { get; }
     public CharacterStats Stats { get; private set; }
+
+    // Статистика живёт столько же, сколько экземпляр персонажа; респавн создаёт новую модель.
+    public PlayerStats LifeStats { get; } = new PlayerStats();
 
     private void Awake()
     {
@@ -34,13 +61,25 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         _ragdollController = GetComponentInChildren<RagdollController>();
         _boosterHandler = GetComponent<BoosterHandler>();
         _trailVisualModifier = GetComponent<TrailVisualModifier>();
-        StatsComponent = GetComponent<PlayerStatsComponent>();
+        _landing = GetComponent<SpawnLandingTracker>();
+        _descentAnimator = GetComponent<SpawnDescentAnimator>();
+        _animationSwitcher = GetComponent<BoosterAnimationSwitcher>();
+        _propAttacher = GetComponent<BoosterPropAttacher>();
+        _scaleAnimator = GetComponent<BoosterScaleAnimator>();
+        _landing.Started += OnLandingChanged;
+        _landing.Finished += OnLandingChanged;
     }
+
+    // Единственное место, где открытое окно приземления превращается
+    // в состояние анимации и в запрет на взаимодействия
+    private void OnLandingChanged()
+    {
+        _view.SetLanding(IsLanding);
+        ApplyInteractionState();
+    }
+
     public IBoosterObservable BoosterObservable => _boosterHandler;
     public ITrailVisualProvider TrailVisual => _trailVisualModifier;
-
-    public event Action Died;
-    public event Action RespawnRequested;
 
     public bool HasActiveTrail => _conqueror.TrailHexes.Count > 0;
 
@@ -56,15 +95,22 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         remove => _conqueror.TrailOrphaned -= value;
     }
 
-    public float Speed => _mover.PlayerSpeed.magnitude;
+    public event Action<ICharacter, IReadOnlyList<IHex>> AreaCaptured
+    {
+        add => _conqueror.AreaCaptured += value;
+        remove => _conqueror.AreaCaptured -= value;
+    }
 
-    public PlayerStatsComponent StatsComponent { get; private set; }
+    public float Speed => _mover.Velocity.magnitude;
+
     public Color Color => _color;
     public Transform Transform => transform;
 
     public Transform GetSocket(SocketType socket) => socket switch
     {
         SocketType.Head => _headSocket,
+        SocketType.Back => _backSocket,
+        SocketType.Feet => _feetSocket,
         _ => throw new ArgumentOutOfRangeException(nameof(socket))
     };
 
@@ -86,16 +132,49 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         _killManager.UnregisterResolver(this);
     }
 
-    public void SetModelScale(float factor) => _view.SetModelScale(factor);
+    public void RegisterDeathInterceptor(Func<bool> interceptor)
+    {
+        _killManager.RegisterDeathInterceptor(this, interceptor);
+    }
+
+    public void UnregisterDeathInterceptor()
+    {
+        _killManager.UnregisterDeathInterceptor(this);
+    }
+
+    // Спасение от смерти: трейл возвращается прежним владельцам, персонаж уносится на свою территорию
+    public void EscapeToTerritory()
+    {
+        _conqueror.AbandonTrail();
+        _mover.TeleportTo(PickRefugeHex().Transform.position + Vector3.up * EscapeYOffset);
+    }
+
+    private IHex PickRefugeHex()
+    {
+        var territory = _conqueror.FixedHexes;
+        if (territory.Count == 0)
+            return _grid.GetRandomHex();
+
+        int index = UnityEngine.Random.Range(0, territory.Count);
+        foreach (var hex in territory)
+            if (index-- == 0)
+                return hex;
+
+        return _grid.GetRandomHex();
+    }
 
     public void SetTrailMesh(Mesh mesh) => _trailVisualModifier.SetMesh(mesh);
 
     public void ClearTrailMesh() => _trailVisualModifier.ClearMesh();
 
-    public void Init(ColorService colorService, TerritoryManager territoryManager, IHexGridProvider grid, KillManager killManager)
+    public void Init(ColorService colorService, TerritoryManager territoryManager, IHexGridProvider grid,
+        KillManager killManager, IMatchState matchState)
     {
+        _matchState = matchState ?? throw new ArgumentNullException(nameof(matchState));
+        _matchState.Changed += ApplyInteractionState;
         _killManager = killManager ?? throw new ArgumentNullException(nameof(killManager));
         _colorService = colorService ?? throw new ArgumentNullException(nameof(colorService));
+        _grid = grid ?? throw new ArgumentNullException(nameof(grid));
 
         Stats = new CharacterStats();
         Stats.SetBase(StatType.Speed, _config.BaseSpeed);
@@ -104,18 +183,18 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         _boosterHandler.Init(this);
 
         _color = _colorService.GetRandomColor();
-        SetCharacterState(CharacterState.Alive);
+        _state = CharacterState.Alive;
 
         _conqueror.Init(territoryManager, grid, Stats);
-        _grabber.ItemCollected += OnItemCollected;
+        _grabber.ItemDetected += OnItemDetected;
         _view.Init(this);
+        _descentAnimator.Init(_view.transform, _landing);
+        _animationSwitcher.Init(_boosterHandler, _view);
+        _propAttacher.Init(_boosterHandler, this);
+        _scaleAnimator.Init(_boosterHandler, _view);
+        _landing.Begin();
 
         OnInit();
-    }
-
-    public void RequestRespawn()
-    {
-        RespawnRequested?.Invoke();
     }
 
     protected virtual void OnInit() { }
@@ -123,61 +202,67 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
     private void OnDisable()
     {
         if (_grabber != null)
-            _grabber.ItemCollected -= OnItemCollected;
+            _grabber.ItemDetected -= OnItemDetected;
     }
 
-    protected void StorePendingBooster(IBoosterEffect effect) => _boosterHandler.Store(effect);
-    protected void ActivatePendingBooster() => _boosterHandler.ActivatePending();
-
-    protected virtual void OnBoosterCollected(Booster booster) =>
-        _boosterHandler.Activate(booster.CreateEffect());
-
-    private void OnItemCollected(ICollectible item)
+    private void OnDestroy()
     {
-        switch (item)
-        {
-            case Coin:
-                StatsComponent.CollectCoin();
-                break;
+        if (_matchState != null)
+            _matchState.Changed -= ApplyInteractionState;
 
-            case Booster booster:
-                OnBoosterCollected(booster);
-                break;
+        if (_landing != null)
+        {
+            _landing.Started -= OnLandingChanged;
+            _landing.Finished -= OnLandingChanged;
         }
     }
 
-    protected void SetCharacterState(CharacterState state)
-    {
-        if (_state == state)
-            return;
+    public bool CanAcceptBooster => CanAct && _boosterHandler.CanAccept;
+    protected bool TryStorePendingBooster(IBoosterEffect effect) => _boosterHandler.TryStore(effect);
+    public bool TryActivatePendingBooster() => _boosterHandler.TryActivatePending();
 
-        _state = state;
+    public void AcceptCoin() => LifeStats.AddCoin();
+
+    public virtual bool TryAcceptBooster(IBoosterEffect effect)
+    {
+        return _boosterHandler.TryActivate(effect);
     }
 
-    public void Die()
+    // Предмет потребляется, только если персонаж его принял — иначе остаётся на поле
+    private void OnItemDetected(ICollectible item)
     {
-        SetCharacterState(CharacterState.Died);
+        if (CanAct && item.TryApplyTo(this))
+            item.Collect();
+    }
+
+    private void ApplyInteractionState()
+    {
+        bool canInteract = CanAct;
+        _mover.enabled = canInteract;
+        _grabber.enabled = canInteract;
+        _conqueror.enabled = canInteract;
+    }
+
+    public bool TryDie()
+    {
+        if (_state == CharacterState.Died)
+            return false;
+
+        _state = CharacterState.Died;
+        _landing.Cancel();
+        _boosterHandler.Clear();
         _mover.enabled = false;
         _grabber.enabled = false;
         _conqueror.enabled = false;
-        _conqueror.Reset();
+        _conqueror.ReleaseTerritory();
 
         _colorService?.ReturnColor(_color);
         _ragdollController.Activate(_color);
-
-        Died?.Invoke();
+        return true;
     }
 
     public void Kill()
     {
-        StatsComponent.RegisterKill();
-    }
-
-    protected void ResetState()
-    {
-        _mover.enabled = false;
-        _grabber.enabled = false;
-        _conqueror.Reset();
-        _conqueror.enabled = false;
+        LifeStats.AddKill();
     }
 }

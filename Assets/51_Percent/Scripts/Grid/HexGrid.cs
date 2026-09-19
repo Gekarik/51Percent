@@ -9,14 +9,17 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
     private const float RowHeightMultiplier = 0.75f;
     private const float HalfOffset = 0.5f;
 
-    [SerializeField] private HexNeighborOffsets _neighborOffsets;
+    [Required] [SerializeField] private HexNeighborOffsets _neighborOffsets;
 
     private List<Hex> _allHexes;
     private List<IHex> _allHexesAsInterface;
     private Dictionary<HexCoord, Hex> _coordToHex;
+
+    // Якорь: конвертация мир<->координаты отсчитывается от реального гекса,
+    // а не от вычисленного origin — так float-погрешности не смещают всю сетку
+    private Hex _anchor;
     private float _hexWidth;
-    private float _hexHeight;
-    private Vector3 _gridOrigin;
+    private float _rowStep;
 
     public int Count => _allHexes.Count;
     public IReadOnlyList<IHex> AllHexes => _allHexesAsInterface;
@@ -24,8 +27,8 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
     private void Awake()
     {
         CollectHexes();
-        CalculateGridParameters();
         BuildCoordinateSystem();
+        CalibrateSpacing();
     }
 
     private void CollectHexes()
@@ -38,65 +41,70 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
         _allHexesAsInterface = _allHexes.Cast<IHex>().ToList();
     }
 
-    private void CalculateGridParameters()
-    {
-        Bounds firstHexBounds = _allHexes[0].GetRendererBounds();
-        _hexWidth = firstHexBounds.size.x;
-        _hexHeight = firstHexBounds.size.z;
-
-        float minimumX = float.MaxValue;
-        float minimumZ = float.MaxValue;
-
-        foreach (Hex hex in _allHexes)
-        {
-            Vector3 position = hex.transform.position;
-
-            if (position.x < minimumX)
-                minimumX = position.x;
-
-            if (position.z < minimumZ)
-                minimumZ = position.z;
-        }
-
-        _gridOrigin = new Vector3(
-            minimumX - _hexWidth * HalfOffset,
-            0f,
-            minimumZ - _hexHeight * HalfOffset);
-    }
-
     private void BuildCoordinateSystem()
     {
-        int hexCount = _allHexes.Count;
-        _coordToHex = new Dictionary<HexCoord, Hex>(hexCount);
+        _coordToHex = new Dictionary<HexCoord, Hex>(_allHexes.Count);
 
         foreach (Hex hex in _allHexes)
         {
-            HexCoord coord = WorldToCoord(hex.transform.position);
-            _coordToHex[coord] = hex;
+            if (_coordToHex.ContainsKey(hex.Coord))
+                throw new InvalidOperationException(
+                    $"HexGrid: duplicate coord {hex.Coord} on '{hex.name}'. " +
+                    "Похоже, гексы без назначенных координат — перегенерируйте грид (Tools → 51 Percent → Grid Wizard)");
+
+            _coordToHex[hex.Coord] = hex;
         }
+
+        _anchor = _allHexes[0];
     }
+
+    // Шаг сетки вычисляется по фактическим позициям максимально разнесённых гексов:
+    // это гасит погрешность одного шага и не зависит от размеров меша
+    private void CalibrateSpacing()
+    {
+        Hex farInRow = null;
+        Hex farInColumn = null;
+
+        foreach (Hex hex in _allHexes)
+        {
+            if (hex.Coord.R == _anchor.Coord.R)
+            {
+                if (farInRow == null || DeltaQ(hex) > DeltaQ(farInRow))
+                    farInRow = hex;
+            }
+            else if (farInColumn == null || DeltaR(hex) > DeltaR(farInColumn))
+            {
+                farInColumn = hex;
+            }
+        }
+
+        Bounds fallbackBounds = _anchor.GetRendererBounds();
+
+        _hexWidth = farInRow != null && DeltaQ(farInRow) > 0
+            ? (farInRow.transform.position.x - _anchor.transform.position.x) / (farInRow.Coord.Q - _anchor.Coord.Q)
+            : fallbackBounds.size.x;
+
+        _rowStep = farInColumn != null
+            ? (farInColumn.transform.position.z - _anchor.transform.position.z) / (farInColumn.Coord.R - _anchor.Coord.R)
+            : fallbackBounds.size.z * RowHeightMultiplier;
+    }
+
+    private int DeltaQ(Hex hex) => Math.Abs(hex.Coord.Q - _anchor.Coord.Q);
+    private int DeltaR(Hex hex) => Math.Abs(hex.Coord.R - _anchor.Coord.R);
 
     private HexCoord WorldToCoord(Vector3 worldPosition)
     {
-        float relativeX = worldPosition.x - _gridOrigin.x;
-        float relativeZ = worldPosition.z - _gridOrigin.z;
+        Vector3 anchorPosition = _anchor.transform.position;
 
-        int row = Mathf.RoundToInt(relativeZ / (_hexHeight * RowHeightMultiplier));
-        bool isOddRow = (row & 1) == 1;
-        float rowOffset = isOddRow ? _hexWidth * HalfOffset : 0f;
-        int column = Mathf.RoundToInt((relativeX - rowOffset) / _hexWidth);
+        int row = _anchor.Coord.R + Mathf.RoundToInt((worldPosition.z - anchorPosition.z) / _rowStep);
+        float rowShift = RowShift(row) - RowShift(_anchor.Coord.R);
+        int column = _anchor.Coord.Q + Mathf.RoundToInt((worldPosition.x - anchorPosition.x - rowShift) / _hexWidth);
 
         return new HexCoord(column, row);
     }
 
-    public Vector3 CoordToWorld(HexCoord coord)
-    {
-        float rowOffset = coord.IsOddRow ? _hexWidth * HalfOffset : 0f;
-        float x = _gridOrigin.x + coord.Q * _hexWidth + rowOffset + _hexWidth * HalfOffset;
-        float z = _gridOrigin.z + coord.R * _hexHeight * RowHeightMultiplier + _hexHeight * HalfOffset;
-
-        return new Vector3(x, 0f, z);
-    }
+    // Нечётные ряды сдвинуты вправо на полгекса (odd-r layout)
+    private float RowShift(int row) => (row & 1) == 1 ? _hexWidth * HalfOffset : 0f;
 
     public IHex GetHex(HexCoord coord)
     {
@@ -119,7 +127,7 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
 
     public HexCoord GetCoord(IHex hex)
     {
-        return WorldToCoord(hex.Transform.position);
+        return hex.Coord;
     }
 
     public IEnumerable<IHex> GetNeighbors(HexCoord coord)

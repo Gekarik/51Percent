@@ -71,4 +71,13 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
-CLAUDE.md
+# JetBrains Rider / IDEA: проект и особенно workspace.xml меняются на каждой машине
+.idea/
+
+# Claude Code: разрешения конкретной машины с абсолютными путями.
+# Общие настройки проекта (.claude/settings.json) остаются в репозитории.
+.claude/settings.local.json
+
+# Краш-логи JVM (Rider), появляются в корне проекта
+hs_err_pid*.log
+replay_pid*.log

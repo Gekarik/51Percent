@@ -16,12 +16,15 @@ public class Player : CharacterBase
             follower.Init(transform);
     }
 
-    protected override void OnBoosterCollected(Booster booster) =>
-        StorePendingBooster(booster.CreateEffect());
+    // Игрок не активирует бустер сразу — кладёт в карман и запускает по кнопке
+    public override bool TryAcceptBooster(IBoosterEffect effect)
+    {
+        return TryStorePendingBooster(effect);
+    }
 
     private void Update()
     {
         if (Input.GetKeyDown(_activateBoosterKey))
-            ActivatePendingBooster();
+            TryActivatePendingBooster();
     }
 }

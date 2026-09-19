@@ -3,7 +3,12 @@ using UnityEngine;
 
 public class Hex : MonoBehaviour, IHex
 {
-    [SerializeField] private HexView _hexView;
+    [Required] [SerializeField] private HexView _hexView;
+
+    // Координата назначается генератором при создании грида и сериализуется в сцену:
+    // гекс — единственный источник правды о своей позиции в сетке
+    [SerializeField, HideInInspector] private int _coordQ;
+    [SerializeField, HideInInspector] private int _coordR;
 
     private HexState _state;
 
@@ -12,6 +17,7 @@ public class Hex : MonoBehaviour, IHex
     public Transform Transform => transform;
     public HexView HexView => _hexView;
     public Transform ViewTransform => _hexView.transform;
+    public HexCoord Coord => new HexCoord(_coordQ, _coordR);
     public HexState State => _state;
     public ICharacter Owner { get; private set; }
 
@@ -32,6 +38,12 @@ public class Hex : MonoBehaviour, IHex
     private void OnDisable()
     {
         StateChanged -= _presenter.OnStateChanged;
+    }
+
+    public void AssignCoord(HexCoord coord)
+    {
+        _coordQ = coord.Q;
+        _coordR = coord.R;
     }
 
     public void SetOwner(ICharacter player, HexState hexState)

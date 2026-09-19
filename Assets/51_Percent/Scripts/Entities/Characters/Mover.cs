@@ -11,7 +11,8 @@ public class Mover : MonoBehaviour
     private CharacterStats _stats;
     private float _rotationSpeed;
     private Vector3 _direction;
-    public Vector3 PlayerSpeed { get; private set; }
+
+    public Vector3 Velocity => _rigidbody.velocity;
 
     private void Awake()
     {
@@ -20,6 +21,15 @@ public class Mover : MonoBehaviour
 
         if (_vectorProvider == null)
             throw new InvalidOperationException("No VectorProviderComponent");
+
+        // Плоская доска: вертикаль персонажу не нужна — фиксируем Y, чтобы не падать в щели
+        _rigidbody.constraints |= RigidbodyConstraints.FreezePositionY;
+    }
+
+    // Точка входа для подмены источника направления (dev-инструменты)
+    public void SetProvider(VectorProviderComponent provider)
+    {
+        _vectorProvider = provider;
     }
 
     public void Init(CharacterStats stats, CharacterConfigSO config)
@@ -39,12 +49,23 @@ public class Mover : MonoBehaviour
         Rotate();
     }
 
+    private void OnDisable()
+    {
+        _direction = Vector3.zero;
+        if (_rigidbody != null)
+            _rigidbody.velocity = Vector3.zero;
+    }
+
     private void Move()
     {
         float speed = _stats.GetValue(StatType.Speed);
         Vector3 desired = _direction * speed;
-        _rigidbody.velocity = new Vector3(desired.x, _rigidbody.velocity.y, desired.z);
-        PlayerSpeed = new Vector3(desired.x, 0f, desired.z);
+        _rigidbody.velocity = new Vector3(desired.x, 0f, desired.z);
+    }
+
+    public void TeleportTo(Vector3 position)
+    {
+        _rigidbody.position = position;
     }
 
     private void Rotate()

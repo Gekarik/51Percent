@@ -5,14 +5,13 @@ using UnityEngine;
 public class EnemySpawner : CharacterSpawner<Enemy>
 {
     [SerializeField] private int _enemyCount = 5;
-    [SerializeField] private BotPersonalitySettings _personality;
+    [Required] [SerializeField] private BotPersonalitySettings _personality;
     [SerializeField] private BotNamesSO _botNames;
     [SerializeField] private Transform[] _spawnPoints;
 
     private IReadOnlyList<ICharacter> _allCharacters;
     private ICollectibleRegistry _collectibleRegistry;
     private int _spawnedCount;
-    private readonly Dictionary<Enemy, int> _personalityIndices = new Dictionary<Enemy, int>();
 
     public void SetAIReferences(IReadOnlyList<ICharacter> allCharacters, ICollectibleRegistry collectibleRegistry)
     {
@@ -40,6 +39,15 @@ public class EnemySpawner : CharacterSpawner<Enemy>
         return result;
     }
 
+    // Dev-инструмент: враг без мозга — стоит на месте, но полноценно участвует в правилах игры
+    public ICharacter SpawnIdleEnemy()
+    {
+        var enemy = SpawnNext();
+        enemy.SetName("AFK");
+        RegisterInLeaderBoard(enemy);
+        return enemy;
+    }
+
     private void SpawnEnemy()
     {
         _spawnedCount++;
@@ -48,19 +56,7 @@ public class EnemySpawner : CharacterSpawner<Enemy>
 
         var enemy = SpawnNext();
         enemy.SetName(name);
-        _personalityIndices[enemy] = personalityIndex;
         RegisterInLeaderBoard(enemy);
         enemy.InitBrain(_grid, _allCharacters, _collectibleRegistry, _personality, personalityIndex);
-    }
-
-    protected override void OnRespawnRequested(Enemy character)
-    {
-        int personalityIndex = _personalityIndices.TryGetValue(character, out var idx) ? idx : 0;
-
-        var newEnemy = SpawnAt(_grid.GetRandomHex());
-        newEnemy.SetName(character.Name);
-        _personalityIndices[newEnemy] = personalityIndex;
-        RegisterInLeaderBoard(newEnemy);
-        newEnemy.InitBrain(_grid, _allCharacters, _collectibleRegistry, _personality, personalityIndex);
     }
 }

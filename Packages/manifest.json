@@ -2,6 +2,7 @@
   "dependencies": {
     "com.coplaydev.unity-mcp": "file:D:/unity-mcp-beta/unity-mcp-beta/MCPForUnity",
     "com.unity.cinemachine": "2.10.3",
+    "com.unity.cloud.gltfast": "6.14.1",
     "com.unity.collab-proxy": "2.7.1",
     "com.unity.feature.development": "1.0.1",
     "com.unity.recorder": "4.0.3",

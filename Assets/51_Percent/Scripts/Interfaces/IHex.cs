@@ -4,6 +4,7 @@ using UnityEngine;
 public interface IHex
 {
     Transform Transform { get; }
+    HexCoord Coord { get; }
     HexState State { get; }
     ICharacter Owner { get; }
     Transform ViewTransform { get; }

@@ -1,62 +1,21 @@
-using System.Collections;
 using UnityEngine;
 
-public class BoosterSpawner : MonoBehaviour
+public class BoosterSpawner : CollectibleSpawnerBase
 {
-    [SerializeField] private Booster[] _boosterPrefabs;
+    protected override CollectibleKind Kind => CollectibleKind.Booster;
+
+    [Header("Boosters")]
+    [Required] [SerializeField] private Booster[] _boosterPrefabs;
     [SerializeField] private Transform _container;
-    [SerializeField] private SpawnPointProvider _spawnPoint;
-    [SerializeField] private float _initialDelay = 10f;
-    [SerializeField] private float _spawnInterval = 60f;
-    [SerializeField] private int _maxBoosters = 3;
 
-    private int _activeCount;
-    private ICollectibleRegistry _registry;
-    private Coroutine _spawnRoutine;
-
-    public void SetRegistry(ICollectibleRegistry registry)
-    {
-        _registry = registry;
-    }
-
-    private void OnEnable()
-    {
-        _spawnRoutine = StartCoroutine(SpawnLoop());
-    }
-
-    private void OnDisable()
-    {
-        if (_spawnRoutine != null)
-            StopCoroutine(_spawnRoutine);
-    }
-
-    private IEnumerator SpawnLoop()
-    {
-        yield return new WaitForSeconds(_initialDelay);
-
-        while (true)
-        {
-            if (_activeCount < _maxBoosters)
-                SpawnRandom();
-            yield return new WaitForSeconds(_spawnInterval);
-        }
-    }
-
-    private void SpawnRandom()
+    protected override ICollectible Acquire()
     {
         var prefab = _boosterPrefabs[Random.Range(0, _boosterPrefabs.Length)];
-        var booster = Instantiate(prefab, _spawnPoint.GetRandomPosition(), Quaternion.identity, _container);
-        booster.Collected += OnBoosterCollected;
-        _registry?.Register(booster);
-        _activeCount++;
+        return Instantiate(prefab, _container);
     }
 
-    private void OnBoosterCollected(ICollectible collectible)
+    protected override void Dispose(ICollectible item)
     {
-        collectible.Collected -= OnBoosterCollected;
-        _registry?.Unregister(collectible);
-        _activeCount--;
-        Destroy(collectible.Transform.gameObject);
+        Destroy(item.Transform.gameObject);
     }
-
 }

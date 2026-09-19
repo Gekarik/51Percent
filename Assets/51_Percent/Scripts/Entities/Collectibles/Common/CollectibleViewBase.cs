@@ -21,7 +21,20 @@ public abstract class CollectibleViewBase : MonoBehaviour, ICollectibleView
             throw new InvalidOperationException($"[{GetType().Name}] _settings не назначен на '{name}'");
 
         _viewTransform = transform;
+        AlignMeshBottomToPivot();
         _initialTransformSnapshot = new TransformSnapshot(_viewTransform);
+    }
+
+    // Низ меша садится на origin, чтобы спавн по высоте не зависел от пивота конкретного префаба
+    private void AlignMeshBottomToPivot()
+    {
+        var meshFilter = GetComponent<MeshFilter>();
+        if (meshFilter == null || meshFilter.sharedMesh == null)
+            return;
+
+        Vector3 localPosition = _viewTransform.localPosition;
+        localPosition.y = -meshFilter.sharedMesh.bounds.min.y * _viewTransform.localScale.y;
+        _viewTransform.localPosition = localPosition;
     }
 
     private void OnEnable()
@@ -62,10 +75,11 @@ public abstract class CollectibleViewBase : MonoBehaviour, ICollectibleView
 
     private void StartIdleAnimation()
     {
-        float startY = _viewTransform.position.y;
+        // Локальная анимация: позиция спавна выставляется после OnEnable, мировой Y тут ещё неактуален
+        float startY = _viewTransform.localPosition.y;
 
         _bobTween = _viewTransform
-            .DOMoveY(startY + _settings.BobHeight, _settings.BobDuration)
+            .DOLocalMoveY(startY + _settings.BobHeight, _settings.BobDuration)
             .SetLoops(-1, LoopType.Yoyo)
             .SetEase(_settings.BobEase);
 

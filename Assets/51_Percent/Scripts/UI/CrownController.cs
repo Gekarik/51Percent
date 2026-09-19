@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class CrownController : MonoBehaviour
 {
-    [SerializeField] private Crown _crownPrefab;
+    [Required] [SerializeField] private Crown _crownPrefab;
 
     private LeaderBoardModel _leaderBoardModel;
     private Crown _crown;

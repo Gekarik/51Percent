@@ -1,11 +1,12 @@
 using System;
 
+// Крылья: одноразовое спасение — перехватывают смерть и уносят владельца на его территорию
 public class WingsBoosterEffect : IBoosterEffect, IEarlyConsumable
 {
     private readonly float _duration;
     private IBoosterContext _context;
 
-    public string BoosterId => "wings";
+    public BoosterId BoosterId => BoosterId.Wings;
     public float Duration => _duration;
     public event Action EarlyConsumed;
 
@@ -17,20 +18,19 @@ public class WingsBoosterEffect : IBoosterEffect, IEarlyConsumable
     public void Apply(IBoosterContext context)
     {
         _context = context;
-        context.Died += OnDied;
+        context.RegisterDeathInterceptor(InterceptDeath);
     }
 
     public void Remove(IBoosterContext context)
     {
-        context.Died -= OnDied;
+        context.UnregisterDeathInterceptor();
         _context = null;
     }
 
-    private void OnDied()
+    private bool InterceptDeath()
     {
-        _context.Died -= OnDied;
-        _context.RequestRespawn();
-        _context = null;
+        _context.EscapeToTerritory();
         EarlyConsumed?.Invoke();
+        return true;
     }
 }

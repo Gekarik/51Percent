@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviour, ICharacter
 {
-    [SerializeField] private T _prefab;
+    [Required] [SerializeField] private T _prefab;
 
     protected HexGrid _grid;
     protected TerritoryManager _territoryManager;
@@ -20,8 +20,11 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
 
     protected CharacterFactory<T> _factory;
 
+    public event Action<ICharacter> CharacterSpawned;
+
     public void Init(HexGrid grid, TerritoryManager territoryManager, KillManager killManager,
-        ColorService colorService, LeaderBoardModel leaderBoardModel, WinConditionTracker winConditionTracker)
+        ColorService colorService, LeaderBoardModel leaderBoardModel, WinConditionTracker winConditionTracker,
+        IMatchState matchState)
     {
         _grid = grid ?? throw new ArgumentNullException(nameof(grid));
         _territoryManager = territoryManager ?? throw new ArgumentNullException(nameof(territoryManager));
@@ -30,7 +33,8 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
         _leaderBoardModel = leaderBoardModel ?? throw new ArgumentNullException(nameof(leaderBoardModel));
         _winConditionTracker = winConditionTracker ?? throw new ArgumentNullException(nameof(winConditionTracker));
 
-        _factory = new CharacterFactory<T>(_prefab, _colorService, _territoryManager, _grid, _killManager);
+        _factory = new CharacterFactory<T>(_prefab, _colorService, _territoryManager, _grid, _killManager,
+            matchState ?? throw new ArgumentNullException(nameof(matchState)));
         _initialized = true;
     }
 
@@ -62,13 +66,11 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
         var character = _factory.Create(hex);
         character.TrailInterrupted += _killManager.OnTrailInterrupted;
         character.TrailOrphaned += _killManager.OnTrailOrphaned;
-        character.RespawnRequested += () => OnRespawnRequested(character);
         _winConditionTracker.RegisterCharacter(character);
         _allCharacters?.Add(character);
+        CharacterSpawned?.Invoke(character);
         return character;
     }
-
-    protected virtual void OnRespawnRequested(T character) { }
 
     protected IHex GetNextHex()
     {

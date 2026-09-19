@@ -16,7 +16,9 @@ public class CharacterView : MonoBehaviour
 
     private void Update()
     {
-        if (_character == null) return;
+        if (_character == null)
+            return;
+
         SetSpeed(_character.Speed);
     }
 
@@ -28,6 +30,18 @@ public class CharacterView : MonoBehaviour
     public void SetModelScale(float factor)
     {
         transform.localScale = _initialLocalScale * factor;
+    }
+
+    // Переключение режима походки через параметр — переходы и crossfade живут в графе контроллера
+    public void SetLocomotionMode(LocomotionMode mode)
+    {
+        _animator.SetInteger(AnimatorParams.LocomotionMode, (int)mode);
+    }
+
+    // Единственная запись флага приземления: источник — доменное окно, владелец решения — CharacterBase
+    public void SetLanding(bool isLanding)
+    {
+        _animator.SetBool(AnimatorParams.IsLanding, isLanding);
     }
 
     private void SetSpeed(float speed)

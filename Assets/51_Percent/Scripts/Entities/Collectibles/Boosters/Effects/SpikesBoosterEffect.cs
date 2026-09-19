@@ -1,10 +1,12 @@
+using System;
 using UnityEngine;
 
-public class SpikesBoosterEffect : IBoosterEffect
+// Шипы: одноразовая ловушка — разворачивают одно убийство по трейлу и гаснут
+public class SpikesBoosterEffect : IBoosterEffect, IEarlyConsumable
 {
-    public const string Id = "spikes";
-    public string BoosterId => Id;
+    public BoosterId BoosterId => BoosterId.Spikes;
     public float Duration { get; }
+    public event Action EarlyConsumed;
 
     private readonly Mesh _spikedMesh;
 
@@ -16,7 +18,7 @@ public class SpikesBoosterEffect : IBoosterEffect
 
     public void Apply(IBoosterContext context)
     {
-        context.RegisterTrailKillResolver((owner, stepper) => (stepper, owner));
+        context.RegisterTrailKillResolver(ReverseKill);
         context.SetTrailMesh(_spikedMesh);
     }
 
@@ -24,5 +26,11 @@ public class SpikesBoosterEffect : IBoosterEffect
     {
         context.UnregisterTrailKillResolver();
         context.ClearTrailMesh();
+    }
+
+    private (ICharacter victim, ICharacter killer) ReverseKill(ICharacter owner, ICharacter stepper)
+    {
+        EarlyConsumed?.Invoke();
+        return (stepper, owner);
     }
 }

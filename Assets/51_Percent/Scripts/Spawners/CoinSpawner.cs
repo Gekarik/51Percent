@@ -1,7 +1,10 @@
 using UnityEngine;
 
-public class CoinSpawner : ObjectSpawner<Coin>
+public class CoinSpawner : PooledSpawner<Coin>, ICoinScatterer
 {
+    protected override CollectibleKind Kind => CollectibleKind.Coin;
+
+    [Header("Scatter")]
     [SerializeField] private float _scatterRadius = 1.5f;
     [SerializeField] private float _scatterDuration = 0.4f;
 
@@ -9,7 +12,7 @@ public class CoinSpawner : ObjectSpawner<Coin>
     {
         for (int i = 0; i < count; i++)
         {
-            var coin = SpawnAtPosition(origin);
+            var coin = SpawnTyped(origin);
             var offset = Random.insideUnitCircle * _scatterRadius;
             var target = origin + new Vector3(offset.x, 0f, offset.y);
             coin.Scatter(target, _scatterDuration);

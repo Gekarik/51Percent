@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 public class LeaderBoardModel
 {
-    private readonly TerritoryManager _territoryManager;
+    private readonly ITerritoryOwnership _territoryManager;
     private readonly List<LeaderBoardEntry> _entries = new List<LeaderBoardEntry>();
 
     public IReadOnlyList<LeaderBoardEntry> Entries => _entries;
     public event Action Changed;
 
-    public LeaderBoardModel(TerritoryManager territoryManager)
+    public LeaderBoardModel(ITerritoryOwnership territoryManager)
     {
         _territoryManager = territoryManager;
         _territoryManager.OwnershipChanged += HandleOwnershipChanged;
