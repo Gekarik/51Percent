@@ -2,9 +2,6 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-// Читы dev-сцены. Клавиши: 1-4 — выдать бустер из массива, 5 — заспавнить врага (он всегда один),
-// 6 — натравить врага на игрока / остановить, 7 — победить, 8 — проиграть (нужен живой противник),
-// 0 — снять активный эффект
 public class DevTools : MonoBehaviour
 {
     private const string LogPrefix = "[DevTools]";
@@ -197,7 +194,6 @@ public class DevTools : MonoBehaviour
 
     private void OnGUI()
     {
-        // GUIStyle нельзя создавать вне OnGUI — кэшируем при первом вызове
         _helpStyle ??= new GUIStyle(GUI.skin.box) { alignment = TextAnchor.UpperLeft };
 
         var content = new GUIContent(_helpText);

@@ -4,8 +4,6 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-// Диагностика: что именно везёт в себе гуманоидный клип. Нужна, чтобы не гадать,
-// где сидит проезд вперёд — в корневом движении или в самой позе
 public static class ClipMotionProbe
 {
     private const string ControllerPath = "Assets/51_Percent/Animators/Character.controller";
@@ -15,7 +13,6 @@ public static class ClipMotionProbe
     [MenuItem("Tools/51 Percent/Probe Clip Motion")]
     private static void Probe()
     {
-        // Смотрим ровно то, что стоит в состоянии, а не то, что мы думаем, что стоит
         var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         var state = controller.layers
             .SelectMany(layer => layer.stateMachine.states)
@@ -39,7 +36,6 @@ public static class ClipMotionProbe
         foreach (string name in new[] { "RootT.x", "RootT.y", "RootT.z" })
             report.Append(" | " + DescribeCurve(clip, bindings, name));
 
-        // Смещение корня за клип по данным самого движения
         report.Append($" | averageSpeed: {clip.averageSpeed}");
         report.Append($" | apparentSpeed: {clip.apparentSpeed:F3}");
         report.Append($" | rootCurves: {clip.hasRootCurves}, motionCurves: {clip.hasMotionCurves}");

@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Проверка инвариантов приземления в Play Mode: тело стоит на месте всё окно,
-// взаимодействия выключены, флаг анимации поднят, после окна движение возвращается
 [InitializeOnLoad]
 public static class SpawnAnimationProbe
 {
@@ -68,12 +66,9 @@ public static class SpawnAnimationProbe
         if (!animator.GetBool(AnimatorParams.IsLanding))
             _failed = true;
 
-        // Флага мало: сломанные переходы в графе оставляют флаг поднятым,
-        // но состояние приземления при этом не играет
         if (!IsPlayingLanding(animator))
             _failed = true;
 
-        // Тело не двигается всё окно: с неба спускается только модель
         if ((character.transform.position - Anchors[id]).sqrMagnitude > PositionTolerance)
             _failed = true;
     }

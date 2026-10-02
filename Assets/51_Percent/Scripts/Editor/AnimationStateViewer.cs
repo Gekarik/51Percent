@@ -3,9 +3,6 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-// Окно отладки анимации выделенного объекта: в Play Mode показывает живое состояние
-// графа и позволяет принудительно запустить любое состояние, в редакторе проигрывает
-// выбранный клип без запуска игры
 public class AnimationStateViewer : EditorWindow
 {
     private const int Layer = 0;
@@ -84,7 +81,6 @@ public class AnimationStateViewer : EditorWindow
         Bar(progress, $"проиграно {progress * 100f:F0}%");
     }
 
-    // Имя клипа берём у самого аниматора: оно верно даже если состояние переименовали
     private static string DescribeClips(Animator animator)
     {
         var clips = animator.GetCurrentAnimatorClipInfo(Layer);
@@ -130,7 +126,6 @@ public class AnimationStateViewer : EditorWindow
         }
     }
 
-    // Окно приземления рядом с состоянием графа: рассинхрон между ними виден сразу
     private void DrawCharacter(Animator animator)
     {
         var character = animator.GetComponentInParent<CharacterBase>();

@@ -32,8 +32,6 @@ public class SpawnPlacementTests : GameplayScenario
     [UnityTest]
     public IEnumerator SelectSpawnHex_NeverPicksForeignTrail()
     {
-        // Трейлом врага занимается самая удалённая свободная область: без проверки состояния
-        // клетки именно она осталась бы лучшим местом появления.
         Component trapped = FreeAreas().OrderByDescending(DistanceToNearestCharacter).First();
 
         using (Changes())
@@ -53,8 +51,6 @@ public class SpawnPlacementTests : GameplayScenario
         return (Component)Call(selector, "SelectSpawnHex");
     }
 
-    // Тот же список, что получает спавнер: ботов в сцене несколько,
-    // и расстояние должно считаться до всех живых участников
     private object MatchCharacters()
     {
         return Field(Find("PlayerSpawner").Single(), "_allCharacters");

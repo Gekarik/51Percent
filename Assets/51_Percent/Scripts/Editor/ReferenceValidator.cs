@@ -7,13 +7,11 @@ using UnityEngine;
 
 public static class ReferenceValidator
 {
-    // Ограничение вложенности [Serializable]-классов — защита от случайных циклов
     private const int MaxNestingDepth = 4;
 
     public readonly struct Violation
     {
         public readonly Component Component;
-        // Путь в формате SerializedObject.FindProperty (например "_spawnPoint._area")
         public readonly string PropertyPath;
 
         public Violation(Component component, string propertyPath)
@@ -70,13 +68,11 @@ public static class ReferenceValidator
             }
             else if (value != null && IsNestedSerializableClass(field.FieldType, target))
             {
-                // Вложенный [Serializable]-класс (например, SpawnPointProvider внутри спавнера)
                 CollectViolations(owner, value, path, violations, depth - 1);
             }
         }
     }
 
-    // Сломанная ссылка — проблема всегда, пустое поле — только если оно [Required]
     private static void CheckReference(Component owner, UnityEngine.Object value, string path, bool isRequired, List<Violation> violations)
     {
         if (IsMissing(value) || (value == null && isRequired))
@@ -96,14 +92,11 @@ public static class ReferenceValidator
             CheckReference(owner, list[i] as UnityEngine.Object, $"{path}.Array.data[{i}]", isRequired, violations);
     }
 
-    // Объект удалён, но сериализованная ссылка на него осталась:
-    // обёртка не null по ReferenceEquals, но Unity-сравнение даёт null, а instanceID сохранился
     private static bool IsMissing(UnityEngine.Object value)
     {
         return value == null && !ReferenceEquals(value, null) && value.GetInstanceID() != 0;
     }
 
-    // Сериализуемые поля: публичные или с [SerializeField], включая приватные в базовых классах
     private static IEnumerable<FieldInfo> GetSerializedFields(Type type)
     {
         while (type != null && type != typeof(MonoBehaviour) && type != typeof(object))

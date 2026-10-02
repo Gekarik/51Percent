@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Окно со всеми проблемными ссылками сцены: клик — подсветить объект, поле — заполнить прямо здесь
 public class ReferenceWizard : EditorWindow
 {
     private static readonly Color ProblemColor = new Color(1f, 0.36f, 0.36f);
@@ -44,7 +43,6 @@ public class ReferenceWizard : EditorWindow
 
         foreach (var violation in _violations)
         {
-            // Компонент могли удалить после сканирования
             if (violation.Component == null)
                 continue;
 

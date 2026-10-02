@@ -1,8 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 
-// Проигрывание клипа на объекте сцены без запуска игры: тем же механизмом,
-// которым пользуется штатное окно Animation. Владеет только временем показа
 public class AnimationPreviewer
 {
     private GameObject _target;
@@ -42,7 +40,6 @@ public class AnimationPreviewer
         Sample();
     }
 
-    // Вызывается из окна каждый кадр редактора
     public void Tick()
     {
         if (!IsPlaying || _clip == null || _target == null)

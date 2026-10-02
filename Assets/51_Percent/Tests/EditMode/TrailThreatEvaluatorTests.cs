@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-// Решение бота об опасности проверяется без сцены: алгоритму нужны только позиции.
 public class TrailThreatEvaluatorTests
 {
     private const float DetectionRadius = 10f;
@@ -33,7 +32,6 @@ public class TrailThreatEvaluatorTests
     [Test]
     public void RivalBeyondDetectionRadius_IsIgnored_EvenWhenStandingOnTrail()
     {
-        // Соперник стоит вплотную к клетке трейла, но сам бот его не видит
         var trail = Positions(new Vector3(100f, 0f, 0f));
 
         Assert.That(Threatened(trail, Positions(new Vector3(100f, 0f, 0f))), Is.False);
@@ -42,7 +40,6 @@ public class TrailThreatEvaluatorTests
     [Test]
     public void RivalNearOldTailOnly_IsNotThreat()
     {
-        // Длинный трейл: первые клетки уже позади, следим только за свежим участком
         var trail = new List<Vector3>();
         for (int i = 0; i < 12; i++)
             trail.Add(new Vector3(i, 0f, 0f));

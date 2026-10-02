@@ -4,9 +4,6 @@ using DG.Tweening;
 using UnityEditor;
 using UnityEngine;
 
-// Заводит реестр внешнего вида бустеров и прошивает им оба префаба персонажей.
-// Ручная прошивка — самый вероятный способ уронить эту ветку: ни один реестр
-// в проекте до сих пор ни разу не был заведён
 public static class BoosterVisualSetup
 {
     private const string RegistryPath = "Assets/51_Percent/ScriptableObjects/BoosterVisuals.asset";
@@ -26,8 +23,6 @@ public static class BoosterVisualSetup
         Debug.Log("Booster visuals: реестр заведён, компоненты и сокеты прошиты на Player и Enemy.");
     }
 
-    // Поведение коллектибла на надетом пропе — та самая ошибка, из-за которой доска
-    // крутилась на персонаже. Ловим её при настройке, а не глазами в игре
     private static void ValidateProps()
     {
         foreach (string path in new[] { SkateboardPath, WingsPath })
@@ -60,8 +55,6 @@ public static class BoosterVisualSetup
         return created;
     }
 
-    // Значения по умолчанию — стартовая точка для подкрутки, а не истина.
-    // Скейт привязан к бустеру скорости: отдельного бустера доски в проекте нет
     private static void FillDefaults(BoosterVisualRegistry registry)
     {
         var serialized = new SerializedObject(registry);
@@ -109,8 +102,6 @@ public static class BoosterVisualSetup
         SetEnum(entry.FindPropertyRelative("_scaleEase"), scaleEase);
     }
 
-    // enumValueIndex — это позиция в списке значений, а не само значение.
-    // Для enum с пропусками прямое приведение дало бы не то поле
     private static void SetEnum<T>(SerializedProperty property, T value) where T : Enum
     {
         property.enumValueIndex = Array.IndexOf(Enum.GetValues(typeof(T)), value);
@@ -141,8 +132,6 @@ public static class BoosterVisualSetup
         }
     }
 
-    // Сокеты живут под моделью, а не под корнем: корень отмасштабирован, и проп
-    // на нём не последует ни за спуском при появлении, ни за ростом от гриба
     private static Transform EnsureSocket(Transform parent, string name)
     {
         var existing = parent.Find(name);

@@ -1,7 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 
-// Не пускает в Play, пока в открытой сцене есть сломанные ссылки или пустые [Required] поля
 [InitializeOnLoad]
 public static class PlayModeGatekeeper
 {
@@ -23,8 +22,6 @@ public static class PlayModeGatekeeper
         EditorApplication.isPlaying = false;
         EditorApplication.isPaused = false;
 
-        // Ошибка Console включает Error Pause во время перехода между режимами.
-        // Отмена запуска — результат проверки, поэтому сообщаем её предупреждением.
         ReferenceValidator.LogViolations(violations);
         Debug.LogWarning($"Запуск отменён: проблемных ссылок — {violations.Count}. Исправь их в Reference Wizard.");
 
@@ -34,7 +31,6 @@ public static class PlayModeGatekeeper
 
     private static void ShowCancelledPlayMode()
     {
-        // Не вмешиваемся, если пользователь уже запросил новый запуск.
         if (EditorApplication.isPlayingOrWillChangePlaymode)
             return;
 

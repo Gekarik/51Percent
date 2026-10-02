@@ -3,7 +3,6 @@ using UnityEngine;
 
 public static class ViewObjectCreator
 {
-    // Создаёт заготовку сущности: корень Model + дочерняя вьюшка с мешем, под выделенным объектом
     [MenuItem("Tools/51 Percent/Create View Object")]
     private static void CreateViewObject()
     {

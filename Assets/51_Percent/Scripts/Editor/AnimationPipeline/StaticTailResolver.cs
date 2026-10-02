@@ -1,8 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 
-/// Находит последний кадр, на котором клип ещё меняется.
-/// Страховка от экспортёров, дописывающих статичную позу в хвост.
 public sealed class StaticTailResolver
 {
     private const float ValueEpsilon = 0.0001f;

@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 
-/// Ищет blender.exe. Путь машинно-зависимый, поэтому живёт в EditorPrefs,
-/// а не в ассете — иначе он уехал бы в репозиторий вместе с проектом.
 public sealed class BlenderLocator
 {
     private const string PreferenceKey = "51Percent.AnimationPipeline.BlenderPath";
@@ -44,7 +42,6 @@ public sealed class BlenderLocator
 
             yield return Path.Combine(root, ExecutableName);
 
-            // У установок из Blender Foundation исполняемый файл лежит в папке версии
             foreach (string versioned in Directory.GetDirectories(root))
                 yield return Path.Combine(versioned, ExecutableName);
         }

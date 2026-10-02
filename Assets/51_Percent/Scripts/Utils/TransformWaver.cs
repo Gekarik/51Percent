@@ -8,7 +8,7 @@ public class TransformWaver : IWaveAnimator
 {
     private float _animationHeight = 0.6f;
     private float _totalWaveDuration = 0.8f;
-    private float _overlapFactor = 0.5f; // 0 = полное наложение, 1 ~ последовательный
+    private float _overlapFactor = 0.5f;
 
     private readonly WaveDelayResolver _delayResolver;
     private readonly Dictionary<Transform, Vector3> _originalPositions = new();

@@ -25,7 +25,6 @@ public abstract class CollectibleViewBase : MonoBehaviour, ICollectibleView
         _initialTransformSnapshot = new TransformSnapshot(_viewTransform);
     }
 
-    // Низ меша садится на origin, чтобы спавн по высоте не зависел от пивота конкретного префаба
     private void AlignMeshBottomToPivot()
     {
         var meshFilter = GetComponent<MeshFilter>();
@@ -75,7 +74,6 @@ public abstract class CollectibleViewBase : MonoBehaviour, ICollectibleView
 
     private void StartIdleAnimation()
     {
-        // Локальная анимация: позиция спавна выставляется после OnEnable, мировой Y тут ещё неактуален
         float startY = _viewTransform.localPosition.y;
 
         _bobTween = _viewTransform

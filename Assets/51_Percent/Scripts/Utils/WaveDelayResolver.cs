@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// Переводит расстояние элемента до источника волны в задержку его старта
 public class WaveDelayResolver
 {
     private readonly WaveDirection _direction;

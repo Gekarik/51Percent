@@ -2,10 +2,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-// Собирает надеваемые пропы из тех же моделей, что и пикапы. Пикап и надетый проп —
-// соседи, а не родственники: у пикапа есть поведение коллектибла (покачивание,
-// вращение, коллайдер), надетому пропу всё это только мешает. Вариант префаба тут
-// не подходит — пришлось бы наследовать поведение, чтобы сразу его вычитать
 public static class WornPropBuilder
 {
     private const string OutputFolder = "Assets/51_Percent/Prefabs/Props/Worn";
@@ -28,21 +24,10 @@ public static class WornPropBuilder
         }
     }
 
-    // Подгонка живёт в одном месте: в корневом трансформе надетого префаба.
-    // Доска опущена на высоту настила деки: пивот у доски внизу, у колёс, поэтому
-    // без сдвига настил оказывается выше ступней и персонаж проваливается внутрь.
-    // Величина измерена по вершинам деки в её средней трети (Probe Prop Bounds)
     private const float SkateboardDeckHeight = 0.168f;
 
-    // Доска сдвинута под опорную (левую) ногу. Толчковая правая уходит вбок на 0.10…0.26,
-    // а полуширина доски 0.16 — стоя по осевой, она подставлялась бы под толчок.
-    // Замерено Probe Foot Track по клипу катания
     private const float SkateboardSideShift = 0.08f;
 
-    // Сокет спины сидит на кости spine_03, а её оси развёрнуты: X смотрит вперёд,
-    // Z — влево (замерено Probe Socket Orientation). Поэтому размах крыльев,
-    // лежащий по их собственной X, без поворота раскрывался бы вперёд-назад,
-    // а отступ за спину задаётся по X сокета, а не по Z
     private const float WingsYaw = 90f;
     private const float WingsBackShift = 0.05f;
 
@@ -104,7 +89,6 @@ public static class WornPropBuilder
         }
     }
 
-    // Надетый проп — только картинка: ни покачивания, ни вращения, ни физики
     private static void StripPickupBehaviour(GameObject root)
     {
         foreach (var view in root.GetComponentsInChildren<CollectibleViewBase>(true))

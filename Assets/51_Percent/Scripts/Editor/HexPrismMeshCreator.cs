@@ -2,10 +2,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-// Генерирует меш гекс-призмы из существующего меша гекса: контур берётся из вершин источника
-// (след в плане XZ не меняется — спейсинг сетки сохраняется), верхняя грань остаётся на своём
-// уровне, юбка вытягивается только вниз. Дна нет — его никто не видит.
-// Повторный запуск перезаписывает содержимое ассета, сохраняя GUID и все ссылки на него.
 public class HexPrismMeshCreator : ScriptableWizard
 {
     private const string SavePath = "Assets/51_Percent/Meshes/Generated/HexPrism.asset";
@@ -62,8 +58,6 @@ public class HexPrismMeshCreator : ScriptableWizard
         Debug.Log($"Меш призмы сохранён: {SavePath} (углов контура: {outline.Count}, глубина: {_depth})");
     }
 
-    // Выпуклая оболочка вершин в плане XZ (monotone chain).
-    // Дубликаты и коллинеарные точки отсеиваются условием <= 0 — на выходе чистые углы гекса
     private static List<Vector2> BuildConvexOutline(Vector3[] vertices)
     {
         var points = new List<Vector2>(vertices.Length);
@@ -102,8 +96,6 @@ public class HexPrismMeshCreator : ScriptableWizard
         return (a.x - origin.x) * (b.y - origin.y) - (a.y - origin.y) * (b.x - origin.x);
     }
 
-    // Юнити считает лицевой стороной обход по часовой стрелке со стороны нормали:
-    // для верхней грани контур должен идти по часовой при взгляде сверху
     private static void EnsureClockwiseFromAbove(List<Vector2> outline)
     {
         float signedArea = 0f;
@@ -119,7 +111,6 @@ public class HexPrismMeshCreator : ScriptableWizard
             outline.Reverse();
     }
 
-    // Вершины не переиспользуются между гранями — жёсткие рёбра для плоского low-poly шейдинга
     private static void FillPrism(Mesh target, List<Vector2> outline, float topY, float depth)
     {
         var vertices = new List<Vector3>();
@@ -201,7 +192,6 @@ public class HexPrismMeshCreator : ScriptableWizard
         }
     }
 
-    // Прямоугольник контура в плане — для нормировки UV верхней грани
     private readonly struct Bounds2D
     {
         private readonly Vector2 _min;

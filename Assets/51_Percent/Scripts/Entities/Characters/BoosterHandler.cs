@@ -1,8 +1,5 @@
 using System;
 
-// Активный эффект персонажа. Обычный C#-объект: правило «один бустер на руках»,
-// срок действия и причина завершения проверяются без сцены и без ожидания кадров.
-// Время подаёт владелец через Tick — на паузе deltaTime равен нулю, и эффект не истекает.
 public class BoosterHandler : IBoosterObservable, IBoosterLifecycle
 {
     private readonly IBoosterContext _context;
@@ -23,8 +20,6 @@ public class BoosterHandler : IBoosterObservable, IBoosterLifecycle
     public IBoosterEffect ActiveEffect => _activeEffect;
     public bool HasActiveBooster => _activeEffect != null;
     public float RemainingTime => HasActiveBooster ? Math.Max(0f, _activeEffect.Duration - _elapsedTime) : 0f;
-    // Правило «один бустер на руках»: подобранный применяется сразу,
-    // поэтому новый не берём, пока действует текущий
     public bool CanAccept => !_isChanging && !HasActiveBooster;
     private bool CanExecuteCommand => !_isChanging && _context.CanAct;
 
@@ -37,7 +32,6 @@ public class BoosterHandler : IBoosterObservable, IBoosterLifecycle
         return true;
     }
 
-    // Срок действия отсчитывает владелец: модель не знает ни о кадрах, ни о шкале времени
     public void Tick(float deltaTime)
     {
         if (_activeEffect == null || deltaTime <= 0f)
@@ -52,7 +46,6 @@ public class BoosterHandler : IBoosterObservable, IBoosterLifecycle
         BoosterChanged?.Invoke();
     }
 
-    // Команда ручного снятия; очистка при смерти не зависит от разрешения команд.
     public bool TryDeactivate()
     {
         if (!CanExecuteCommand || _activeEffect == null)
@@ -63,7 +56,6 @@ public class BoosterHandler : IBoosterObservable, IBoosterLifecycle
         return true;
     }
 
-    // К моменту уведомления активный слот пуст, модификаторы уже сняты.
     public void Clear()
     {
         if (_activeEffect == null)
@@ -100,8 +92,6 @@ public class BoosterHandler : IBoosterObservable, IBoosterLifecycle
         BoosterChanged?.Invoke();
     }
 
-    // Жизненный цикл эффекта закрывает хендлер, а не сам эффект — единая точка завершения
-    // независимо от причины. Причина уходит наружу: только здесь известно, почему бустер кончился
     private void FinishActiveEffect(BoosterEndReason reason)
     {
         if (_activeEffect == null)
@@ -117,7 +107,6 @@ public class BoosterHandler : IBoosterObservable, IBoosterLifecycle
         try
         {
             effect.Remove(_context);
-            // Событие после Remove и до BoosterChanged: подписчики видят согласованное состояние.
             BoosterEnded?.Invoke(effect.BoosterId, reason);
         }
         finally

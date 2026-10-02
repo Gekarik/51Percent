@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Презентация захвата: превращает доменное событие «захвачены гексы» в волновую анимацию вьюшек
 public class CaptureWavePresenter
 {
     private readonly IWaveAnimator _waveAnimator;

@@ -50,7 +50,6 @@ public class Bootstrap : MonoBehaviour
 
         _playerRespawner.Init(_playerSpawner, _matchState);
 
-        // Службы персонажа одни на весь матч — собираются здесь и дальше идут одним объектом
         var characterDependencies = new CharacterDependencies(_colorService, _territoryManager,
             _hexGrid, _matchState);
 
@@ -62,8 +61,6 @@ public class Bootstrap : MonoBehaviour
         _enemySpawner.Init(characterDependencies, _killManager, _leaderBoardModel, _winConditionTracker);
         _enemySpawner.CharacterSpawned += OnCharacterSpawned;
 
-        // Презентация и поведение подписываются на появление персонажа до первого спавна:
-        // спавнеры создают участников в своих Start, то есть уже после этого Awake
         _playerHudBinder.Init(_playerSpawner);
         _enemyBrainBinder.Init(_enemySpawner, _hexGrid, allCharacters, collectibleRegistry);
 
@@ -81,7 +78,6 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
-    // Захват — доменное событие персонажа; волновая анимация — реакция презентации на него
     private void OnCharacterSpawned(ICharacter character)
     {
         character.Trail.AreaCaptured += _captureWavePresenter.OnAreaCaptured;

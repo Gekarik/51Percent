@@ -13,7 +13,6 @@ public class HexView : MonoBehaviour, IHexView, ICoroutineRunner
     private MeshRenderer _meshRenderer;
     private MeshFilter _meshFilter;
 
-    // Ленивый доступ: границы меша могут запрашиваться из HexGrid.Awake раньше, чем отработает наш Awake
     private MeshRenderer MeshRenderer => _meshRenderer != null ? _meshRenderer : _meshRenderer = GetComponent<MeshRenderer>();
     private MeshFilter MeshFilter => _meshFilter != null ? _meshFilter : _meshFilter = GetComponent<MeshFilter>();
 

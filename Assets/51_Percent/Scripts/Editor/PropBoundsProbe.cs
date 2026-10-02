@@ -3,8 +3,6 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-// Диагностика посадки пропа: где у него верх, низ и пивот относительно корня.
-// Нужна, чтобы подобрать высоту не на глаз, а по геометрии
 public static class PropBoundsProbe
 {
     private static readonly string[] Props =
@@ -20,8 +18,6 @@ public static class PropBoundsProbe
             Debug.Log(Describe(path));
     }
 
-    // Настил, на котором стоят ноги: берём вершины в средней трети по длине
-    // и смотрим их верх. Загнутые нос с хвостом в эту треть не попадают
     private const float MiddleFraction = 0.33f;
 
     private static string DescribeStandingSurface(GameObject instance)
@@ -88,8 +84,6 @@ public static class PropBoundsProbe
             report.Append($" | низ {bounds.min.y:F4}, верх {bounds.max.y:F4}");
             report.Append($" | центр Y {bounds.center.y:F4}");
 
-            // Отдельно по частям: у доски настил деки — это верх её собственного меша,
-            // а не верх всего пропа, куда попадают загнутые нос и хвост
             foreach (var renderer in renderers)
                 report.Append($" || {renderer.name}: низ {renderer.bounds.min.y:F4}, верх {renderer.bounds.max.y:F4}");
 

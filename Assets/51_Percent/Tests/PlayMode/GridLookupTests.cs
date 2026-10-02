@@ -6,14 +6,10 @@ using UnityEngine.TestTools;
 
 public class GridLookupTests : GameplayScenario
 {
-    // Точка ближе половины шага к центру клетки принадлежит именно ей: центры соседей
-    // отстоят на целый шаг, поэтому другого кандидата на таком расстоянии быть не может.
     private const float InsideCellFactor = 0.45f;
     private const float NearCenterFactor = 0.2f;
     private const int DirectionCount = 12;
 
-    // Полное поле SampleScene велико для перебора всех клеток в тесте: шага достаточно,
-    // чтобы попасть и в рядовые клетки, и в края поля.
     private const int CellSamplingStep = 37;
 
     [UnityTest]
@@ -69,7 +65,6 @@ public class GridLookupTests : GameplayScenario
         return Hexes.Where((_, index) => index % CellSamplingStep == 0).ToArray();
     }
 
-    // Шаг решётки — наименьшее расстояние между центрами: соседние клетки стоят именно так.
     private float LatticeStep()
     {
         Vector3 origin = Hexes[0].transform.position;

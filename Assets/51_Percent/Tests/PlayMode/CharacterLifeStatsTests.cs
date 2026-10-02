@@ -15,8 +15,6 @@ public class CharacterLifeStatsTests
     [SetUp]
     public void SetUp()
     {
-        // Игровой код пока в Assembly-CSharp: отдельная тестовая assembly не может
-        // ссылаться на неё напрямую. Reflection ограничен адаптером к существующей сцене.
         _gameAssembly = Assembly.Load("51Percent.Runtime");
         _previousTimeScale = Time.timeScale;
         Time.timeScale = 0f;
@@ -57,7 +55,6 @@ public class CharacterLifeStatsTests
         var killManager = ReadField(bootstrap, "_killManager");
         int coinsBeforeDeath = Find("Coin").Length;
 
-        // Смерть проходит через действующую цепочку, включая рассыпание и отложенный респавн.
         Call(killManager, "OnTrailInterrupted", player, enemy);
         Assert.That(ReadProperty(player, "State").ToString(), Is.EqualTo("Died"));
         Assert.That(ReadProperty(respawner, "HasPendingRespawn"), Is.EqualTo(true));
@@ -70,7 +67,6 @@ public class CharacterLifeStatsTests
         Time.timeScale = 1f;
         while (respawned == null && Time.realtimeSinceStartup < deadline)
         {
-            // Изолируем проверяемый цикл от случайных перемещений ботов и подбора предметов.
             foreach (string typeName in new[] { "Mover", "Conqueror", "Grabber" })
                 foreach (var component in Find(typeName))
                     ((Behaviour)component).enabled = false;
@@ -88,7 +84,6 @@ public class CharacterLifeStatsTests
         Assert.That(Find("PlayerStatsView").Single(), Is.SameAs(view));
         AssertHud(view, 0, 0);
 
-        // Старая модель уже не должна обновлять сохранённую вьюшку HUD.
         Call(oldStats, "AddCoin");
         Call(oldStats, "AddKill");
         AssertHud(view, 0, 0);
@@ -97,7 +92,6 @@ public class CharacterLifeStatsTests
         AssertStats(newStats, 1, 1);
         AssertHud(view, 1, 1);
 
-        // Финальное окно должно взять данные победившего бота, а не модель HUD игрока.
         Call(enemy, "AcceptCoin");
         Call(enemy, "AcceptCoin");
         Call(enemy, "AcceptCoin");

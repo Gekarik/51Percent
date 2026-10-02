@@ -3,10 +3,6 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-// Чинит состояния графа, чей клип пропал или снят с FBX как generic. Generic-копия
-// привязана к костям исходного скелета (mixamorig), которых у наших персонажей нет,
-// и потому не шевелит модель. Лечение одно: переимпортировать FBX как Humanoid
-// и взять клип из него, чтобы движение натягивалось через аватар
 public static class AnimatorClipRepairer
 {
     private const string ControllerPath = "Assets/51_Percent/Animators/Character.controller";
@@ -93,10 +89,6 @@ public static class AnimatorClipRepairer
         return true;
     }
 
-    // In-place: Bake Into Pose убирает движение из корня, но само смещение остаётся в позе.
-    // Чтобы тело не уезжало от корня, Based Upon по горизонтали и развороту должен быть
-    // не Original, а центр масс и ориентация тела — тогда поза центруется каждый кадр.
-    // Высоту оставляем Original: там нужна авторская посадка на землю
     private static void EnsureClipSettings(RepairTarget target)
     {
         string path = target.SourcePath;
@@ -104,7 +96,6 @@ public static class AnimatorClipRepairer
         if (!(AssetImporter.GetAtPath(path) is ModelImporter importer))
             return;
 
-        // clipAnimations пуст, пока настройки не трогали: материализуем их из умолчаний
         var clips = importer.clipAnimations.Length > 0
             ? importer.clipAnimations
             : importer.defaultClipAnimations;
@@ -130,7 +121,6 @@ public static class AnimatorClipRepairer
                 changed = true;
             }
 
-            // Без зацикливания клип походки отыграет один раз и замрёт до конца бустера
             if (target.Loop && !clip.loopTime)
             {
                 clip.loopTime = true;

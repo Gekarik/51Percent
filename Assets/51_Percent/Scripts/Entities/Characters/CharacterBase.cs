@@ -45,11 +45,8 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
     public abstract bool IsHuman { get; }
     public CharacterStats Stats { get; private set; }
 
-    // Статистика живёт столько же, сколько экземпляр персонажа; респавн создаёт новую модель.
     public PlayerStats LifeStats { get; } = new PlayerStats();
 
-    // Активный эффект — такая же модель персонажа, как статистика.
-    // Создаётся в Init: ей нужен контекст, то есть сам персонаж
     public BoosterHandler Boosters { get; private set; }
 
     private void Awake()
@@ -63,8 +60,6 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         _boosterPresentation = GetComponent<BoosterPresentation>();
     }
 
-    // Единственное место, где открытое окно приземления превращается
-    // в состояние анимации и в запрет на взаимодействия
     private void OnLandingChanged()
     {
         _view.SetLanding(IsLanding);
@@ -96,7 +91,6 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         _name = name;
     }
 
-    // Спасение от смерти: трейл возвращается прежним владельцам, персонаж уносится на свою территорию
     public void EscapeToTerritory()
     {
         _conqueror.AbandonTrail();
@@ -175,7 +169,6 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
 
     public bool CanAcceptBooster => CanAct && Boosters.CanAccept;
 
-    // Срок действия эффекта идёт по игровому времени: на паузе deltaTime равен нулю
     protected virtual void Update()
     {
         _landing?.Tick(Time.deltaTime);
@@ -183,14 +176,11 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         SendMoveCommand();
     }
 
-    // Команду формирует источник управления, разрешает её персонаж, применяет мотор.
-    // Пока действовать нельзя, мотор получает нулевое направление и не тянет Rigidbody
     private void SendMoveCommand()
     {
         _mover.SetMoveDirection(CanAct ? _vectorProvider.GetMoveDirection() : Vector3.zero);
     }
 
-    // Точка подмены источника команд (dev-инструменты)
     public void SetVectorProvider(VectorProviderComponent provider)
     {
         _vectorProvider = provider != null ? provider : throw new ArgumentNullException(nameof(provider));
@@ -203,7 +193,6 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         return Boosters.TryActivate(effect);
     }
 
-    // Предмет потребляется, только если персонаж его принял — иначе остаётся на поле
     private void OnItemDetected(ICollectible item)
     {
         if (CanAct && item.TryApplyTo(this))

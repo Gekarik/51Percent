@@ -1,13 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Оценка опасности для собственного трейла: близко ли соперник к его свежему участку.
-// Самостоятельный алгоритм над позициями — решение бота можно проверить без сцены,
-// Rigidbody и компонентов. Наблюдения собирает Unity-адаптер (EnemyBrain).
 public class TrailThreatEvaluator
 {
-    // Опасен только свежий участок: хвост трейла бот уже оставил позади,
-    // и подход соперника к его началу не мешает вернуться домой
     private const int WatchedSegmentLength = 5;
 
     public bool IsTrailThreatened(Vector3 botPosition, IReadOnlyList<Vector3> trailPositions,
@@ -24,7 +19,6 @@ public class TrailThreatEvaluator
         {
             Vector3 rival = rivalPositions[r];
 
-            // Дальних соперников бот не замечает — это его радиус внимания, а не правило игры
             if ((rival - botPosition).sqrMagnitude > detectionSqr)
                 continue;
 

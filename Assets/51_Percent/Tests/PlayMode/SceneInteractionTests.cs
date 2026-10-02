@@ -25,7 +25,6 @@ public class SceneInteractionTests : GameplayScenario
             && Neighbors(hex).All(neighbor => Read(neighbor, "Owner") == null));
         var attacked = wideCapture ? Neighbors(center).First() : center;
         Call(Territory, "TrailHex", Enemy, attacked);
-        // Подобранный бустер применяется сразу, отдельной команды активации больше нет
         Assert.That(Call(Player, "TryAcceptBooster", New("WingsBoosterEffect", 10f)), Is.EqualTo(true));
         Assert.That(Call(Enemy, "TryAcceptBooster", New("SpikesBoosterEffect", 10f, null)), Is.EqualTo(true));
         Call(Read(Player, "Stats"), "SetBase", Enum.Parse(GameType("StatType"), "CaptureWidth"), wideCapture ? 2f : 1f);
@@ -34,7 +33,6 @@ public class SceneInteractionTests : GameplayScenario
         conqueror.enabled = true;
         Call(Part(Player, "Mover"), "TeleportTo", center.transform.position + Vector3.up * 0.1f);
         Time.timeScale = 1f;
-        // Вход в клетку определяет настоящий FixedUpdate, внутренние методы захвата не вызываются.
         yield return new WaitForFixedUpdate();
         yield return null;
         Time.timeScale = 0f;

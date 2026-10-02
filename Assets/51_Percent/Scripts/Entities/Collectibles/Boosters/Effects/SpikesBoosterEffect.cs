@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 
-// Шипы: одноразовая ловушка — разворачивают одно убийство по трейлу и гаснут
 public class SpikesBoosterEffect : IBoosterEffect, IEarlyConsumable, ITrailKillModifier
 {
     public BoosterId BoosterId => BoosterId.Spikes;
@@ -26,7 +25,6 @@ public class SpikesBoosterEffect : IBoosterEffect, IEarlyConsumable, ITrailKillM
         context.ClearTrailMesh();
     }
 
-    // Ловушка срабатывает один раз: расход отмечается здесь же, в момент разворота убийства
     public (ICharacter victim, ICharacter killer) ResolveTrailKill(ICharacter trailOwner, ICharacter stepper)
     {
         EarlyConsumed?.Invoke();

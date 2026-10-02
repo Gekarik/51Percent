@@ -30,7 +30,6 @@ public abstract class GameplayScenario
     {
         _tweenWarnings.Clear();
         Application.logMessageReceived += OnLogMessage;
-        // Адаптер к Assembly-CSharp: тестовая assembly не меняет устройство игрового кода.
         _gameAssembly = Assembly.Load("51Percent.Runtime");
         _previousTimeScale = Time.timeScale;
         yield return SceneManager.LoadSceneAsync("SampleScene");
@@ -47,7 +46,6 @@ public abstract class GameplayScenario
         Combat = Field(bootstrap, "_killManager");
         WinConditions = Field(bootstrap, "_winConditionTracker");
 
-        // Окно приземления — модель персонажа, а не компонент сцены
         foreach (var character in new[] { Player, Enemy })
             Call(Field(character, "_landing"), "Cancel");
         FreezeWorld();
@@ -66,7 +64,6 @@ public abstract class GameplayScenario
 
     private void OnLogMessage(string message, string stackTrace, LogType type)
     {
-        // Safe Mode DOTween переводит исключения в предупреждения: обычный UnityTest их не отклоняет.
         if (type != LogType.Log && message.Contains("DOTWEEN"))
             _tweenWarnings.Add(message);
     }

@@ -1,6 +1,5 @@
 using NUnit.Framework;
 
-// Срок окна приземления — правило персонажа, поэтому проверяется без сцены и без кадров.
 public class LandingWindowTests
 {
     private const float Duration = 0.75f;

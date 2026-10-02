@@ -15,8 +15,6 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
     private List<IHex> _allHexesAsInterface;
     private Dictionary<HexCoord, Hex> _coordToHex;
 
-    // Якорь: конвертация мир<->координаты отсчитывается от реального гекса,
-    // а не от вычисленного origin — так float-погрешности не смещают всю сетку
     private Hex _anchor;
     private float _hexWidth;
     private float _rowStep;
@@ -58,8 +56,6 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
         _anchor = _allHexes[0];
     }
 
-    // Шаг сетки вычисляется по фактическим позициям максимально разнесённых гексов:
-    // это гасит погрешность одного шага и не зависит от размеров меша
     private void CalibrateSpacing()
     {
         Hex farInRow = null;
@@ -103,7 +99,6 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
         return new HexCoord(column, row);
     }
 
-    // Нечётные ряды сдвинуты вправо на полгекса (odd-r layout)
     private float RowShift(int row) => (row & 1) == 1 ? _hexWidth * HalfOffset : 0f;
 
     public IHex GetHex(HexCoord coord)
@@ -119,10 +114,6 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
         return found;
     }
 
-    // Прямоугольное округление в WorldToCoord ошибается у наклонных граней гекса:
-    // ячейка там не прямоугольник, и точка может попасть к соседу. Ошибка не превышает
-    // одного шага, поэтому итог уточняется по ближайшему центру среди кандидата и его
-    // соседей — для гексагональной решётки ближайший центр и задаёт её разбиение плоскости.
     public IHex GetHexAt(Vector3 worldPosition)
     {
         HexCoord approximateCoord = WorldToCoord(worldPosition);
@@ -143,7 +134,6 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
         return nearest;
     }
 
-    // Высота не участвует: персонаж движется над плоскостью поля с собственным смещением по Y
     private float PlanarDistanceSqr(IHex hex, Vector3 worldPosition)
     {
         Vector3 center = hex.Transform.position;

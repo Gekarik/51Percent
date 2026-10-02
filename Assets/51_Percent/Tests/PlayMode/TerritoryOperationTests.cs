@@ -31,7 +31,6 @@ public class TerritoryOperationTests : GameplayScenario
             ring.First(hex => Neighbors(hex).Contains(mainRoot)),
             ring.First(hex => Neighbors(hex).Contains(detachedRoot))
         };
-        // До трейла обе ветки соединены через центр и две клетки будущего кольца.
         Call(Territory, "FixHexes", Enemy, HexArray(main.Concat(detached).Concat(bridges).Append(center)));
         foreach (var hex in ring)
             Call(Territory, "TrailHex", Player, hex);
@@ -125,7 +124,6 @@ public class TerritoryOperationTests : GameplayScenario
         Observe(Territory, "OwnershipChanged", () =>
         {
             notifications++;
-            // Подписчик должен видеть уже закреплённые трейл и внутреннюю клетку.
             foreach (var hex in ring.Append(center))
             {
                 Assert.That(Read(hex, "Owner"), Is.SameAs(Player));

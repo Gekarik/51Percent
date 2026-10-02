@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
-// Правила активного эффекта без сцены и без ожидания кадров:
-// модель получает время через Tick, поэтому срок действия проверяется напрямую.
 public class BoosterHandlerTests
 {
     private const float Duration = 10f;
@@ -79,7 +77,6 @@ public class BoosterHandlerTests
             "Эффект снят командой, когда персонаж не может действовать.");
     }
 
-    // Очистка при смерти не зависит от разрешения команд: персонаж уже не может действовать
     [Test]
     public void Clear_RemovesActiveEffect_EvenWhenCharacterCannotAct()
     {
@@ -137,4 +134,3 @@ public class BoosterHandlerTests
         public void Consume() => EarlyConsumed?.Invoke();
     }
 }
-

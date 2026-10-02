@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-/// Накопленный результат прогона: пройденные шаги и итог.
 public sealed class AnimationImportReport
 {
     private readonly List<string> _steps = new List<string>();

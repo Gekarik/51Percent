@@ -5,7 +5,6 @@ public class Coin : CollectibleBase
 {
     private const float ScatterJumpPower = 0.5f;
 
-    // Монета принимается всегда
     public override bool TryApplyTo(ICollectibleConsumer consumer)
     {
         consumer.AcceptCoin();

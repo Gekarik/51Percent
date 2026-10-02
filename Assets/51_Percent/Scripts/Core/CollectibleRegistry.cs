@@ -12,8 +12,6 @@ public class CollectibleRegistry : ICollectibleRegistry
     public void Register(ICollectible collectible, CollectibleKind kind)
     {
         GetList(kind).Add(collectible);
-        // Реестр описывает предметы на поле, поэтому реагирует на потребление,
-        // а не на конец анимации исчезновения
         collectible.Consumed += Unregister;
     }
 

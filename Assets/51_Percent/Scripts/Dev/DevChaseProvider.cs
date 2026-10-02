@@ -1,6 +1,5 @@
 using UnityEngine;
 
-// Dev: примитивный источник направления — бежит по прямой к цели, без цели стоит
 public class DevChaseProvider : VectorProviderComponent
 {
     private Transform _target;

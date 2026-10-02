@@ -3,14 +3,11 @@ using System.Text;
 using Process = System.Diagnostics.Process;
 using ProcessStartInfo = System.Diagnostics.ProcessStartInfo;
 
-/// Конвертирует GLB в FBX внешним вызовом Blender в фоновом режиме.
 public sealed class GlbToFbxConverter
 {
     private const int TimeoutMilliseconds = 180000;
     private const string ScriptFileName = "glb_to_fbx.py";
 
-    // Диапазон кадров сцены обязан совпадать с длиной экшена: по умолчанию у Blender
-    // это 1-250, и экспортёр добивает клип статичной позой до конца диапазона.
     private const string ConversionScript = @"
 import bpy, sys
 
@@ -92,7 +89,6 @@ print('PIPELINE_RANGE:', scene.frame_start, scene.frame_end)
         return path;
     }
 
-    // Blender пишет в stdout сотни строк, в отчёт нужны только диапазон и ошибки
     private string Summarize(string output, string errors)
     {
         var summary = new StringBuilder();

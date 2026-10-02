@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Выдаёт ботам зависимости их поведения. Отделён от спавнера: появление персонажа и
-// устройство AI меняются по разным причинам. Подписан на BotSpawned, а не на общее
-// CharacterSpawned, поэтому dev-враг без мозга остаётся без мозга.
 public class EnemyBrainBinder : MonoBehaviour
 {
     [Required] [SerializeField] private BotPersonalitySettings _personality;

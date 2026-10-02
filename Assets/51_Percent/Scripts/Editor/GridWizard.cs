@@ -1,9 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 
-// Генерация гексагональной сетки из окна — без компонента-генератора в сцене.
-// Гексы кладутся детьми HexGrid: он собирает их из своих детей в Awake.
-// PrefabUtility сохраняет связь инстансов с префабом (правки префаба доедут до сцены)
 public class GridWizard : EditorWindow
 {
     private const string PrefabGuidKey = "51Percent.GridWizard.HexPrefabGuid";
@@ -22,7 +19,6 @@ public class GridWizard : EditorWindow
     private const string WallsRootName = "Walls";
 
     private const float RowHeightMultiplier = 0.75f;
-    // Допуск на float-погрешность: гекс, лежащий ровно на границе зоны, должен остаться
     private const float TrimTolerance = 1e-4f;
     private const string UndoOperationName = "Generate Hex Grid";
 
@@ -131,7 +127,6 @@ public class GridWizard : EditorWindow
                         + r * hexHeight * RowHeightMultiplier
                         + hexHeight * 0.5f;
 
-                // Кладём гекс только если его ячейка целиком внутри зоны — обрезаем торчащие полутайлы по краю
                 if (x - halfWidth < bounds.min.x - TrimTolerance || x + halfWidth > bounds.max.x + TrimTolerance)
                     continue;
 
@@ -159,7 +154,6 @@ public class GridWizard : EditorWindow
             Undo.DestroyObjectImmediate(container.GetChild(i).gameObject);
     }
 
-    // Стены строятся заново при каждой перегенерации — под актуальные границы зоны
     private void RebuildWalls()
     {
         Transform root = GetWallsRoot();
@@ -168,7 +162,6 @@ public class GridWizard : EditorWindow
         Bounds bounds = _playableArea.bounds;
         float halfThickness = _wallThickness * 0.5f;
 
-        // Северная и южная стены перекрывают углы за счёт расширения по X на толщину
         float horizontalLength = bounds.size.x + _wallThickness * 2f;
 
         CreateWall(root, "Wall_North",
@@ -209,8 +202,6 @@ public class GridWizard : EditorWindow
         Undo.RegisterCreatedObjectUndo(wall, UndoOperationName);
     }
 
-    // Игровая зона уже указана у спавнеров предметов — берём её оттуда, чтобы не просить дважды.
-    // Зона лежит внутри сериализуемого SpawnPointProvider, поэтому свойство ищется вложенным
     private static BoxCollider FindPlayableArea()
     {
         var spawner = FindObjectOfType<CollectibleSpawnerBase>();

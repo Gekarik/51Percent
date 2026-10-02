@@ -29,18 +29,15 @@ public class EnemyBrain : VectorProviderComponent
     private float _nextThinkTime;
     private bool _initialized;
 
-    // Expansion
     private Vector3 _expansionMidpoint;
     private Vector3 _expansionEndpoint;
     private bool _expansionPlanned;
     private bool _reachedMidpoint;
 
-    // Attack
     private ICharacter _attackTarget;
     private Vector3 _failedAttackPosition;
     private bool _hasFailedAttackRepulsor;
 
-    // Collect
     private ICollectible _collectibleTarget;
     private CollectibleKind _collectibleTargetKind;
 
@@ -94,8 +91,6 @@ public class EnemyBrain : VectorProviderComponent
         _moveDirection.y = 0f;
         return _moveDirection.sqrMagnitude > 0.01f ? _moveDirection.normalized : Vector3.forward;
     }
-
-    // ── FSM ──────────────────────────────────────────────────────────────
 
     private void Think()
     {
@@ -175,7 +170,6 @@ public class EnemyBrain : VectorProviderComponent
 
     private void ThinkCollecting()
     {
-        // Бустер-цель обесценивается, если по дороге руки успели занять (подобрал другой бустер)
         bool targetLostValue = _collectibleTargetKind == CollectibleKind.Booster && !_consumer.CanAcceptBooster;
 
         if (_collectibleTarget == null
@@ -194,8 +188,6 @@ public class EnemyBrain : VectorProviderComponent
 
         _targetPosition = _collectibleTarget.Transform.position;
     }
-
-    // ── Переходы ─────────────────────────────────────────────────────────
 
     private void EnterExpanding()
     {
@@ -226,9 +218,6 @@ public class EnemyBrain : VectorProviderComponent
         _collectibleTargetKind = kind;
     }
 
-    // ── Сенсоры ──────────────────────────────────────────────────────────
-
-    // Адаптер: собирает наблюдения из сцены и отдаёт их самостоятельному алгоритму
     private bool IsTrailThreatened()
     {
         var trail = _conqueror.TrailHexes;
@@ -270,7 +259,6 @@ public class EnemyBrain : VectorProviderComponent
 
             float dist = Mathf.Sqrt(distSq);
 
-            // Агрессия определяет, насколько далёкую цель бот готов атаковать
             float maxAttackDist = _personality.DetectionRadius * _personality.Aggression;
             if (dist > maxAttackDist) continue;
 
@@ -295,7 +283,6 @@ public class EnemyBrain : VectorProviderComponent
 
         ICollectible best = FindNearestIn(_collectibleRegistry.Coins, maxDistSq, out float bestDistSq);
 
-        // Бустеры интересны только со свободными руками
         if (_consumer.CanAcceptBooster)
         {
             var booster = FindNearestIn(_collectibleRegistry.Boosters, maxDistSq, out float boosterDistSq);
@@ -329,8 +316,6 @@ public class EnemyBrain : VectorProviderComponent
         return best;
     }
 
-    // ── Расширение ───────────────────────────────────────────────────────
-
     private void PlanExpansion()
     {
         Vector3 outDir = FindBestExpansionDirection();
@@ -360,7 +345,6 @@ public class EnemyBrain : VectorProviderComponent
         return _expansionEndpoint;
     }
 
-    // Находит самую дальнюю допустимую точку вдоль направления до границы карты
     private Vector3 FindFarthestValidPoint(Vector3 from, Vector3 direction, float maxDistance)
     {
         Vector3 best = from;
@@ -403,7 +387,6 @@ public class EnemyBrain : VectorProviderComponent
                 if (hex.State == HexState.Empty) score += 3f;
                 else if (hex.State == HexState.Busy && hex.Owner != _character) score += 2f;
 
-                // Потенциальное поле отталкивания: штраф пропорционален близости врага к каждой точке пути
                 if (_allCharacters != null)
                 {
                     foreach (var character in _allCharacters)
@@ -418,7 +401,6 @@ public class EnemyBrain : VectorProviderComponent
                     }
                 }
 
-                // Усиленный репульсор на месте провалившейся атаки
                 if (_hasFailedAttackRepulsor)
                 {
                     float distSq = (_failedAttackPosition - scanPos).sqrMagnitude;
@@ -440,15 +422,12 @@ public class EnemyBrain : VectorProviderComponent
         return Quaternion.Euler(0f, Random.Range(-20f, 20f), 0f) * bestDir;
     }
 
-    // ── Возврат домой ────────────────────────────────────────────────────
-
     private Vector3 GetNearestHomePosition()
     {
         CollectTerritoryPositions();
         return _bearings.NearestPoint(transform.position, _territoryPositions);
     }
 
-    // Адаптер: позиции собственной территории для вычислений, которые не знают о клетках
     private void CollectTerritoryPositions()
     {
         _territoryPositions.Clear();
@@ -461,8 +440,6 @@ public class EnemyBrain : VectorProviderComponent
             if (hex?.Transform != null)
                 _territoryPositions.Add(hex.Transform.position);
     }
-
-    // ── Атака ────────────────────────────────────────────────────────────
 
     private Vector3 GetAttackPosition()
     {
@@ -492,8 +469,6 @@ public class EnemyBrain : VectorProviderComponent
 
         return _attackTarget.Transform.position;
     }
-
-    // ── Вспомогательное ──────────────────────────────────────────────────
 
     private Vector3 GetTerritoryCenter()
     {

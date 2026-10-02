@@ -2,8 +2,6 @@ using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 
-// Мотор применяет направление к Rigidbody и не знает, откуда команда пришла:
-// её подаёт персонаж, он же решает, разрешено ли сейчас двигаться
 public class Mover : MonoBehaviour
 {
     private Rigidbody _rigidbody;
@@ -17,7 +15,6 @@ public class Mover : MonoBehaviour
     {
         _rigidbody = GetComponent<Rigidbody>();
 
-        // Плоская доска: вертикаль персонажу не нужна — фиксируем Y, чтобы не падать в щели
         _rigidbody.constraints |= RigidbodyConstraints.FreezePositionY;
     }
 

@@ -1,8 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 
-/// Переводит импортёр модели в humanoid-риг.
-/// Без аватара мышечные кривые не на что раскладывать, и ретаргет невозможен.
 public sealed class HumanoidRigConfigurer
 {
     public void Configure(string modelPath)

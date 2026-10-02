@@ -1,6 +1,5 @@
 using UnityEditor;
 
-/// Настраивает, как модель отдаёт свой клип: границы, зацикливание, наличие клипа вообще.
 public sealed class ClipImportConfigurer
 {
     public void Apply(string modelPath, bool loop, int lastFrame)
@@ -20,9 +19,6 @@ public sealed class ClipImportConfigurer
         importer.SaveAndReimport();
     }
 
-    /// После извлечения клип внутри модели становится дублем отдельного ассета:
-    /// в списках выбора одно и то же движение предлагалось бы дважды.
-    /// Аватар при этом сохраняется — он собирается из рига, а не из анимации.
     public void DisableImport(string modelPath)
     {
         var importer = (ModelImporter)AssetImporter.GetAtPath(modelPath);
@@ -31,7 +27,6 @@ public sealed class ClipImportConfigurer
         importer.SaveAndReimport();
     }
 
-    // До первой правки clipAnimations пуст, а настройки лежат в defaultClipAnimations
     private ModelImporterClipAnimation[] ResolveClips(ModelImporter importer)
     {
         return importer.clipAnimations.Length > 0

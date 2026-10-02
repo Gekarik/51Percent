@@ -3,9 +3,6 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-// Диагностика стойки: где ходят ступни относительно корня модели за время клипа.
-// Нужна, чтобы поставить доску под опорную ногу, а не под осевую линию,
-// иначе толчковая нога упирается в доску вместо земли
 public static class FootTrackProbe
 {
     private const string CharacterPath = "Assets/51_Percent/Prefabs/Characters/Player.prefab";

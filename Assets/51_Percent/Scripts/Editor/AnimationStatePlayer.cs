@@ -3,8 +3,6 @@ using System.Linq;
 using UnityEditor.Animations;
 using UnityEngine;
 
-// Принудительный запуск состояния графа в Play Mode: обходит условия переходов,
-// чтобы посмотреть конкретную анимацию не воспроизводя игровую ситуацию
 public class AnimationStatePlayer
 {
     private const int Layer = 0;

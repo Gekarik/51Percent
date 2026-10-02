@@ -1,8 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 
-/// Выносит клип из модели в самостоятельный ассет.
-/// Отдельный клип переживает переимпорт модели и не зависит от её настроек.
 public sealed class AnimationClipExtractor
 {
     private const string PreviewPrefix = "__preview__";

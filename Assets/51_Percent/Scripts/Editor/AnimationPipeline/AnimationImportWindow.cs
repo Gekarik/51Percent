@@ -2,7 +2,6 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-/// Окно конвейера: собирает запрос и показывает отчёт. Логики импорта не содержит.
 public sealed class AnimationImportWindow : EditorWindow
 {
     private const string WindowTitle = "Импорт анимаций";
@@ -67,7 +66,6 @@ public sealed class AnimationImportWindow : EditorWindow
             _clipName = Path.GetFileNameWithoutExtension(path);
     }
 
-    // Поле нужно только для GLB: FBX проходит конвейер без Blender
     private void DrawBlenderField()
     {
         if (!IsGlbSelected())

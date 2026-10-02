@@ -32,11 +32,8 @@ public static class SpawnAnimationSetup
         AddParameter(controller, AnimatorParams.LocomotionMode, AnimatorControllerParameterType.Int);
         RemoveParameter(controller, "LandingProgress");
 
-        // Стартовое состояние — Idle: окно приземления открывается из кода,
-        // и до этого момента графу нечего проигрывать
         machine.defaultState = idle;
 
-        // Клип идёт своим темпом, нормализованное время вручную не гонится
         landing.timeParameterActive = false;
         landing.timeParameter = string.Empty;
 
@@ -99,7 +96,6 @@ public static class SpawnAnimationSetup
         exit.duration = ExitDuration;
     }
 
-    // Одинаковый порог исключает одновременные условия Idle -> Run и Run -> Idle
     private static void AlignSpeedThresholds(AnimatorStateMachine machine)
     {
         foreach (var child in machine.states)
@@ -148,8 +144,6 @@ public static class SpawnAnimationSetup
         serialized.ApplyModifiedPropertiesWithoutUndo();
     }
 
-    // Unity дописывает суффикс к имени при дублировании состояния, поэтому ищем по началу имени:
-    // иначе ручная правка графа молча ломает настройку
     private static AnimatorState FindState(AnimatorStateMachine machine, string name)
     {
         return machine.states.Select(child => child.state).Single(state => state.name.StartsWith(name));

@@ -3,10 +3,6 @@ using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 
-// Делает in-place копию клипа, у которого нет in-place версии в источнике.
-// Настройки импорта тут бессильны: Bake Into Pose не удаляет проезд, а лишь
-// перестаёт отдавать его корню, и тело всё равно уезжает. Убираем сам проезд —
-// горизонтальные корневые кривые сплющиваются в константу
 public static class InPlaceClipBuilder
 {
     private const string SourcePath = "Assets/51_Percent/Ch46_nonPBR@Skateboarding(1).fbx";
@@ -15,7 +11,6 @@ public static class InPlaceClipBuilder
     private const string StateName = "Skateboarding";
     private const string PreviewPrefix = "__preview__";
 
-    // Вертикаль не трогаем: это присед и покачивание на доске, они нужны
     private static readonly string[] FlattenedCurves = { "RootT.x", "RootT.z" };
 
     [MenuItem("Tools/51 Percent/Build In-Place Skating Clip")]
@@ -51,7 +46,6 @@ public static class InPlaceClipBuilder
         return clip;
     }
 
-    // Значение берём на нулевом кадре: персонаж остаётся там, где стартовал
     private static int FlattenHorizontalRoot(AnimationClip clip)
     {
         var bindings = AnimationUtility.GetCurveBindings(clip);

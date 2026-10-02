@@ -3,9 +3,6 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-// Диагностика ориентации сокетов: куда смотрят их оси относительно корня модели.
-// У костей оси повёрнуты относительно мировых, поэтому проп с нулевым поворотом
-// в сокете может оказаться развёрнутым, и поправка зависит от конкретной кости
 public static class SocketOrientationProbe
 {
     private const string CharacterPath = "Assets/51_Percent/Prefabs/Characters/Player.prefab";
@@ -40,7 +37,6 @@ public static class SocketOrientationProbe
                     continue;
                 }
 
-                // Оси сокета, выраженные в системе координат модели
                 Vector3 right = model.InverseTransformDirection(socket.right);
                 Vector3 up = model.InverseTransformDirection(socket.up);
                 Vector3 forward = model.InverseTransformDirection(socket.forward);
@@ -58,7 +54,6 @@ public static class SocketOrientationProbe
         }
     }
 
-    // Куда преимущественно смотрит ось в понятных словах
     private static string Describe(Vector3 direction)
     {
         var axes = new (string Name, Vector3 Value)[]

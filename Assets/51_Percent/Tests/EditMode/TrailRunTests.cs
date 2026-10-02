@@ -4,7 +4,6 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 
-// Правила трейла без сцены: поле задаётся списком клеток, территория — словарём владельцев.
 public class TrailRunTests
 {
     private FakeGrid _grid;
@@ -237,7 +236,6 @@ public class TrailRunTests
         public Transform Transform => null;
         public IBoosterObservable BoosterObservable => null;
         public ITrailVisualProvider TrailVisual => null;
-        // TrailRun события забега поднимает сам и о наблюдателе владельца не спрашивает
         public ITrailObservable Trail => null;
 
         public Transform GetSocket(SocketType socket) => null;

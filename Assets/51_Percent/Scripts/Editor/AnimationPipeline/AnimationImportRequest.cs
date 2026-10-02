@@ -1,4 +1,3 @@
-/// Параметры одного прогона конвейера.
 public sealed class AnimationImportRequest
 {
     public AnimationImportRequest(string sourcePath, string clipName, bool loop)

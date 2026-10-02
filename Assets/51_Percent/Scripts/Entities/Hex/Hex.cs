@@ -5,8 +5,6 @@ public class Hex : MonoBehaviour, IHex
 {
     [Required] [SerializeField] private HexView _hexView;
 
-    // Координата назначается генератором при создании грида и сериализуется в сцену:
-    // гекс — единственный источник правды о своей позиции в сетке
     [SerializeField, HideInInspector] private int _coordQ;
     [SerializeField, HideInInspector] private int _coordR;
 

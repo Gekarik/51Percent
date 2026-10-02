@@ -13,7 +13,6 @@ public class MatchRulesTests : GameplayScenario
         var handler = Read(Player, "Boosters");
         var effect = New("SpeedBoosterEffect", 10f, 50f);
 
-        // Подобранный бустер применяется сразу: промежуточного состояния у бустера нет
         Assert.That(Call(Player, "TryAcceptBooster", effect), Is.EqualTo(true));
         Assert.That(Read(handler, "ActiveEffect"), Is.SameAs(effect));
         Assert.That(Call(Player, "TryAcceptBooster", New("WingsBoosterEffect", 10f)), Is.EqualTo(false),
@@ -108,7 +107,6 @@ public class MatchRulesTests : GameplayScenario
         Assert.That((float)Call(stats, "GetValue", speed), Is.EqualTo(original).Within(0.001f));
         Call(WinConditions, "ForceFinish", Enemy);
         Assert.That(Read(Find("PlayerRespawner").Single(), "HasPendingRespawn"), Is.EqualTo(false));
-        // Даже если внешняя система снова пустит игровое время, отменённый таймер не создаст игрока.
         Time.timeScale = 1f;
         float delay = (float)Field(Find("PlayerRespawner").Single(), "_delayBeforeSpawn");
         yield return new WaitForSeconds(delay + 0.2f);
@@ -132,8 +130,6 @@ public class MatchRulesTests : GameplayScenario
         var encounter = Hexes.First(hex => Read(hex, "Owner") == null);
         Call(Territory, "TrailHex", Enemy, encounter);
         var conqueror = Part(Player, "Conqueror");
-        // Правила трейла живут в TrailRun; вход на клетку вызывается напрямую,
-        // чтобы не зависеть от физического перемещения в этом сценарии
         var run = Field(conqueror, "_run");
         Call(run, "Enter", encounter);
         Assert.That(Alive(Player), Is.True);

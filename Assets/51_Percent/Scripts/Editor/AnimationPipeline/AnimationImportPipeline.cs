@@ -3,11 +3,8 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-/// Проводит анимацию от исходного файла до готового humanoid-клипа в проекте.
 public sealed class AnimationImportPipeline
 {
-    // Суффикс "~" заставляет Unity полностью игнорировать папку: исходные GLB
-    // лежат рядом с проектом, но не становятся ассетами и не плодят дубли клипов
     private const string GlbFolder = "Assets/Mesh2Motion/Glb~";
     private const string FbxFolder = "Assets/Mesh2Motion/Fbx";
     private const string ClipsFolder = "Assets/51_Percent/Animations";
@@ -16,7 +13,6 @@ public sealed class AnimationImportPipeline
     private const string FbxExtension = ".fbx";
     private const string ClipExtension = ".anim";
 
-    // Хвост короче этого порога — погрешность запекания, обрезать нечего
     private const float TailToleranceFrames = 2f;
 
     private readonly BlenderLocator _blenderLocator;
