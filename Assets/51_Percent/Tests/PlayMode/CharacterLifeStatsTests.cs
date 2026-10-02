@@ -17,7 +17,7 @@ public class CharacterLifeStatsTests
     {
         // Игровой код пока в Assembly-CSharp: отдельная тестовая assembly не может
         // ссылаться на неё напрямую. Reflection ограничен адаптером к существующей сцене.
-        _gameAssembly = Assembly.Load("Assembly-CSharp");
+        _gameAssembly = Assembly.Load("51Percent.Runtime");
         _previousTimeScale = Time.timeScale;
         Time.timeScale = 0f;
     }

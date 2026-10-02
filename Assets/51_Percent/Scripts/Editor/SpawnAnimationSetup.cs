@@ -17,7 +17,7 @@ public static class SpawnAnimationSetup
     {
         ConfigureController();
         ConfigurePrefabs();
-        Debug.Log("Spawn setup complete: окно приземления в SpawnLandingTracker, форма спуска в SpawnDescentSettings.");
+        Debug.Log("Spawn setup complete: срок окна приземления в CharacterConfig, форма спуска в SpawnDescentSettings.");
     }
 
     private static void ConfigureController()
@@ -126,7 +126,6 @@ public static class SpawnAnimationSetup
 
             try
             {
-                Require<SpawnLandingTracker>(root);
                 AssignSettings(Require<SpawnDescentAnimator>(root), settings);
                 PrefabUtility.SaveAsPrefabAsset(root, path);
             }

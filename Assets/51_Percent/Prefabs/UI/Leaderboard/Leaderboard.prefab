@@ -61,6 +61,7 @@ MonoBehaviour:
   _entryPrefab: {fileID: 5932924256828355550, guid: f0cae6022c9d49b4ba5818cfc8d81ba1, type: 3}
   _container: {fileID: 8710772832875687017}
   _crown: {fileID: 4246932730493205105, guid: e152873383161d04f99b8ff908e7316b, type: 3}
+  _boosterIconRegistry: {fileID: 0}
 --- !u!1001 &2459130897974179044
 PrefabInstance:
   m_ObjectHideFlags: 0

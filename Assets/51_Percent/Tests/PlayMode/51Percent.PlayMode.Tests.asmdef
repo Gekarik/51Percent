@@ -1,6 +1,8 @@
 {
     "name": "51Percent.PlayMode.Tests",
-    "references": [],
+    "references": [
+        "51Percent.Runtime"
+    ],
     "optionalUnityReferences": [
         "TestAssemblies"
     ]

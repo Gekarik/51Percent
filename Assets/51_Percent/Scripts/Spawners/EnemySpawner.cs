@@ -1,23 +1,17 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawner : CharacterSpawner<Enemy>
 {
     [SerializeField] private int _enemyCount = 5;
-    [Required] [SerializeField] private BotPersonalitySettings _personality;
     [SerializeField] private BotNamesSO _botNames;
     [SerializeField] private Transform[] _spawnPoints;
 
-    private IReadOnlyList<ICharacter> _allCharacters;
-    private ICollectibleRegistry _collectibleRegistry;
     private int _spawnedCount;
 
-    public void SetAIReferences(IReadOnlyList<ICharacter> allCharacters, ICollectibleRegistry collectibleRegistry)
-    {
-        _allCharacters = allCharacters;
-        _collectibleRegistry = collectibleRegistry;
-    }
+    // Отдельно от CharacterSpawned: зависимости поведения получают только полноценные боты,
+    // а dev-враг остаётся неподвижным. Индекс характера — порядок появления, его ведёт спавнер
+    public event Action<Enemy, int> BotSpawned;
 
     private void Start()
     {
@@ -35,7 +29,7 @@ public class EnemySpawner : CharacterSpawner<Enemy>
 
         var result = new IHex[_spawnPoints.Length];
         for (int i = 0; i < _spawnPoints.Length; i++)
-            result[i] = _grid.GetHexAt(_spawnPoints[i].position) ?? _grid.GetRandomHex();
+            result[i] = Grid.GetHexAt(_spawnPoints[i].position) ?? Grid.GetRandomHex();
         return result;
     }
 
@@ -57,6 +51,6 @@ public class EnemySpawner : CharacterSpawner<Enemy>
         var enemy = SpawnNext();
         enemy.SetName(name);
         RegisterInLeaderBoard(enemy);
-        enemy.InitBrain(_grid, _allCharacters, _collectibleRegistry, _personality, personalityIndex);
+        BotSpawned?.Invoke(enemy, personalityIndex);
     }
 }

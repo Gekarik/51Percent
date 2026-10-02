@@ -1,33 +1,25 @@
 using UnityEngine;
 
-public class CharacterFactory<T> where T : MonoBehaviour, ICharacter
+public class CharacterFactory<T> where T : CharacterBase
 {
     private const float SpawnYOffset = 0.1f;
 
     private readonly T _prefab;
-    private readonly ColorService _colorService;
-    private readonly TerritoryManager _territoryManager;
-    private readonly IHexGridProvider _grid;
-    private readonly KillManager _killManager;
-    private readonly IMatchState _matchState;
+    private readonly CharacterDependencies _dependencies;
 
-    public CharacterFactory(T prefab, ColorService colorService, TerritoryManager territoryManager,
-        IHexGridProvider grid, KillManager killManager, IMatchState matchState)
+    public CharacterFactory(T prefab, CharacterDependencies dependencies)
     {
         _prefab = prefab;
-        _colorService = colorService;
-        _territoryManager = territoryManager;
-        _grid = grid;
-        _killManager = killManager;
-        _matchState = matchState;
+        _dependencies = dependencies;
     }
 
     public T Create(IHex hex)
     {
         Vector3 spawnPosition = hex.Transform.position + Vector3.up * SpawnYOffset;
         var character = Object.Instantiate(_prefab, spawnPosition, Quaternion.identity);
-        character.Init(_colorService, _territoryManager, _grid, _killManager, _matchState);
-        _territoryManager.GetStartTerritory(character, hex);
+        character.Init(_dependencies.ColorService, _dependencies.Territory, _dependencies.Grid,
+            _dependencies.MatchState);
+        _dependencies.Territory.GetStartTerritory(character, hex);
         return character;
     }
 }

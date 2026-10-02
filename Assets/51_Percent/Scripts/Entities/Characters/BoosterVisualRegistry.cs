@@ -7,8 +7,7 @@ using UnityEngine;
 // Одна запись на бустер, потому что при заведении нового всё это настраивается разом.
 // Иконки живут отдельно: они в слое UI и у них другой потребитель
 [CreateAssetMenu(fileName = "BoosterVisuals", menuName = "51_Percent/Booster Visual Registry")]
-public class BoosterVisualRegistry : ScriptableObject,
-    ILocomotionModeSource, IBoosterPropSource, IBoosterScaleSource
+public class BoosterVisualRegistry : ScriptableObject
 {
     [Serializable]
     private struct Entry

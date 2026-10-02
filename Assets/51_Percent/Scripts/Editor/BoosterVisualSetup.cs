@@ -129,9 +129,7 @@ public static class BoosterVisualSetup
                 var back = EnsureSocket(FindBone(model, SpineBoneName) ?? model, BackSocketName);
                 var feet = EnsureSocket(model, FeetSocketName);
 
-                AssignRegistry(Require<BoosterAnimationSwitcher>(root), registry);
-                AssignRegistry(Require<BoosterPropAttacher>(root), registry);
-                AssignRegistry(Require<BoosterScaleAnimator>(root), registry);
+                AssignRegistry(Require<BoosterPresentation>(root), registry);
                 AssignSockets(root.GetComponent<CharacterBase>(), back, feet);
 
                 PrefabUtility.SaveAsPrefabAsset(root, path);

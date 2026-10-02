@@ -81,3 +81,10 @@ crashlytics-build.properties
 # Краш-логи JVM (Rider), появляются в корне проекта
 hs_err_pid*.log
 replay_pid*.log
+
+# Временные сцены Unity Test Framework: создаются при запуске PlayMode тестов
+/[Aa]ssets/InitTestScene*.unity
+/[Aa]ssets/InitTestScene*.unity.meta
+
+# Резервные копии, создаваемые инструментами
+*.bak

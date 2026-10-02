@@ -56,16 +56,24 @@ public abstract class CollectibleSpawnerBase : MonoBehaviour
     {
         var item = Acquire();
         item.Transform.position = position;
+        item.Consumed += OnConsumed;
         item.Collected += OnCollected;
         _registry?.Register(item, Kind);
         _count++;
         return item;
     }
 
+    // Место на карте освобождается сразу: новый предмет может появиться, пока прежний
+    // доигрывает исчезновение
+    private void OnConsumed(ICollectible item)
+    {
+        item.Consumed -= OnConsumed;
+        _count--;
+    }
+
     private void OnCollected(ICollectible item)
     {
         item.Collected -= OnCollected;
         Dispose(item);
-        _count--;
     }
 }

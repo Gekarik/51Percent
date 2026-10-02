@@ -1,6 +1,7 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Mover))]
+// Единственное место, где читается ввод игрока. Клавиши активации бустера нет:
+// подобранный бустер применяется сразу, в момент подбора
 public class PlayerInputProvider : VectorProviderComponent
 {
     private const string Horizontal = nameof(Horizontal);

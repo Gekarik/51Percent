@@ -22,6 +22,7 @@ public class RagdollController : MonoBehaviour
     private Rigidbody[] _ragdollBodies;
     private Collider[] _ragdollColliders;
     private Animator _animator;
+    private Tween _deactivateTween;
 
     private void Awake()
     {
@@ -49,7 +50,19 @@ public class RagdollController : MonoBehaviour
 
         StartCoroutine(ApplyForcesNextFrame(inheritedVelocity, externalImpulse));
 
-        DOVirtual.DelayedCall(DeactivateDelay, () => gameObject.SetActive(false));
+        _deactivateTween?.Kill();
+        _deactivateTween = DOVirtual.DelayedCall(DeactivateDelay, () =>
+        {
+            _deactivateTween = null;
+            gameObject.SetActive(false);
+        });
+    }
+
+    private void OnDisable()
+    {
+        // Отложенное скрытие не должно пережить модель или выгрузку её сцены.
+        _deactivateTween?.Kill();
+        _deactivateTween = null;
     }
 
     private IEnumerator ApplyForcesNextFrame(Vector3 inheritedVelocity, Vector3 externalImpulse)

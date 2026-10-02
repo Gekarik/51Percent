@@ -40,7 +40,7 @@ public class ColorService
         Shuffle(_availableColors);
     }
 
-    private static void Shuffle(List<Color> list)
+    private void Shuffle(List<Color> list)
     {
         for (int i = 0; i < list.Count; i++)
         {

@@ -4,7 +4,7 @@ using UnityEngine;
 
 // Читы dev-сцены. Клавиши: 1-4 — выдать бустер из массива, 5 — заспавнить врага (он всегда один),
 // 6 — натравить врага на игрока / остановить, 7 — победить, 8 — проиграть (нужен живой противник),
-// 9 — выбросить бустер из кармана, 0 — снять активный эффект
+// 0 — снять активный эффект
 public class DevTools : MonoBehaviour
 {
     private const string LogPrefix = "[DevTools]";
@@ -16,7 +16,6 @@ public class DevTools : MonoBehaviour
     private const KeyCode ChaseKey = KeyCode.Alpha6;
     private const KeyCode WinKey = KeyCode.Alpha7;
     private const KeyCode LoseKey = KeyCode.Alpha8;
-    private const KeyCode DropPendingKey = KeyCode.Alpha9;
     private const KeyCode DeactivateKey = KeyCode.Alpha0;
 
     [Header("Бустеры по клавишам 1-4 (в порядке массива)")]
@@ -52,7 +51,7 @@ public class DevTools : MonoBehaviour
     {
         _player = player;
         player.Transform.TryGetComponent(out _playerConsumer);
-        player.Transform.TryGetComponent(out _playerBoosterHandler);
+        _playerBoosterHandler = player is CharacterBase character ? character.Boosters : null;
     }
 
     private void Update()
@@ -75,9 +74,6 @@ public class DevTools : MonoBehaviour
 
         if (Input.GetKeyDown(LoseKey))
             FinishAsLose();
-
-        if (Input.GetKeyDown(DropPendingKey))
-            DropPendingBooster();
 
         if (Input.GetKeyDown(DeactivateKey))
             DeactivateBooster();
@@ -113,8 +109,8 @@ public class DevTools : MonoBehaviour
         _devEnemy = _enemySpawner.SpawnIdleEnemy();
         _devChaseProvider = _devEnemy.Transform.gameObject.AddComponent<DevChaseProvider>();
 
-        if (_devEnemy.Transform.TryGetComponent(out Mover mover))
-            mover.SetProvider(_devChaseProvider);
+        if (_devEnemy is CharacterBase character)
+            character.SetVectorProvider(_devChaseProvider);
 
         Debug.Log($"{LogPrefix} Заспавнен враг: {_devEnemy.Name}. Клавиша 6 — натравить на игрока");
     }
@@ -162,21 +158,6 @@ public class DevTools : MonoBehaviour
         _winConditionTracker.ForceFinish(winner);
     }
 
-    private void DropPendingBooster()
-    {
-        if (!IsPlayerAlive())
-            return;
-
-        if (!_playerBoosterHandler.HasPendingBooster)
-        {
-            Debug.Log($"{LogPrefix} В кармане пусто — выбрасывать нечего");
-            return;
-        }
-
-        if (_playerBoosterHandler.TryDropPending())
-            Debug.Log($"{LogPrefix} Бустер выброшен из кармана");
-    }
-
     private void DeactivateBooster()
     {
         if (!IsPlayerAlive())
@@ -209,7 +190,6 @@ public class DevTools : MonoBehaviour
         help.AppendLine("6 — натравить / остановить врага");
         help.AppendLine("7 — победа");
         help.AppendLine("8 — поражение");
-        help.AppendLine("9 — выбросить бустер из кармана");
         help.Append("0 — снять активный эффект");
 
         return help.ToString();

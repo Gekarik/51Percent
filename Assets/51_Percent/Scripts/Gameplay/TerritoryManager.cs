@@ -6,7 +6,7 @@ using UnityEngine;
 // После HexGrid (-50), но до гексов и презентеров (0): доменный индекс должен
 // подписаться на StateChanged раньше презентации, чтобы сбой вьюшки не ломал учёт владения
 [DefaultExecutionOrder(-40)]
-public class TerritoryManager : MonoBehaviour, ITerritoryOwnership, ITerritoryChanges
+public class TerritoryManager : MonoBehaviour, ITerritoryOwnership, ITerritoryWriter
 {
     [Required] [SerializeField] private HexGrid _hexGrid;
 
@@ -16,6 +16,7 @@ public class TerritoryManager : MonoBehaviour, ITerritoryOwnership, ITerritoryCh
     private readonly ConquestAlgorithm _conquestAlgorithm = new ConquestAlgorithm();
     private readonly List<IHex> _capturedBuffer = new List<IHex>();
     private readonly List<IHex> _holesBuffer = new List<IHex>();
+    private readonly List<IHex> _releaseBuffer = new List<IHex>();
     private readonly HashSet<ICharacter> _affectedBuffer = new HashSet<ICharacter>();
     private readonly IHex[] _emptyTrail = Array.Empty<IHex>();
 
@@ -66,7 +67,20 @@ public class TerritoryManager : MonoBehaviour, ITerritoryOwnership, ITerritoryCh
 
     public void OnCharacterDied(ICharacter character)
     {
-        _tracker.ReleaseAll(character);
+        if (character == null)
+            return;
+
+        using var changes = BeginChanges();
+        var owned = _tracker.GetOwned(character);
+        if (owned.Count == 0)
+            return;
+
+        // Копия: SetOwner через событие меняет тот же самый набор
+        _releaseBuffer.Clear();
+        _releaseBuffer.AddRange(owned);
+
+        foreach (var hex in _releaseBuffer)
+            ReleaseHex(hex);
     }
 
     public void FixHexes(ICharacter character, IEnumerable<IHex> hexes)
@@ -76,19 +90,21 @@ public class TerritoryManager : MonoBehaviour, ITerritoryOwnership, ITerritoryCh
             FixHex(character, h);
     }
 
+    // Владение хранит сам гекс, поэтому запись идёт в него напрямую.
+    // Индекс владельцев обновится сам — трекер подписан на StateChanged
     public void FixHex(ICharacter character, IHex hex)
     {
-        _tracker.TakeOwnership(character, hex);
+        hex?.SetOwner(character, HexState.Busy);
     }
 
     public void ReleaseHex(IHex hex)
     {
-        _tracker.ReleaseHex(hex);
+        hex?.SetOwner(null, HexState.Empty);
     }
 
     public void TrailHex(ICharacter character, IHex hex)
     {
-        _tracker.TransferToTrail(character, hex);
+        hex?.SetOwner(character, HexState.PartOfTrail);
     }
 
     // Захватывает область, ограниченную закреплённой территорией и трейлом.
@@ -202,7 +218,7 @@ public class TerritoryManager : MonoBehaviour, ITerritoryOwnership, ITerritoryCh
                 continue;
 
             foreach (var hex in _components[i])
-                _tracker.ReleaseHex(hex);
+                ReleaseHex(hex);
         }
     }
 }

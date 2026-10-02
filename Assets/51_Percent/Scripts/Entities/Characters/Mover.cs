@@ -1,12 +1,11 @@
-using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(VectorProviderComponent))]
 
+// Мотор применяет направление к Rigidbody и не знает, откуда команда пришла:
+// её подаёт персонаж, он же решает, разрешено ли сейчас двигаться
 public class Mover : MonoBehaviour
 {
-    private VectorProviderComponent _vectorProvider;
     private Rigidbody _rigidbody;
     private CharacterStats _stats;
     private float _rotationSpeed;
@@ -17,30 +16,20 @@ public class Mover : MonoBehaviour
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
-        _vectorProvider = GetComponent<VectorProviderComponent>();
-
-        if (_vectorProvider == null)
-            throw new InvalidOperationException("No VectorProviderComponent");
 
         // Плоская доска: вертикаль персонажу не нужна — фиксируем Y, чтобы не падать в щели
         _rigidbody.constraints |= RigidbodyConstraints.FreezePositionY;
     }
 
-    // Точка входа для подмены источника направления (dev-инструменты)
-    public void SetProvider(VectorProviderComponent provider)
-    {
-        _vectorProvider = provider;
-    }
-
-    public void Init(CharacterStats stats, CharacterConfigSO config)
+    public void Init(CharacterStats stats, float rotationSpeed)
     {
         _stats = stats;
-        _rotationSpeed = config.RotationSpeed;
+        _rotationSpeed = rotationSpeed;
     }
 
-    private void Update()
+    public void SetMoveDirection(Vector3 direction)
     {
-        _direction = _vectorProvider.GetMoveDirection();
+        _direction = direction;
     }
 
     private void FixedUpdate()

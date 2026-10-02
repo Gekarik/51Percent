@@ -89677,8 +89677,9 @@ MonoBehaviour:
   _coinSpawner: {fileID: 1086302506}
   _boosterSpawner: {fileID: 2135415362}
   _playerRespawner: {fileID: 460755755}
+  _enemyBrainBinder: {fileID: 1203069876}
   _colorSettings: {fileID: 11400000, guid: bf22f668aeca9ba45bb429608e8c2838, type: 2}
-  _uiRoot: {fileID: 265119321}
+  _playerHudBinder: {fileID: 2032428101}
   _leaderBoardView: {fileID: 542647861}
   _crownController: {fileID: 738620721}
   _devTools: {fileID: 1655345662}
@@ -144667,6 +144668,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1203069875}
   - component: {fileID: 1203069874}
+  - component: {fileID: 1203069876}
   m_Layer: 8
   m_Name: EnemySpawner
   m_TagString: Untagged
@@ -144688,7 +144690,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _prefab: {fileID: 5476233700063100578, guid: 15ada923c59cd4843a3cb0d60872ed65, type: 3}
   _enemyCount: 0
-  _personality: {fileID: 11400000, guid: 84a1a0064bca1da408efb38c3c95394a, type: 2}
   _botNames: {fileID: 11400000, guid: b2bfe99adb5e9354181739944ee5b133, type: 2}
   _spawnPoints:
   - {fileID: 516268892}
@@ -144718,6 +144719,19 @@ Transform:
   - {fileID: 1063811323}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1203069876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1203069873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e0cfd521a75517448f020e07a0f6e0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _personality: {fileID: 11400000, guid: 84a1a0064bca1da408efb38c3c95394a, type: 2}
 --- !u!1 &1203634506
 GameObject:
   m_ObjectHideFlags: 0
@@ -240088,6 +240102,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2032428100}
   - component: {fileID: 2032428099}
+  - component: {fileID: 2032428101}
   m_Layer: 0
   m_Name: PlayerSpawner
   m_TagString: Untagged
@@ -240108,11 +240123,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefab: {fileID: 1636724846439854639, guid: ec4fa1c971502c54a96f26e998ae1108, type: 3}
-  _uiPrefab: {fileID: 5315387417272389926, guid: af8e75336395bbe4f989ccdcfbca5a5e, type: 3}
   _spawnPoint: {fileID: 0}
-  _boosterHud: {fileID: 0}
-  _boosterIconRegistry: {fileID: 0}
-  _cameraFollower: {fileID: 639219401}
 --- !u!4 &2032428100
 Transform:
   m_ObjectHideFlags: 0
@@ -240128,6 +240139,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2032428101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2032428098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28d56e7af0819184bb298dc1fe2a2e11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _statsViewPrefab: {fileID: 5315387417272389926, guid: af8e75336395bbe4f989ccdcfbca5a5e, type: 3}
+  _uiRoot: {fileID: 265119321}
+  _boosterHud: {fileID: 0}
+  _boosterIconRegistry: {fileID: 0}
+  _cameraFollower: {fileID: 639219401}
 --- !u!1 &2033035330
 GameObject:
   m_ObjectHideFlags: 0

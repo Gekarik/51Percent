@@ -112,9 +112,7 @@ public class LeaderBoardView : MonoBehaviour
             if (!_characterToView.TryGetValue(character, out var entryView))
                 return;
 
-            var observable = character.BoosterObservable;
-            // Бустер «на руках» один: либо активный, либо в кармане
-            var effect = observable.ActiveEffect ?? observable.PendingEffect;
+            var effect = character.BoosterObservable.ActiveEffect;
             var icon = effect != null ? _boosterIconRegistry?.Get(effect.BoosterId) : null;
             entryView.SetBoosterIcon(icon);
         };

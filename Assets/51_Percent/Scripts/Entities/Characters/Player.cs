@@ -1,30 +1,6 @@
-using UnityEngine;
-
+// Отличие игрока от бота — только признак человека: подобранный бустер оба применяют сразу.
+// Карман и активация по кнопке сняты 20 сентября 2026 по требованию геймдизайна
 public class Player : CharacterBase
 {
-    [SerializeField] private KeyCode _activateBoosterKey = KeyCode.Space;
-
-    private Camera _camera;
     public override bool IsHuman => true;
-    public Camera Camera => _camera;
-
-    protected override void OnInit()
-    {
-        _camera = Camera.main;
-
-        if (_camera != null && _camera.TryGetComponent<CameraFollower>(out var follower))
-            follower.Init(transform);
-    }
-
-    // Игрок не активирует бустер сразу — кладёт в карман и запускает по кнопке
-    public override bool TryAcceptBooster(IBoosterEffect effect)
-    {
-        return TryStorePendingBooster(effect);
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(_activateBoosterKey))
-            TryActivatePendingBooster();
-    }
 }

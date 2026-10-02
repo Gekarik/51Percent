@@ -93,7 +93,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
+  m_fontSize: 18
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -312,7 +312,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
+  m_fontSize: 18
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1189,7 +1189,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
+  m_fontSize: 18
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1344,7 +1344,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
+  m_fontSize: 18
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1604,7 +1604,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
+  m_fontSize: 18
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2067,7 +2067,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 32
+  m_fontSize: 18
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2665,7 +2665,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1276236448637350138, guid: 600d3fe88f0945048ad682ecc6da6354, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 360.40002
+      value: 140.29
       objectReference: {fileID: 0}
     - target: {fileID: 1276236448637350138, guid: 600d3fe88f0945048ad682ecc6da6354, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -2689,7 +2689,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1276236448763145445, guid: 600d3fe88f0945048ad682ecc6da6354, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 261.66003
+      value: 41.549995
       objectReference: {fileID: 0}
     - target: {fileID: 1276236448763145445, guid: 600d3fe88f0945048ad682ecc6da6354, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -2922,7 +2922,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1276236448637350138, guid: 600d3fe88f0945048ad682ecc6da6354, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 311.40002
+      value: 91.29
       objectReference: {fileID: 0}
     - target: {fileID: 1276236448637350138, guid: 600d3fe88f0945048ad682ecc6da6354, type: 3}
       propertyPath: m_AnchoredPosition.y

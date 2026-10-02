@@ -7,6 +7,7 @@ public abstract class CollectibleBase : MonoBehaviour, ICollectible
 
     private ICollectibleView _viewInterface;
 
+    public event Action<ICollectible> Consumed;
     public event Action<ICollectible> Collected;
 
     public CollectibleState State { get; protected set; }
@@ -39,9 +40,15 @@ public abstract class CollectibleBase : MonoBehaviour, ICollectible
         _viewInterface.AnimationCompleted -= OnViewAnimationCompleted;
     }
 
+    // Логический результат наступает сразу: предмет выбывает с поля в момент подбора,
+    // а не когда доиграет анимация. Иначе подобранный предмет ещё числился бы на карте
     public void Collect()
     {
+        if (State != CollectibleState.Idle)
+            return;
+
         State = CollectibleState.Collected;
+        Consumed?.Invoke(this);
         _viewInterface.PlayCollectAnimation();
     }
 

@@ -1,0 +1,8 @@
+{
+    "name": "51Percent.EditMode.Tests",
+    "references": [
+        "51Percent.Runtime"
+    ],
+    "includePlatforms": ["Editor"],
+    "optionalUnityReferences": ["TestAssemblies"]
+}

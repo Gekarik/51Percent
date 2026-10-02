@@ -1,54 +1,32 @@
 using System;
-using System.Collections;
-using UnityEngine;
 
-public class BoosterHandler : MonoBehaviour, IBoosterObservable, IBoosterLifecycle
+// Активный эффект персонажа. Обычный C#-объект: правило «один бустер на руках»,
+// срок действия и причина завершения проверяются без сцены и без ожидания кадров.
+// Время подаёт владелец через Tick — на паузе deltaTime равен нулю, и эффект не истекает.
+public class BoosterHandler : IBoosterObservable, IBoosterLifecycle
 {
-    private IBoosterContext _context;
+    private readonly IBoosterContext _context;
+
     private IBoosterEffect _activeEffect;
-    private IBoosterEffect _pendingEffect;
-    private Coroutine _activeCoroutine;
-    private float _startTime;
+    private float _elapsedTime;
     private bool _isChanging;
 
     public event Action BoosterChanged;
     public event Action<BoosterId> BoosterStarted;
     public event Action<BoosterId, BoosterEndReason> BoosterEnded;
 
-    public IBoosterEffect ActiveEffect => _activeEffect;
-    public bool HasActiveBooster => _activeEffect != null;
-    public float RemainingTime => HasActiveBooster ? Mathf.Max(0f, _activeEffect.Duration - (Time.time - _startTime)) : 0f;
-    public IBoosterEffect PendingEffect => _pendingEffect;
-    public bool HasPendingBooster => _pendingEffect != null;
-    // Правило «один бустер на руках»: пока есть бустер в кармане или активный — новый не берём
-    public bool CanAccept => !_isChanging && !HasActiveBooster && !HasPendingBooster;
-    private bool CanExecuteCommand => !_isChanging && _context != null && _context.CanAct;
-
-    public void Init(IBoosterContext context)
+    public BoosterHandler(IBoosterContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public bool TryStore(IBoosterEffect effect)
-    {
-        if (effect == null || !CanExecuteCommand || !CanAccept)
-            return false;
-
-        _pendingEffect = effect;
-        BoosterChanged?.Invoke();
-        return true;
-    }
-
-    public bool TryActivatePending()
-    {
-        if (!CanExecuteCommand || _pendingEffect == null || _activeEffect != null)
-            return false;
-
-        var effect = _pendingEffect;
-        _pendingEffect = null;
-        StartEffect(effect);
-        return true;
-    }
+    public IBoosterEffect ActiveEffect => _activeEffect;
+    public bool HasActiveBooster => _activeEffect != null;
+    public float RemainingTime => HasActiveBooster ? Math.Max(0f, _activeEffect.Duration - _elapsedTime) : 0f;
+    // Правило «один бустер на руках»: подобранный применяется сразу,
+    // поэтому новый не берём, пока действует текущий
+    public bool CanAccept => !_isChanging && !HasActiveBooster;
+    private bool CanExecuteCommand => !_isChanging && _context.CanAct;
 
     public bool TryActivate(IBoosterEffect effect)
     {
@@ -59,25 +37,18 @@ public class BoosterHandler : MonoBehaviour, IBoosterObservable, IBoosterLifecyc
         return true;
     }
 
-    private void StartEffect(IBoosterEffect effect)
+    // Срок действия отсчитывает владелец: модель не знает ни о кадрах, ни о шкале времени
+    public void Tick(float deltaTime)
     {
-        _isChanging = true;
-        try
-        {
-            _activeEffect = effect;
-            _startTime = Time.time;
-            if (effect is IEarlyConsumable consumable)
-                consumable.EarlyConsumed += OnEffectEarlyConsumed;
+        if (_activeEffect == null || deltaTime <= 0f)
+            return;
 
-            effect.Apply(_context);
-            _activeCoroutine = StartCoroutine(RunDuration(effect));
-            BoosterStarted?.Invoke(effect.BoosterId);
-        }
-        finally
-        {
-            _isChanging = false;
-        }
+        _elapsedTime += deltaTime;
 
+        if (_elapsedTime < _activeEffect.Duration)
+            return;
+
+        FinishActiveEffect(BoosterEndReason.Expired);
         BoosterChanged?.Invoke();
     }
 
@@ -92,47 +63,40 @@ public class BoosterHandler : MonoBehaviour, IBoosterObservable, IBoosterLifecyc
         return true;
     }
 
-    // Выбросить бустер из кармана
-    public bool TryDropPending()
-    {
-        if (!CanExecuteCommand || _pendingEffect == null)
-            return false;
-
-        _pendingEffect = null;
-        BoosterChanged?.Invoke();
-        return true;
-    }
-
-    // К моменту уведомления пусты и карман, и активный слот; модификаторы уже сняты.
+    // К моменту уведомления активный слот пуст, модификаторы уже сняты.
     public void Clear()
     {
-        if (_pendingEffect == null && _activeEffect == null)
+        if (_activeEffect == null)
             return;
 
-        _pendingEffect = null;
         FinishActiveEffect(BoosterEndReason.Cancelled);
         BoosterChanged?.Invoke();
     }
 
-    private void OnDestroy()
+    private void StartEffect(IBoosterEffect effect)
     {
-        Clear();
+        _isChanging = true;
+        try
+        {
+            _activeEffect = effect;
+            _elapsedTime = 0f;
+            if (effect is IEarlyConsumable consumable)
+                consumable.EarlyConsumed += OnEffectEarlyConsumed;
+
+            effect.Apply(_context);
+            BoosterStarted?.Invoke(effect.BoosterId);
+        }
+        finally
+        {
+            _isChanging = false;
+        }
+
+        BoosterChanged?.Invoke();
     }
 
     private void OnEffectEarlyConsumed()
     {
         FinishActiveEffect(BoosterEndReason.Consumed);
-        BoosterChanged?.Invoke();
-    }
-
-    private IEnumerator RunDuration(IBoosterEffect effect)
-    {
-        yield return new WaitForSeconds(effect.Duration);
-        if (_activeEffect != effect)
-            yield break;
-
-        _activeCoroutine = null;
-        FinishActiveEffect(BoosterEndReason.Expired);
         BoosterChanged?.Invoke();
     }
 
@@ -145,14 +109,9 @@ public class BoosterHandler : MonoBehaviour, IBoosterObservable, IBoosterLifecyc
 
         var effect = _activeEffect;
         _activeEffect = null;
+        _elapsedTime = 0f;
         if (effect is IEarlyConsumable consumable)
             consumable.EarlyConsumed -= OnEffectEarlyConsumed;
-
-        if (_activeCoroutine != null)
-        {
-            StopCoroutine(_activeCoroutine);
-            _activeCoroutine = null;
-        }
 
         _isChanging = true;
         try

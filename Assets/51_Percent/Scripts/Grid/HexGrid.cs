@@ -119,10 +119,37 @@ public class HexGrid : MonoBehaviour, IHexGridProvider
         return found;
     }
 
+    // Прямоугольное округление в WorldToCoord ошибается у наклонных граней гекса:
+    // ячейка там не прямоугольник, и точка может попасть к соседу. Ошибка не превышает
+    // одного шага, поэтому итог уточняется по ближайшему центру среди кандидата и его
+    // соседей — для гексагональной решётки ближайший центр и задаёт её разбиение плоскости.
     public IHex GetHexAt(Vector3 worldPosition)
     {
-        HexCoord coord = WorldToCoord(worldPosition);
-        return GetHex(coord);
+        HexCoord approximateCoord = WorldToCoord(worldPosition);
+        IHex nearest = GetHex(approximateCoord);
+        float nearestDistance = nearest != null ? PlanarDistanceSqr(nearest, worldPosition) : float.MaxValue;
+
+        foreach (IHex neighbor in GetNeighbors(approximateCoord))
+        {
+            float distance = PlanarDistanceSqr(neighbor, worldPosition);
+
+            if (distance >= nearestDistance)
+                continue;
+
+            nearestDistance = distance;
+            nearest = neighbor;
+        }
+
+        return nearest;
+    }
+
+    // Высота не участвует: персонаж движется над плоскостью поля с собственным смещением по Y
+    private float PlanarDistanceSqr(IHex hex, Vector3 worldPosition)
+    {
+        Vector3 center = hex.Transform.position;
+        float deltaX = center.x - worldPosition.x;
+        float deltaZ = center.z - worldPosition.z;
+        return deltaX * deltaX + deltaZ * deltaZ;
     }
 
     public HexCoord GetCoord(IHex hex)

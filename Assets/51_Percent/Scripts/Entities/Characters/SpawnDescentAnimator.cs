@@ -8,11 +8,11 @@ public class SpawnDescentAnimator : MonoBehaviour
 {
     [Required] [SerializeField] private SpawnDescentSettings _settings;
 
-    private SpawnLandingTracker _landing;
+    private LandingWindow _landing;
     private Transform _model;
     private Vector3 _groundLocalPosition;
 
-    public void Init(Transform model, SpawnLandingTracker landing)
+    public void Init(Transform model, LandingWindow landing)
     {
         if (model == null)
             throw new ArgumentNullException(nameof(model));

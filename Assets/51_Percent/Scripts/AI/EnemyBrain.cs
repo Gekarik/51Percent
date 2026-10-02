@@ -44,6 +44,12 @@ public class EnemyBrain : VectorProviderComponent
     private ICollectible _collectibleTarget;
     private CollectibleKind _collectibleTargetKind;
 
+    private readonly TrailThreatEvaluator _threatEvaluator = new TrailThreatEvaluator();
+    private readonly TerritoryBearings _bearings = new TerritoryBearings();
+    private readonly List<Vector3> _territoryPositions = new List<Vector3>();
+    private readonly List<Vector3> _trailPositions = new List<Vector3>();
+    private readonly List<Vector3> _rivalPositions = new List<Vector3>();
+
     public void Init(IHexGridProvider grid, IReadOnlyList<ICharacter> allCharacters,
         ICollectibleRegistry collectibleRegistry, BotPersonalitySettings personality = null, int botIndex = 0)
     {
@@ -150,7 +156,7 @@ public class EnemyBrain : VectorProviderComponent
     {
         if (_attackTarget == null ||
             _attackTarget.State != CharacterState.Alive ||
-            !_attackTarget.HasActiveTrail)
+            !_attackTarget.Trail.HasActiveTrail)
         {
             _failedAttackPosition = _attackTarget?.Transform.position ?? transform.position;
             _hasFailedAttackRepulsor = true;
@@ -158,7 +164,7 @@ public class EnemyBrain : VectorProviderComponent
             return;
         }
 
-        if (_character.HasActiveTrail && IsTrailThreatened())
+        if (_character.Trail.HasActiveTrail && IsTrailThreatened())
         {
             EnterReturning();
             return;
@@ -222,35 +228,29 @@ public class EnemyBrain : VectorProviderComponent
 
     // ── Сенсоры ──────────────────────────────────────────────────────────
 
+    // Адаптер: собирает наблюдения из сцены и отдаёт их самостоятельному алгоритму
     private bool IsTrailThreatened()
     {
         var trail = _conqueror.TrailHexes;
-        if (trail.Count == 0) return false;
+        if (trail.Count == 0)
+            return false;
 
-        float threatSq = TrailThreatRadius * TrailThreatRadius;
-        float detSq = _personality.DetectionRadius * _personality.DetectionRadius;
+        _trailPositions.Clear();
+        for (int i = 0; i < trail.Count; i++)
+            if (trail[i]?.Transform != null)
+                _trailPositions.Add(trail[i].Transform.position);
 
+        _rivalPositions.Clear();
         foreach (var character in _allCharacters)
         {
-            if (character == null || character == _character) continue;
-            if (character.State != CharacterState.Alive) continue;
+            if (character == null || character == _character || character.State != CharacterState.Alive)
+                continue;
 
-            float enemyDistSq = (character.Transform.position - transform.position).sqrMagnitude;
-            if (enemyDistSq > detSq) continue;
-
-            // Проверяем только последние хексы трейла (рядом с ботом)
-            int from = Mathf.Max(0, trail.Count - 5);
-            for (int i = from; i < trail.Count; i++)
-            {
-                var hex = trail[i];
-                if (hex?.Transform == null) continue;
-
-                float distSq = (character.Transform.position - hex.Transform.position).sqrMagnitude;
-                if (distSq < threatSq) return true;
-            }
+            _rivalPositions.Add(character.Transform.position);
         }
 
-        return false;
+        return _threatEvaluator.IsTrailThreatened(transform.position, _trailPositions, _rivalPositions,
+            _personality.DetectionRadius, TrailThreatRadius);
     }
 
     private ICharacter FindAttackTarget()
@@ -263,7 +263,7 @@ public class EnemyBrain : VectorProviderComponent
         {
             if (character == null || character == _character) continue;
             if (character.State != CharacterState.Alive) continue;
-            if (!character.HasActiveTrail) continue;
+            if (!character.Trail.HasActiveTrail) continue;
 
             float distSq = (character.Transform.position - transform.position).sqrMagnitude;
             if (distSq > detSq) continue;
@@ -444,25 +444,22 @@ public class EnemyBrain : VectorProviderComponent
 
     private Vector3 GetNearestHomePosition()
     {
-        var territory = _conqueror.FixedHexes;
-        if (territory == null || territory.Count == 0)
-            return transform.position;
+        CollectTerritoryPositions();
+        return _bearings.NearestPoint(transform.position, _territoryPositions);
+    }
 
-        IHex nearest = null;
-        float nearestSq = float.MaxValue;
+    // Адаптер: позиции собственной территории для вычислений, которые не знают о клетках
+    private void CollectTerritoryPositions()
+    {
+        _territoryPositions.Clear();
+        var territory = _conqueror.FixedHexes;
+
+        if (territory == null)
+            return;
 
         foreach (var hex in territory)
-        {
-            if (hex?.Transform == null) continue;
-            float sq = (transform.position - hex.Transform.position).sqrMagnitude;
-            if (sq < nearestSq)
-            {
-                nearestSq = sq;
-                nearest = hex;
-            }
-        }
-
-        return nearest?.Transform.position ?? transform.position;
+            if (hex?.Transform != null)
+                _territoryPositions.Add(hex.Transform.position);
     }
 
     // ── Атака ────────────────────────────────────────────────────────────
@@ -500,20 +497,8 @@ public class EnemyBrain : VectorProviderComponent
 
     private Vector3 GetTerritoryCenter()
     {
-        var territory = _conqueror.FixedHexes;
-        if (territory == null || territory.Count == 0)
-            return transform.position;
-
-        Vector3 sum = Vector3.zero;
-        int count = 0;
-        foreach (var hex in territory)
-        {
-            if (hex?.Transform == null) continue;
-            sum += hex.Transform.position;
-            count++;
-        }
-
-        return count > 0 ? sum / count : transform.position;
+        CollectTerritoryPositions();
+        return _bearings.Center(transform.position, _territoryPositions);
     }
 
 #if UNITY_EDITOR

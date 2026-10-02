@@ -1,15 +1,12 @@
 using System;
-using System.Collections.Generic;
 
+// Боевые правила атаки по трейлу. Исход зависит от активных эффектов участников, и эффекты
+// спрашиваются напрямую: сами они ничего здесь не регистрируют, поэтому исход целиком
+// определяется состоянием на момент атаки.
 public class KillManager
 {
     private readonly IMatchState _matchState;
     private readonly ICharacterElimination _elimination;
-    private readonly Dictionary<ICharacter, Func<ICharacter, ICharacter, (ICharacter victim, ICharacter killer)>> _resolvers
-        = new Dictionary<ICharacter, Func<ICharacter, ICharacter, (ICharacter victim, ICharacter killer)>>();
-
-    // Перехватчик получает шанс отменить смерть (например, крылья уносят жертву домой)
-    private readonly Dictionary<ICharacter, Func<bool>> _deathInterceptors = new Dictionary<ICharacter, Func<bool>>();
 
     public event Action<ICharacter> CharacterEliminated;
 
@@ -19,36 +16,14 @@ public class KillManager
         _elimination = elimination ?? throw new ArgumentNullException(nameof(elimination));
     }
 
-    public void RegisterResolver(ICharacter character, Func<ICharacter, ICharacter, (ICharacter victim, ICharacter killer)> resolver)
-    {
-        _resolvers[character] = resolver;
-    }
-
-    public void UnregisterResolver(ICharacter character)
-    {
-        _resolvers.Remove(character);
-    }
-
-    public void RegisterDeathInterceptor(ICharacter character, Func<bool> interceptor)
-    {
-        _deathInterceptors[character] = interceptor;
-    }
-
-    public void UnregisterDeathInterceptor(ICharacter character)
-    {
-        _deathInterceptors.Remove(character);
-    }
-
     public void OnTrailInterrupted(ICharacter trailOwner, ICharacter stepper)
     {
         if (!_matchState.IsRunning || trailOwner == null || stepper == null || trailOwner == stepper
             || trailOwner.State != CharacterState.Alive || stepper.State != CharacterState.Alive)
             return;
 
-        // Этап 1: кто умирает (шипы меняют жертву и убийцу местами)
-        var (victim, killer) = _resolvers.TryGetValue(trailOwner, out var resolver)
-            ? resolver(trailOwner, stepper)
-            : (trailOwner, stepper);
+        // Этап 1: кто умирает (шипы владельца трейла меняют жертву и убийцу местами)
+        var (victim, killer) = ResolveTrailKill(trailOwner, stepper);
 
         // Этап 2: состоится ли смерть. Спасение — атака сорвалась, килл не засчитывается
         if (TryEscapeDeath(victim))
@@ -70,8 +45,20 @@ public class KillManager
             CharacterEliminated?.Invoke(victim);
     }
 
+    private (ICharacter victim, ICharacter killer) ResolveTrailKill(ICharacter trailOwner, ICharacter stepper)
+    {
+        return ActiveEffect(trailOwner) is ITrailKillModifier modifier
+            ? modifier.ResolveTrailKill(trailOwner, stepper)
+            : (trailOwner, stepper);
+    }
+
     private bool TryEscapeDeath(ICharacter victim)
     {
-        return _deathInterceptors.TryGetValue(victim, out var interceptor) && interceptor();
+        return ActiveEffect(victim) is IDeathInterceptor interceptor && interceptor.TryEscapeDeath();
+    }
+
+    private IBoosterEffect ActiveEffect(ICharacter character)
+    {
+        return character?.BoosterObservable?.ActiveEffect;
     }
 }

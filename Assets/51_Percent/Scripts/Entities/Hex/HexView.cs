@@ -25,6 +25,11 @@ public class HexView : MonoBehaviour, IHexView, ICoroutineRunner
         _outlineRenderer.enabled = false;
     }
 
+    private void OnDisable()
+    {
+        _hexViewAnimator?.Reset();
+    }
+
     public Bounds GetBounds() => MeshRenderer.bounds;
     public Bounds GetLocalMeshBounds() => MeshFilter.sharedMesh.bounds;
 

@@ -63370,6 +63370,7 @@ GameObject:
   m_Component:
   - component: {fileID: 381749299}
   - component: {fileID: 381749300}
+  - component: {fileID: 381749301}
   m_Layer: 0
   m_Name: PlayerSpawner
   m_TagString: Untagged
@@ -63405,8 +63406,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefab: {fileID: 1636724846439854639, guid: ec4fa1c971502c54a96f26e998ae1108, type: 3}
-  _uiPrefab: {fileID: 5315387417272389926, guid: af8e75336395bbe4f989ccdcfbca5a5e, type: 3}
   _spawnPoint: {fileID: 0}
+--- !u!114 &381749301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 381749297}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28d56e7af0819184bb298dc1fe2a2e11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _statsViewPrefab: {fileID: 5315387417272389926, guid: af8e75336395bbe4f989ccdcfbca5a5e, type: 3}
+  _uiRoot: {fileID: 1131316871}
   _boosterHud: {fileID: 0}
   _boosterIconRegistry: {fileID: 0}
   _cameraFollower: {fileID: 1231322489}
@@ -172510,8 +172524,9 @@ MonoBehaviour:
   _coinSpawner: {fileID: 894922201}
   _boosterSpawner: {fileID: 1496602466}
   _playerRespawner: {fileID: 1037664225}
+  _enemyBrainBinder: {fileID: 1317363232}
   _colorSettings: {fileID: 11400000, guid: bf22f668aeca9ba45bb429608e8c2838, type: 2}
-  _uiRoot: {fileID: 1131316871}
+  _playerHudBinder: {fileID: 381749301}
   _leaderBoardView: {fileID: 2078353449}
   _crownController: {fileID: 1014936681}
   _devTools: {fileID: 0}
@@ -174564,7 +174579,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _respawnCount: 1
   _delayBeforeSpawn: 2
-  _landingDuration: 1.5
   _shieldRadius: 4
   _shieldHeight: 3
 --- !u!4 &1037664226
@@ -219783,6 +219797,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1317363231}
   - component: {fileID: 1317363230}
+  - component: {fileID: 1317363232}
   m_Layer: 8
   m_Name: EnemySpawner
   m_TagString: Untagged
@@ -219804,7 +219819,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _prefab: {fileID: 5476233700063100578, guid: 15ada923c59cd4843a3cb0d60872ed65, type: 3}
   _enemyCount: 3
-  _personality: {fileID: 11400000, guid: 84a1a0064bca1da408efb38c3c95394a, type: 2}
   _botNames: {fileID: 11400000, guid: b2bfe99adb5e9354181739944ee5b133, type: 2}
   _spawnPoints:
   - {fileID: 266981816}
@@ -219834,6 +219848,19 @@ Transform:
   - {fileID: 911403965}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1317363232
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1317363229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e0cfd521a75517448f020e07a0f6e0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _personality: {fileID: 11400000, guid: 84a1a0064bca1da408efb38c3c95394a, type: 2}
 --- !u!4 &1317813671 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2669208178648822176, guid: 4083e5c9364ec7b42a6254156c2530a2, type: 3}

@@ -209,16 +209,19 @@ public class GridWizard : EditorWindow
         Undo.RegisterCreatedObjectUndo(wall, UndoOperationName);
     }
 
-    // Игровая зона уже указана у спавнеров — берём её оттуда, чтобы не просить дважды
+    // Игровая зона уже указана у спавнеров предметов — берём её оттуда, чтобы не просить дважды.
+    // Зона лежит внутри сериализуемого SpawnPointProvider, поэтому свойство ищется вложенным
     private static BoxCollider FindPlayableArea()
     {
-        var spawner = FindObjectOfType<SpawnerBase>();
+        var spawner = FindObjectOfType<CollectibleSpawnerBase>();
 
         if (spawner == null)
             return null;
 
         var serializedObject = new SerializedObject(spawner);
-        return serializedObject.FindProperty("_spawnArea")?.objectReferenceValue as BoxCollider;
+        var spawnPoint = serializedObject.FindProperty("_spawnPoint");
+
+        return spawnPoint?.FindPropertyRelative("_area")?.objectReferenceValue as BoxCollider;
     }
 
     private void LoadPreferences()

@@ -16,6 +16,7 @@ public class Coin : CollectibleBase
     {
         State = CollectibleState.Scattering;
         transform.DOJump(target, ScatterJumpPower, 1, duration)
+            .SetLink(gameObject, LinkBehaviour.KillOnDisable)
             .OnComplete(() => State = CollectibleState.Idle);
     }
 }

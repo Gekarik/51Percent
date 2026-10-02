@@ -13,12 +13,13 @@ public class Bootstrap : MonoBehaviour
     [Required] [SerializeField] private CoinSpawner _coinSpawner;
     [Required] [SerializeField] private BoosterSpawner _boosterSpawner;
     [Required] [SerializeField] private PlayerRespawner _playerRespawner;
+    [Required] [SerializeField] private EnemyBrainBinder _enemyBrainBinder;
 
     [Header("Settings")]
     [Required] [SerializeField] private ColorSettings _colorSettings;
 
     [Header("UI")]
-    [Required] [SerializeField] private Transform _uiRoot;
+    [Required] [SerializeField] private PlayerHudBinder _playerHudBinder;
     [Required] [SerializeField] private LeaderBoardView _leaderBoardView;
     [Required] [SerializeField] private CrownController _crownController;
 
@@ -49,17 +50,22 @@ public class Bootstrap : MonoBehaviour
 
         _playerRespawner.Init(_playerSpawner, _matchState);
 
+        // Службы персонажа одни на весь матч — собираются здесь и дальше идут одним объектом
+        var characterDependencies = new CharacterDependencies(_colorService, _territoryManager,
+            _hexGrid, _matchState);
+
         _playerSpawner.SetCharacterList(allCharacters);
-        _playerSpawner.Init(_hexGrid, _territoryManager, _killManager, _colorService,
-            _leaderBoardModel, _winConditionTracker, _matchState);
-        _playerSpawner.SetUIRoot(_uiRoot);
+        _playerSpawner.Init(characterDependencies, _killManager, _leaderBoardModel, _winConditionTracker);
         _playerSpawner.CharacterSpawned += OnCharacterSpawned;
 
         _enemySpawner.SetCharacterList(allCharacters);
-        _enemySpawner.SetAIReferences(allCharacters, collectibleRegistry);
-        _enemySpawner.Init(_hexGrid, _territoryManager, _killManager, _colorService,
-            _leaderBoardModel, _winConditionTracker, _matchState);
+        _enemySpawner.Init(characterDependencies, _killManager, _leaderBoardModel, _winConditionTracker);
         _enemySpawner.CharacterSpawned += OnCharacterSpawned;
+
+        // Презентация и поведение подписываются на появление персонажа до первого спавна:
+        // спавнеры создают участников в своих Start, то есть уже после этого Awake
+        _playerHudBinder.Init(_playerSpawner);
+        _enemyBrainBinder.Init(_enemySpawner, _hexGrid, allCharacters, collectibleRegistry);
 
         _coinSpawner.SetRegistry(collectibleRegistry);
         _boosterSpawner.SetRegistry(collectibleRegistry);
@@ -78,7 +84,7 @@ public class Bootstrap : MonoBehaviour
     // Захват — доменное событие персонажа; волновая анимация — реакция презентации на него
     private void OnCharacterSpawned(ICharacter character)
     {
-        character.AreaCaptured += _captureWavePresenter.OnAreaCaptured;
+        character.Trail.AreaCaptured += _captureWavePresenter.OnAreaCaptured;
     }
 
     private void OnDestroy()

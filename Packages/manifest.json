@@ -1,11 +1,14 @@
 {
   "dependencies": {
-    "com.coplaydev.unity-mcp": "file:D:/unity-mcp-beta/unity-mcp-beta/MCPForUnity",
+    "com.bananaparty.webutility": "https://github.com/forcepusher/com.bananaparty.webutility.git#4.0.1",
+    "com.bananaparty.yandexgames": "https://github.com/forcepusher/com.bananaparty.yandexgames.git#18.0.1",
+    "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
     "com.unity.cinemachine": "2.10.3",
     "com.unity.cloud.gltfast": "6.14.1",
     "com.unity.collab-proxy": "2.7.1",
     "com.unity.feature.development": "1.0.1",
     "com.unity.recorder": "4.0.3",
+    "com.unity.test-framework": "1.4.6",
     "com.unity.textmeshpro": "3.0.7",
     "com.unity.timeline": "1.7.7",
     "com.unity.ugui": "1.0.0",

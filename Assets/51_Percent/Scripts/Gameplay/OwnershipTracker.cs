@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 
+// Только чтение и уведомление: запись во владение идёт в сам гекс от его владельца — TerritoryManager.
+// Здесь только индекс, поэтому он не может разойтись с состоянием гексов
 public class OwnershipTracker : IDisposable
 {
     // Источник правды о владельце — сам Hex; здесь только производный индекс character → hexes.
@@ -8,7 +10,6 @@ public class OwnershipTracker : IDisposable
     private readonly Dictionary<ICharacter, HashSet<IHex>> _byOwner = new Dictionary<ICharacter, HashSet<IHex>>();
     private readonly Dictionary<IHex, ICharacter> _indexedOwnerByHex = new Dictionary<IHex, ICharacter>();
     private readonly List<IHex> _trackedHexes = new List<IHex>();
-    private readonly List<IHex> _releaseBuffer = new List<IHex>();
 
     private readonly IReadOnlyCollection<IHex> _empty = Array.Empty<IHex>();
     private int _changeDepth;
@@ -62,35 +63,6 @@ public class OwnershipTracker : IDisposable
     public bool IsOwnedBy(ICharacter character, IHex hex)
     {
         return _indexedOwnerByHex.TryGetValue(hex, out var owner) && owner == character;
-    }
-
-    public void TakeOwnership(ICharacter character, IHex hex)
-    {
-        hex?.SetOwner(character, HexState.Busy);
-    }
-
-    public void TransferToTrail(ICharacter newOwner, IHex hex)
-    {
-        hex?.SetOwner(newOwner, HexState.PartOfTrail);
-    }
-
-    public void ReleaseHex(IHex hex)
-    {
-        hex?.SetOwner(null, HexState.Empty);
-    }
-
-    public void ReleaseAll(ICharacter character)
-    {
-        using var changes = BeginChanges();
-        if (character == null || _byOwner.TryGetValue(character, out var hexes) == false)
-            return;
-
-        // Копия: SetOwner через событие меняет тот же самый набор
-        _releaseBuffer.Clear();
-        _releaseBuffer.AddRange(hexes);
-
-        foreach (var hex in _releaseBuffer)
-            hex.SetOwner(null, HexState.Empty);
     }
 
     private void OnHexStateChanged(IHex hex)

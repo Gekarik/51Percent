@@ -2,39 +2,39 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviour, ICharacter
+public abstract class CharacterSpawner<T> : MonoBehaviour where T : CharacterBase
 {
     [Required] [SerializeField] private T _prefab;
 
-    protected HexGrid _grid;
-    protected TerritoryManager _territoryManager;
     protected KillManager _killManager;
-    protected ColorService _colorService;
     protected LeaderBoardModel _leaderBoardModel;
     protected WinConditionTracker _winConditionTracker;
+
+    private CharacterDependencies _dependencies;
+
+    // Спавнеру грид нужен для выбора места; остальные зависимости персонажа
+    // он не читает и только отдаёт фабрике
+    protected IHexGridProvider Grid => _dependencies.Grid;
 
     private IHex[] _spawnHexes;
     private int _spawnIndex;
     private bool _initialized;
     private List<ICharacter> _allCharacters;
+    private SpawnHexSelector _spawnHexSelector;
 
     protected CharacterFactory<T> _factory;
 
     public event Action<ICharacter> CharacterSpawned;
 
-    public void Init(HexGrid grid, TerritoryManager territoryManager, KillManager killManager,
-        ColorService colorService, LeaderBoardModel leaderBoardModel, WinConditionTracker winConditionTracker,
-        IMatchState matchState)
+    public void Init(CharacterDependencies dependencies, KillManager killManager,
+        LeaderBoardModel leaderBoardModel, WinConditionTracker winConditionTracker)
     {
-        _grid = grid ?? throw new ArgumentNullException(nameof(grid));
-        _territoryManager = territoryManager ?? throw new ArgumentNullException(nameof(territoryManager));
+        _dependencies = dependencies ?? throw new ArgumentNullException(nameof(dependencies));
         _killManager = killManager ?? throw new ArgumentNullException(nameof(killManager));
-        _colorService = colorService ?? throw new ArgumentNullException(nameof(colorService));
         _leaderBoardModel = leaderBoardModel ?? throw new ArgumentNullException(nameof(leaderBoardModel));
         _winConditionTracker = winConditionTracker ?? throw new ArgumentNullException(nameof(winConditionTracker));
 
-        _factory = new CharacterFactory<T>(_prefab, _colorService, _territoryManager, _grid, _killManager,
-            matchState ?? throw new ArgumentNullException(nameof(matchState)));
+        _factory = new CharacterFactory<T>(_prefab, _dependencies);
         _initialized = true;
     }
 
@@ -64,8 +64,8 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
     {
         EnsureInitialized();
         var character = _factory.Create(hex);
-        character.TrailInterrupted += _killManager.OnTrailInterrupted;
-        character.TrailOrphaned += _killManager.OnTrailOrphaned;
+        character.Trail.TrailInterrupted += _killManager.OnTrailInterrupted;
+        character.Trail.TrailOrphaned += _killManager.OnTrailOrphaned;
         _winConditionTracker.RegisterCharacter(character);
         _allCharacters?.Add(character);
         CharacterSpawned?.Invoke(character);
@@ -77,7 +77,10 @@ public abstract class CharacterSpawner<T> : MonoBehaviour where T : MonoBehaviou
         if (_spawnHexes != null && _spawnIndex < _spawnHexes.Length)
             return _spawnHexes[_spawnIndex++];
 
-        return _grid.GetRandomHex();
+        // Селектор создаётся здесь, а не в Init: список участников наполняется спавнами
+        // и должен читаться на момент выбора, а не на момент настройки спавнера
+        _spawnHexSelector ??= new SpawnHexSelector(Grid, _allCharacters);
+        return _spawnHexSelector.SelectSpawnHex();
     }
 
     protected void RegisterInLeaderBoard(ICharacter character)

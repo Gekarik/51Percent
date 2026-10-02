@@ -15,3 +15,4 @@ MonoBehaviour:
   _baseSpeed: 1.5
   _baseCaptureWidth: 1
   _rotationSpeed: 720
+  _landingDuration: 0.75

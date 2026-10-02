@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Mover), typeof(Conqueror))]
-[RequireComponent(typeof(Grabber), typeof(VectorProviderComponent), typeof(BoosterHandler))]
-[RequireComponent(typeof(TrailVisualModifier))]
-[RequireComponent(typeof(SpawnLandingTracker), typeof(SpawnDescentAnimator))]
-[RequireComponent(typeof(BoosterAnimationSwitcher), typeof(BoosterPropAttacher), typeof(BoosterScaleAnimator))]
+[RequireComponent(typeof(Grabber), typeof(VectorProviderComponent))]
+[RequireComponent(typeof(SpawnDescentAnimator))]
+[RequireComponent(typeof(BoosterPresentation))]
 
 public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext, ICollectibleConsumer
 {
@@ -23,19 +21,16 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
     private Color _color;
     private Conqueror _conqueror;
     private Mover _mover;
+    private VectorProviderComponent _vectorProvider;
     private Grabber _grabber;
     private ColorService _colorService;
     private RagdollController _ragdollController;
-    private BoosterHandler _boosterHandler;
-    private TrailVisualModifier _trailVisualModifier;
-    private KillManager _killManager;
+    private TrailAppearance _trailAppearance;
     private IMatchState _matchState;
     private IHexGridProvider _grid;
-    private SpawnLandingTracker _landing;
+    private LandingWindow _landing;
     private SpawnDescentAnimator _descentAnimator;
-    private BoosterAnimationSwitcher _animationSwitcher;
-    private BoosterPropAttacher _propAttacher;
-    private BoosterScaleAnimator _scaleAnimator;
+    private BoosterPresentation _boosterPresentation;
 
     public bool IsLanding => _landing.IsLanding;
     public bool CanAct => _matchState != null && _matchState.IsRunning
@@ -53,21 +48,19 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
     // Статистика живёт столько же, сколько экземпляр персонажа; респавн создаёт новую модель.
     public PlayerStats LifeStats { get; } = new PlayerStats();
 
+    // Активный эффект — такая же модель персонажа, как статистика.
+    // Создаётся в Init: ей нужен контекст, то есть сам персонаж
+    public BoosterHandler Boosters { get; private set; }
+
     private void Awake()
     {
         _conqueror = GetComponent<Conqueror>();
         _mover = GetComponent<Mover>();
+        _vectorProvider = GetComponent<VectorProviderComponent>();
         _grabber = GetComponent<Grabber>();
         _ragdollController = GetComponentInChildren<RagdollController>();
-        _boosterHandler = GetComponent<BoosterHandler>();
-        _trailVisualModifier = GetComponent<TrailVisualModifier>();
-        _landing = GetComponent<SpawnLandingTracker>();
         _descentAnimator = GetComponent<SpawnDescentAnimator>();
-        _animationSwitcher = GetComponent<BoosterAnimationSwitcher>();
-        _propAttacher = GetComponent<BoosterPropAttacher>();
-        _scaleAnimator = GetComponent<BoosterScaleAnimator>();
-        _landing.Started += OnLandingChanged;
-        _landing.Finished += OnLandingChanged;
+        _boosterPresentation = GetComponent<BoosterPresentation>();
     }
 
     // Единственное место, где открытое окно приземления превращается
@@ -78,28 +71,9 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         ApplyInteractionState();
     }
 
-    public IBoosterObservable BoosterObservable => _boosterHandler;
-    public ITrailVisualProvider TrailVisual => _trailVisualModifier;
-
-    public bool HasActiveTrail => _conqueror.TrailHexes.Count > 0;
-
-    public event Action<ICharacter, ICharacter> TrailInterrupted
-    {
-        add => _conqueror.TrailInterrupted += value;
-        remove => _conqueror.TrailInterrupted -= value;
-    }
-
-    public event Action<ICharacter> TrailOrphaned
-    {
-        add => _conqueror.TrailOrphaned += value;
-        remove => _conqueror.TrailOrphaned -= value;
-    }
-
-    public event Action<ICharacter, IReadOnlyList<IHex>> AreaCaptured
-    {
-        add => _conqueror.AreaCaptured += value;
-        remove => _conqueror.AreaCaptured -= value;
-    }
+    public IBoosterObservable BoosterObservable => Boosters;
+    public ITrailVisualProvider TrailVisual => _trailAppearance;
+    public ITrailObservable Trail => _conqueror;
 
     public float Speed => _mover.Velocity.magnitude;
 
@@ -120,26 +94,6 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
     public void SetName(string name)
     {
         _name = name;
-    }
-
-    public void RegisterTrailKillResolver(Func<ICharacter, ICharacter, (ICharacter victim, ICharacter killer)> resolver)
-    {
-        _killManager.RegisterResolver(this, resolver);
-    }
-
-    public void UnregisterTrailKillResolver()
-    {
-        _killManager.UnregisterResolver(this);
-    }
-
-    public void RegisterDeathInterceptor(Func<bool> interceptor)
-    {
-        _killManager.RegisterDeathInterceptor(this, interceptor);
-    }
-
-    public void UnregisterDeathInterceptor()
-    {
-        _killManager.UnregisterDeathInterceptor(this);
     }
 
     // Спасение от смерти: трейл возвращается прежним владельцам, персонаж уносится на свою территорию
@@ -163,24 +117,28 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         return _grid.GetRandomHex();
     }
 
-    public void SetTrailMesh(Mesh mesh) => _trailVisualModifier.SetMesh(mesh);
+    public void SetTrailMesh(Mesh mesh) => _trailAppearance.SetMesh(mesh);
 
-    public void ClearTrailMesh() => _trailVisualModifier.ClearMesh();
+    public void ClearTrailMesh() => _trailAppearance.ClearMesh();
 
     public void Init(ColorService colorService, TerritoryManager territoryManager, IHexGridProvider grid,
-        KillManager killManager, IMatchState matchState)
+        IMatchState matchState)
     {
         _matchState = matchState ?? throw new ArgumentNullException(nameof(matchState));
         _matchState.Changed += ApplyInteractionState;
-        _killManager = killManager ?? throw new ArgumentNullException(nameof(killManager));
         _colorService = colorService ?? throw new ArgumentNullException(nameof(colorService));
         _grid = grid ?? throw new ArgumentNullException(nameof(grid));
+
+        _trailAppearance = new TrailAppearance();
+        _landing = new LandingWindow(_config.LandingDuration);
+        _landing.Started += OnLandingChanged;
+        _landing.Finished += OnLandingChanged;
 
         Stats = new CharacterStats();
         Stats.SetBase(StatType.Speed, _config.BaseSpeed);
         Stats.SetBase(StatType.CaptureWidth, _config.BaseCaptureWidth);
-        _mover.Init(Stats, _config);
-        _boosterHandler.Init(this);
+        _mover.Init(Stats, _config.RotationSpeed);
+        Boosters = new BoosterHandler(this);
 
         _color = _colorService.GetRandomColor();
         _state = CharacterState.Alive;
@@ -189,9 +147,7 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         _grabber.ItemDetected += OnItemDetected;
         _view.Init(this);
         _descentAnimator.Init(_view.transform, _landing);
-        _animationSwitcher.Init(_boosterHandler, _view);
-        _propAttacher.Init(_boosterHandler, this);
-        _scaleAnimator.Init(_boosterHandler, _view);
+        _boosterPresentation.Init(Boosters, _view, this);
         _landing.Begin();
 
         OnInit();
@@ -217,15 +173,34 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
         }
     }
 
-    public bool CanAcceptBooster => CanAct && _boosterHandler.CanAccept;
-    protected bool TryStorePendingBooster(IBoosterEffect effect) => _boosterHandler.TryStore(effect);
-    public bool TryActivatePendingBooster() => _boosterHandler.TryActivatePending();
+    public bool CanAcceptBooster => CanAct && Boosters.CanAccept;
+
+    // Срок действия эффекта идёт по игровому времени: на паузе deltaTime равен нулю
+    protected virtual void Update()
+    {
+        _landing?.Tick(Time.deltaTime);
+        Boosters?.Tick(Time.deltaTime);
+        SendMoveCommand();
+    }
+
+    // Команду формирует источник управления, разрешает её персонаж, применяет мотор.
+    // Пока действовать нельзя, мотор получает нулевое направление и не тянет Rigidbody
+    private void SendMoveCommand()
+    {
+        _mover.SetMoveDirection(CanAct ? _vectorProvider.GetMoveDirection() : Vector3.zero);
+    }
+
+    // Точка подмены источника команд (dev-инструменты)
+    public void SetVectorProvider(VectorProviderComponent provider)
+    {
+        _vectorProvider = provider != null ? provider : throw new ArgumentNullException(nameof(provider));
+    }
 
     public void AcceptCoin() => LifeStats.AddCoin();
 
     public virtual bool TryAcceptBooster(IBoosterEffect effect)
     {
-        return _boosterHandler.TryActivate(effect);
+        return Boosters.TryActivate(effect);
     }
 
     // Предмет потребляется, только если персонаж его принял — иначе остаётся на поле
@@ -250,7 +225,7 @@ public abstract class CharacterBase : MonoBehaviour, ICharacter, IBoosterContext
 
         _state = CharacterState.Died;
         _landing.Cancel();
-        _boosterHandler.Clear();
+        Boosters.Clear();
         _mover.enabled = false;
         _grabber.enabled = false;
         _conqueror.enabled = false;

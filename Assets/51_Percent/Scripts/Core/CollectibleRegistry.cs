@@ -12,12 +12,14 @@ public class CollectibleRegistry : ICollectibleRegistry
     public void Register(ICollectible collectible, CollectibleKind kind)
     {
         GetList(kind).Add(collectible);
-        collectible.Collected += Unregister;
+        // Реестр описывает предметы на поле, поэтому реагирует на потребление,
+        // а не на конец анимации исчезновения
+        collectible.Consumed += Unregister;
     }
 
     public void Unregister(ICollectible collectible)
     {
-        collectible.Collected -= Unregister;
+        collectible.Consumed -= Unregister;
         _coins.Remove(collectible);
         _boosters.Remove(collectible);
     }

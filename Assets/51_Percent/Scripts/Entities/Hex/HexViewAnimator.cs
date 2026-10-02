@@ -29,6 +29,7 @@ public class HexViewAnimator
     public void Reset()
     {
         _currentPulseTween?.Kill();
+        _currentPulseTween = null;
         _hexViewTransform.localScale = _originalScale;
     }
 }
